@@ -1,0 +1,10 @@
+{
+  "name": "@localsink/winston",
+  "version": "0.0.0",
+  "description": "Winston transport for localsink (reserved).",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/localsink/localsink"
+  }
+}

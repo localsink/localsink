@@ -1,0 +1,10 @@
+{
+  "name": "@localsink/http",
+  "version": "0.0.0",
+  "description": "HTTP client for sending logs to localsink (reserved).",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/localsink/localsink"
+  }
+}

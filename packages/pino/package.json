@@ -1,0 +1,10 @@
+{
+  "name": "@localsink/pino",
+  "version": "0.0.0",
+  "description": "Pino transport for localsink (reserved).",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/localsink/localsink"
+  }
+}

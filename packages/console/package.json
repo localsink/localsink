@@ -1,0 +1,10 @@
+{
+  "name": "@localsink/console",
+  "version": "0.0.0",
+  "description": "Console transport for forwarding console.* output to localsink (reserved).",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/localsink/localsink"
+  }
+}
