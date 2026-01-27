@@ -3,8 +3,13 @@
   "version": "0.0.0",
   "description": "Pino transport for localsink (reserved).",
   "license": "MIT",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/localsink/localsink"
+  },
+  "scripts": {
+    "build": "tsc -b .",
+    "lint": "eslint ."
   }
 }

@@ -3,8 +3,19 @@
   "version": "0.0.0",
   "description": "Local-first log sink with a searchable UI and API (reserved).",
   "license": "MIT",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/localsink/localsink"
+  },
+  "scripts": {
+    "build": "tsc -b .",
+    "lint": "eslint .",
+    "dev": "node --watch --watch-path=src src/server.ts",
+    "start": "node src/server.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "catalog:",
+    "hono": "catalog:"
   }
 }
