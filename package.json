@@ -2,15 +2,16 @@
   "name": "localsink",
   "private": true,
   "license": "MIT",
-  "packageManager": "pnpm@10.28.0",
+  "packageManager": "pnpm@10.28.2+sha224.fa1514f54e3833a73be0d1ee702820bf72a8c49a00b8b496bbf7ae52",
   "type": "module",
   "engines": {
-    "node": ">=24",
-    "pnpm": ">=10"
+    "node": "24.13.0",
+    "pnpm": "10.28.2"
   },
   "scripts": {
-    "build": "pnpm -r build",
-    "lint": "pnpm -r lint",
+    "build:all": "pnpm --recursive build",
+    "lint": "eslint *.config.js --max-warnings 0",
+    "lint:all": "pnpm --recursive --include-workspace-root lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"

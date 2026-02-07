@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc -b .",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "dev": "node --watch --watch-path=src src/server.ts",
     "start": "node src/server.ts"
   },
