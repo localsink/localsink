@@ -1,11 +1,6 @@
 {
+  "extends": "./tsconfig.base.json",
   "files": [],
-  "extends": [
-    "@tsconfig/node24/tsconfig.json",
-    "@tsconfig/strictest/tsconfig.json",
-    "@tsconfig/node-ts/tsconfig.json"
-  ],
-  "compilerOptions": { "types": ["node"] },
   "references": [
     { "path": "./packages/console" },
     { "path": "./packages/http" },

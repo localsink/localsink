@@ -20,7 +20,12 @@ export default defineConfig(
     },
   },
   {
-    files: ['eslint.config.js', 'lint-staged.config.js'],
+    files: [
+      'eslint.config.js',
+      'lint-staged.config.js',
+      'vitest.config.ts',
+      'vitest.shared.ts',
+    ],
     ...tsConfigs.disableTypeChecked,
   },
   eslintConfigPrettier,
