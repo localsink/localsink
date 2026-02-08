@@ -11,6 +11,7 @@
   "scripts": {
     "build": "tsc -b .",
     "lint": "eslint . --max-warnings 0",
+    "test": "vitest run",
     "dev": "node --watch --watch-path=src src/server.ts",
     "start": "node src/server.ts"
   },

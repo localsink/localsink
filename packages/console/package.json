@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "tsc -b .",
-    "lint": "eslint . --max-warnings 0"
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run"
   }
 }

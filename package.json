@@ -10,7 +10,8 @@
   },
   "scripts": {
     "build:all": "pnpm --recursive build",
-    "lint": "eslint *.config.js --max-warnings 0",
+    "test:all": "pnpm --recursive test",
+    "lint": "eslint eslint.config.js lint-staged.config.js vitest.config.ts vitest.shared.ts --max-warnings 0",
     "lint:all": "pnpm --recursive --include-workspace-root lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -31,6 +32,7 @@
     "lint-staged": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
   }
 }

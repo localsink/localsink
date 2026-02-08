@@ -2,11 +2,11 @@ import { defineConfig } from 'eslint/config';
 import baseConfig from '../../eslint.config.js';
 
 export default defineConfig(...baseConfig, {
-  files: ['src/**/*.ts'],
+  files: ['src/**/*.ts', 'vitest.config.ts'],
   languageOptions: {
     parserOptions: {
       tsconfigRootDir: import.meta.dirname,
-      projectService: true,
+      project: ['./tsconfig.lib.json', './tsconfig.spec.json'],
     },
   },
 });
