@@ -2,7 +2,7 @@
   "name": "localsink",
   "version": "0.0.0",
   "description": "Local-first log sink with a searchable UI and API (reserved).",
-  "license": "MIT",
+  "license": "BUSL-1.1",
   "type": "module",
   "repository": {
     "type": "git",
