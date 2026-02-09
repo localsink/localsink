@@ -2,7 +2,7 @@
   "name": "@localsink/http",
   "version": "0.0.0",
   "description": "HTTP client for sending logs to localsink (reserved).",
-  "license": "MIT",
+  "license": "BUSL-1.1",
   "type": "module",
   "repository": {
     "type": "git",

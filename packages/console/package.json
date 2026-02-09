@@ -2,7 +2,7 @@
   "name": "@localsink/console",
   "version": "0.0.0",
   "description": "Console transport for forwarding console.* output to localsink (reserved).",
-  "license": "MIT",
+  "license": "BUSL-1.1",
   "type": "module",
   "repository": {
     "type": "git",

@@ -2,7 +2,7 @@
   "name": "@localsink/pino",
   "version": "0.0.0",
   "description": "Pino transport for localsink (reserved).",
-  "license": "MIT",
+  "license": "BUSL-1.1",
   "type": "module",
   "repository": {
     "type": "git",

@@ -1,7 +1,7 @@
 {
   "name": "localsink",
   "private": true,
-  "license": "MIT",
+  "license": "BUSL-1.1",
   "packageManager": "pnpm@10.28.2+sha224.fa1514f54e3833a73be0d1ee702820bf72a8c49a00b8b496bbf7ae52",
   "type": "module",
   "engines": {
