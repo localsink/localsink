@@ -23,6 +23,7 @@
     "@tsconfig/node24": "catalog:",
     "@tsconfig/strictest": "catalog:",
     "@types/node": "catalog:",
+    "drizzle-kit": "catalog:",
     "eslint": "catalog:",
     "eslint-config-prettier": "catalog:",
     "eslint-import-resolver-typescript": "catalog:",
