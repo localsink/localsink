@@ -12,6 +12,9 @@ catalogs:
     '@hono/node-server':
       specifier: ^1.19.9
       version: 1.19.9
+    '@hono/zod-validator':
+      specifier: ^0.7.6
+      version: 0.7.6
     '@libsql/client':
       specifier: ^0.17.0
       version: 0.17.0
@@ -33,6 +36,9 @@ catalogs:
     drizzle-orm:
       specifier: ^0.45.1
       version: 0.45.1
+    drizzle-zod:
+      specifier: ^0.8.3
+      version: 0.8.3
     eslint:
       specifier: 9.39.2
       version: 9.39.2
@@ -69,6 +75,9 @@ catalogs:
     vitest:
       specifier: 4.0.18
       version: 4.0.18
+    zod:
+      specifier: ^4.3.5
+      version: 4.3.6
 
 overrides:
   esbuild: '>=0.27.3'
@@ -138,15 +147,24 @@ importers:
       '@hono/node-server':
         specifier: 'catalog:'
         version: 1.19.9(hono@4.11.7)
+      '@hono/zod-validator':
+        specifier: 'catalog:'
+        version: 0.7.6(hono@4.11.7)(zod@4.3.6)
       '@libsql/client':
         specifier: 'catalog:'
         version: 0.17.0
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.1(@libsql/client@0.17.0)
+      drizzle-zod:
+        specifier: 'catalog:'
+        version: 0.8.3(drizzle-orm@0.45.1(@libsql/client@0.17.0))(zod@4.3.6)
       hono:
         specifier: 'catalog:'
         version: 4.11.7
+      zod:
+        specifier: 'catalog:'
+        version: 4.3.6
 
   packages/pino: {}
 
@@ -375,6 +393,12 @@ packages:
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
+
+  '@hono/zod-validator@0.7.6':
+    resolution: {integrity: sha512-Io1B6d011Gj1KknV4rXYz4le5+5EubcWEU/speUjuw9XMMIaP3n78yXLhjd2A3PXaXaUwEAluOiAyLqhBEJgsw==}
+    peerDependencies:
+      hono: '>=3.9.0'
+      zod: ^3.25.0 || ^4.0.0
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -1113,6 +1137,12 @@ packages:
         optional: true
       sqlite3:
         optional: true
+
+  drizzle-zod@0.8.3:
+    resolution: {integrity: sha512-66yVOuvGhKJnTdiqj1/Xaaz9/qzOdRJADpDa68enqS6g3t0kpNkwNYjUuaeXgZfO/UWuIM9HIhSlJ6C5ZraMww==}
+    peerDependencies:
+      drizzle-orm: '>=0.36.0'
+      zod: ^3.25.0 || ^4.0.0
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -2167,6 +2197,9 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
+
 snapshots:
 
   '@drizzle-team/brocli@0.10.2': {}
@@ -2324,6 +2357,11 @@ snapshots:
   '@hono/node-server@1.19.9(hono@4.11.7)':
     dependencies:
       hono: 4.11.7
+
+  '@hono/zod-validator@0.7.6(hono@4.11.7)(zod@4.3.6)':
+    dependencies:
+      hono: 4.11.7
+      zod: 4.3.6
 
   '@humanfs/core@0.19.1': {}
 
@@ -2930,6 +2968,11 @@ snapshots:
   drizzle-orm@0.45.1(@libsql/client@0.17.0):
     optionalDependencies:
       '@libsql/client': 0.17.0
+
+  drizzle-zod@0.8.3(drizzle-orm@0.45.1(@libsql/client@0.17.0))(zod@4.3.6):
+    dependencies:
+      drizzle-orm: 0.45.1(@libsql/client@0.17.0)
+      zod: 4.3.6
 
   dunder-proto@1.0.1:
     dependencies:
@@ -4162,3 +4205,5 @@ snapshots:
   yaml@2.8.2: {}
 
   yocto-queue@0.1.0: {}
+
+  zod@4.3.6: {}
