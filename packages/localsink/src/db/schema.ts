@@ -1,4 +1,5 @@
 import { int, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { createInsertSchema } from 'drizzle-zod';
 
 export const logsTable = sqliteTable('logs', {
   id: int().primaryKey({ autoIncrement: true }),
@@ -13,4 +14,8 @@ export const logsTable = sqliteTable('logs', {
     type?: string;
   }>(),
   context: text({ mode: 'json' }).$type<Record<string, unknown>>(),
+});
+
+export const logsApiInsertSchema = createInsertSchema(logsTable).omit({
+  id: true,
 });
