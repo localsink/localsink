@@ -38,26 +38,26 @@ app.get('/api/logs/:id', zValidator('param', logIdParamSchema), async (c) => {
   return c.json(log);
 });
 
-app.post('/api/logs', async (c) => {
-  let log: unknown;
-  try {
-    log = await c.req.json();
-  } catch {
-    return c.json({ error: 'Invalid JSON body.' }, 400);
-  }
-
-  const { data, success, error } = logsApiInsertSchema.safeParse(log);
-  if (!success) {
-    return c.json({ error: error.message }, 400);
-  }
-
-  await createLog(data);
+app.post('/api/logs', zValidator('json', logsApiInsertSchema), async (c) => {
+  const log = c.req.valid('json');
+  await createLog(log);
   return c.body(null, 201);
 });
 
 const server = serve({
   fetch: app.fetch,
   port: 3000,
+});
+
+server.addListener('listening', () => {
+  const addressInfo = server.address();
+  if (addressInfo && typeof addressInfo === 'object') {
+    console.log(
+      `Server is listening on http://${addressInfo.address}:${String(addressInfo.port)}`,
+    );
+  } else {
+    console.log('Server is listening');
+  }
 });
 
 const exit = () => {
