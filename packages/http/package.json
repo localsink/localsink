@@ -1,9 +1,17 @@
 {
   "name": "@localsink/http",
   "version": "0.0.0",
-  "description": "HTTP client for sending logs to localsink (reserved).",
+  "description": "HTTP client for sending logs to localsink.",
   "license": "BUSL-1.1",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/localsink/localsink"
@@ -12,5 +20,8 @@
     "build": "tsc -b .",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "catalog:"
   }
 }
