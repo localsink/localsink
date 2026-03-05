@@ -4,6 +4,14 @@
   "description": "Pino transport for localsink (reserved).",
   "license": "BUSL-1.1",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/localsink/localsink"
@@ -12,5 +20,15 @@
     "build": "tsc -b .",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "pino-abstract-transport": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "pino": "catalog:"
+  },
+  "devDependencies": {
+    "pino": "catalog:"
   }
 }
