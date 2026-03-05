@@ -10,8 +10,8 @@ catalogs:
       specifier: 9.39.2
       version: 9.39.2
     '@hono/node-server':
-      specifier: ^1.19.9
-      version: 1.19.9
+      specifier: ^1.19.10
+      version: 1.19.10
     '@hono/zod-validator':
       specifier: ^0.7.6
       version: 0.7.6
@@ -52,8 +52,8 @@ catalogs:
       specifier: 2.32.0
       version: 2.32.0
     hono:
-      specifier: ^4.12.2
-      version: 4.12.2
+      specifier: ^4.12.5
+      version: 4.12.5
     husky:
       specifier: 9.1.7
       version: 9.1.7
@@ -140,10 +140,10 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.19.9(hono@4.12.2)
+        version: 1.19.10(hono@4.12.5)
       '@hono/zod-validator':
         specifier: 'catalog:'
-        version: 0.7.6(hono@4.12.2)(zod@4.3.6)
+        version: 0.7.6(hono@4.12.5)(zod@4.3.6)
       '@libsql/client':
         specifier: 'catalog:'
         version: 0.17.0
@@ -155,7 +155,7 @@ importers:
         version: 0.8.3(drizzle-orm@0.45.1(@libsql/client@0.17.0))(zod@4.3.6)
       hono:
         specifier: 'catalog:'
-        version: 4.12.2
+        version: 4.12.5
       zod:
         specifier: 'catalog:'
         version: 4.3.6
@@ -382,8 +382,8 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@hono/node-server@1.19.9':
-    resolution: {integrity: sha512-vHL6w3ecZsky+8P5MD+eFfaGTyCeOHUIFYMGpQGbrBTSmNNoxv0if69rEZ5giu36weC5saFuznL411gRX7bJDw==}
+  '@hono/node-server@1.19.10':
+    resolution: {integrity: sha512-hZ7nOssGqRgyV3FVVQdfi+U4q02uB23bpnYpdvNXkYTRRyWx84b7yf1ans+dnJ/7h41sGL3CeQTfO+ZGxuO+Iw==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
@@ -1443,8 +1443,8 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono@4.12.2:
-    resolution: {integrity: sha512-gJnaDHXKDayjt8ue0n8Gs0A007yKXj4Xzb8+cNjZeYsSzzwKc0Lr+OZgYwVfB0pHfUs17EPoLvrOsEaJ9mj+Tg==}
+  hono@4.12.5:
+    resolution: {integrity: sha512-3qq+FUBtlTHhtYxbxheZgY8NIFnkkC/MR8u5TTsr7YZ3wixryQ3cCwn3iZbg8p8B88iDBBAYSfZDS75t8MN7Vg==}
     engines: {node: '>=16.9.0'}
 
   husky@9.1.7:
@@ -2349,13 +2349,13 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
-  '@hono/node-server@1.19.9(hono@4.12.2)':
+  '@hono/node-server@1.19.10(hono@4.12.5)':
     dependencies:
-      hono: 4.12.2
+      hono: 4.12.5
 
-  '@hono/zod-validator@0.7.6(hono@4.12.2)(zod@4.3.6)':
+  '@hono/zod-validator@0.7.6(hono@4.12.5)(zod@4.3.6)':
     dependencies:
-      hono: 4.12.2
+      hono: 4.12.5
       zod: 4.3.6
 
   '@humanfs/core@0.19.1': {}
@@ -3377,7 +3377,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.12.2: {}
+  hono@4.12.5: {}
 
   husky@9.1.7: {}
 
