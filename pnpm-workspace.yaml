@@ -26,7 +26,9 @@ catalog:
   typescript: 5.9.3
   typescript-eslint: 8.53.0
   vitest: 4.0.18
-  zod: ^4.3.5
+  winston: ^3.0.0
+  winston-transport: ^4.0.0
+  zod: ^4.0.0
 
 catalogMode: strict
 
