@@ -20,6 +20,19 @@ export default defineConfig(
     },
   },
   {
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
+  {
     files: [
       'eslint.config.js',
       'lint-staged.config.js',

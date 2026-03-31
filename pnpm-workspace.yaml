@@ -22,11 +22,13 @@ catalog:
   hono: ^4.12.8
   husky: 9.1.7
   lint-staged: 16.2.7
+  pino: ^10.0.0
+  pino-abstract-transport: ^3.0.0
   prettier: 3.8.0
   typescript: 5.9.3
   typescript-eslint: 8.53.0
   vitest: 4.0.18
-  zod: ^4.3.5
+  zod: ^4.0.0
 
 catalogMode: strict
 
