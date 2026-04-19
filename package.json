@@ -16,8 +16,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "commitlint": "commitlint --edit",
-    "commitlint:check": "commitlint --last --verbose"
+    "commitlint": "commitlint --edit"
   },
   "devDependencies": {
     "@commitlint/cli": "catalog:",
