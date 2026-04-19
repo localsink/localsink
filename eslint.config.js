@@ -21,6 +21,7 @@ export default defineConfig(
   },
   {
     files: [
+      'commitlint.config.ts',
       'eslint.config.js',
       'lint-staged.config.js',
       'vitest.config.ts',

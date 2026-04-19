@@ -21,3 +21,4 @@ jobs:
       - run: pnpm run lint:all
       - run: pnpm run test:all
       - run: pnpm run format:check
+      - run: pnpm run commitlint:check

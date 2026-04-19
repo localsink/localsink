@@ -11,13 +11,18 @@
   "scripts": {
     "build:all": "pnpm --recursive build",
     "test:all": "pnpm --recursive test",
-    "lint": "eslint eslint.config.js lint-staged.config.js vitest.config.ts vitest.shared.ts --max-warnings 0",
+    "lint": "eslint commitlint.config.ts eslint.config.js lint-staged.config.js vitest.config.ts vitest.shared.ts --max-warnings 0",
     "lint:all": "pnpm --recursive --include-workspace-root lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "commitlint": "commitlint --edit",
+    "commitlint:check": "commitlint --last --verbose"
   },
   "devDependencies": {
+    "@commitlint/cli": "catalog:",
+    "@commitlint/config-conventional": "catalog:",
+    "@commitlint/types": "catalog:",
     "@eslint/js": "catalog:",
     "@tsconfig/node-ts": "catalog:",
     "@tsconfig/node24": "catalog:",
