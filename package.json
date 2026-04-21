@@ -2,11 +2,11 @@
   "name": "localsink",
   "private": true,
   "license": "BUSL-1.1",
-  "packageManager": "pnpm@10.28.2+sha224.fa1514f54e3833a73be0d1ee702820bf72a8c49a00b8b496bbf7ae52",
+  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
   "type": "module",
   "engines": {
-    "node": "24.13.0",
-    "pnpm": "10.28.2"
+    "node": "24.15.0",
+    "pnpm": "10.33.0"
   },
   "scripts": {
     "build:all": "pnpm --recursive build",
