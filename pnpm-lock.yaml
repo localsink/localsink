@@ -134,7 +134,11 @@ importers:
 
   packages/console: {}
 
-  packages/http: {}
+  packages/http:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.3.6
 
   packages/localsink:
     dependencies:
@@ -162,7 +166,11 @@ importers:
 
   packages/pino: {}
 
-  packages/sdk: {}
+  packages/sdk:
+    dependencies:
+      '@localsink/http':
+        specifier: workspace:*
+        version: link:../http
 
   packages/winston: {}
 
