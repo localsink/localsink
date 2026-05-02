@@ -1,7 +1,7 @@
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
-  plugins: ['import'],
+  plugins: ['import', 'vitest'],
   env: {
     es2024: true,
     node: true,

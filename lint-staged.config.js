@@ -3,6 +3,6 @@
  * @type {import('lint-staged').Configuration}
  */
 export default {
-  '!(*.ts)': 'oxfmt --write',
+  '!(*.ts)': 'oxfmt --write --no-error-on-unmatched-pattern',
   '*.ts': ['oxlint --fix', 'oxfmt --write'],
 };
