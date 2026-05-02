@@ -1,4 +1,4 @@
-import { mapConsoleArgs } from './mapper.js';
+import { mapConsoleArgs } from './mapper.ts';
 
 describe('mapConsoleArgs', () => {
   describe('level', () => {

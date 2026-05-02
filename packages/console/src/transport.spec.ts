@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { localsink } from './index.js';
+import { localsink } from './index.ts';
 
 let server: http.Server;
 let port: number;
@@ -138,6 +138,7 @@ describe('@localsink/console transport', () => {
       expect(spy).toHaveBeenCalledWith('test message');
     } finally {
       uninstall();
+      spy.mockRestore();
     }
   });
 

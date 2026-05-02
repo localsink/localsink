@@ -1,5 +1,5 @@
 import { format } from 'node:util';
-import { type IngestPayload } from './types.js';
+import { type IngestPayload } from './types.ts';
 
 export function mapConsoleArgs(
   level: IngestPayload['level'],

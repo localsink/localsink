@@ -1,7 +1,7 @@
-import { mapConsoleArgs } from './mapper.js';
-import { type IngestPayload, TransportOptionsSchema } from './types.js';
+import { mapConsoleArgs } from './mapper.ts';
+import { type IngestPayload, TransportOptionsSchema } from './types.ts';
 
-export type { TransportOptions } from './types.js';
+export type { TransportOptions } from './types.ts';
 
 type Level = IngestPayload['level'];
 
@@ -27,7 +27,8 @@ export function localsink(opts: unknown): () => void {
   }
 
   const { serviceName, url } = parsed.data;
-  const endpoint = `${url ?? 'http://localhost:3000'}/api/logs`;
+  const baseUrl = url ?? 'http://localhost:3000';
+  const endpoint = new URL('/api/logs', baseUrl).toString();
 
   function send(level: Level, args: unknown[]): void {
     try {
