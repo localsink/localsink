@@ -28,7 +28,6 @@ export default defineConfig({
     'import/no-anonymous-default-export': 'off',
   },
   options: {
-    // Must remain in root config only — nested configs will error if these are set in package configs
     typeAware: true,
     denyWarnings: true,
   },
