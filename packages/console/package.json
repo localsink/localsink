@@ -3,14 +3,14 @@
   "version": "0.0.0",
   "description": "Console transport for forwarding console.* output to localsink (reserved).",
   "license": "BUSL-1.1",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/localsink/localsink"
   },
+  "type": "module",
   "scripts": {
     "build": "tsc -b .",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "oxlint .",
     "test": "vitest run"
   }
 }

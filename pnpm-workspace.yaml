@@ -4,7 +4,6 @@ packages:
 blockExoticSubdeps: true
 
 catalog:
-  '@eslint/js': 9.39.4
   '@hono/node-server': ^1.19.14
   '@hono/zod-validator': ^0.7.6
   '@libsql/client': ^0.17.2
@@ -15,16 +14,13 @@ catalog:
   drizzle-kit: 0.31.10
   drizzle-orm: ^0.45.2
   drizzle-zod: ^0.8.3
-  eslint: 9.39.4
-  eslint-config-prettier: 10.1.8
-  eslint-import-resolver-typescript: 4.4.4
-  eslint-plugin-import: 2.32.0
   hono: ^4.12.14
   husky: 9.1.7
   lint-staged: 16.4.0
-  prettier: 3.8.3
+  oxfmt: 0.47.0
+  oxlint: 1.62.0
+  oxlint-tsgolint: 0.22.1
   typescript: 6.0.3
-  typescript-eslint: 8.58.2
   vitest: 4.1.4
   zod: ^4.3.6
 

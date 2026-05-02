@@ -3,6 +3,6 @@
  * @type {import('lint-staged').Configuration}
  */
 export default {
-  '!(*.ts)': 'prettier --ignore-unknown --write',
-  '*.ts': ['eslint --fix', 'prettier --write'],
+  '!(*.ts)': 'oxfmt --write --no-error-on-unmatched-pattern',
+  '*.ts': ['oxlint --fix', 'oxfmt --write'],
 };
