@@ -1,9 +1,9 @@
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
-  plugins: ['import', 'vitest'],
+  plugins: ['import'],
   env: {
-    es2024: true,
+    builtin: true,
     node: true,
   },
   categories: {
@@ -31,5 +31,14 @@ export default defineConfig({
     typeAware: true,
     denyWarnings: true,
   },
+  overrides: [
+    {
+      files: ['**/*.spec.ts'],
+      plugins: ['import', 'vitest'],
+      env: {
+        vitest: true,
+      },
+    },
+  ],
   ignorePatterns: ['dist/**', 'node_modules/**'],
 });
