@@ -3,14 +3,14 @@
   "version": "0.0.0",
   "description": "Local-first log sink with a searchable UI and API (reserved).",
   "license": "BUSL-1.1",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/localsink/localsink"
   },
+  "type": "module",
   "scripts": {
     "build": "tsc -b .",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "oxlint . --deny-warnings",
     "test": "vitest run",
     "dev": "node --watch --watch-path=src src/server.ts",
     "start": "node src/server.ts",

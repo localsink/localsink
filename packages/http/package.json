@@ -3,14 +3,14 @@
   "version": "0.0.0",
   "description": "HTTP client for sending logs to localsink (reserved).",
   "license": "BUSL-1.1",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/localsink/localsink"
   },
+  "type": "module",
   "scripts": {
     "build": "tsc -b .",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "oxlint . --deny-warnings",
     "test": "vitest run"
   }
 }
