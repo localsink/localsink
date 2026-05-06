@@ -6,7 +6,7 @@
   "scripts": {
     "build:all": "pnpm --recursive build",
     "test:all": "pnpm --recursive test",
-    "lint": "oxlint oxfmt.config.ts oxlint.config.ts lint-staged.config.js vitest.config.ts vitest.shared.ts",
+    "lint": "oxlint oxfmt.config.ts oxlint.config.ts lint-staged.config.ts vitest.config.ts vitest.shared.ts",
     "lint:all": "pnpm --recursive --include-workspace-root lint",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
