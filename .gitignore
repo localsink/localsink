@@ -34,9 +34,6 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# Tool caches
-.eslintcache
-.prettiercache
 
 # Misc
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json

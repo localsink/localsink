@@ -3,22 +3,22 @@
   "version": "0.0.0",
   "description": "Console transport for forwarding console.* output to localsink (reserved).",
   "license": "BUSL-1.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/localsink/localsink"
+  },
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/localsink/localsink"
-  },
   "scripts": {
     "build": "tsc -b .",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "oxlint .",
     "test": "vitest run"
   },
   "dependencies": {
