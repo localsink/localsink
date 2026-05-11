@@ -5,6 +5,18 @@ let server: http.Server;
 let port: number;
 const receivedBodies: unknown[] = [];
 
+function bodyLevel(b: unknown): unknown {
+  if (typeof b !== 'object' || b === null) return undefined;
+  return Reflect.get(b, 'level');
+}
+
+function serverPort(s: http.Server): number {
+  const addr = s.address();
+  if (typeof addr !== 'object' || addr === null)
+    throw new Error('Server not bound');
+  return addr.port;
+}
+
 async function waitFor(
   condition: () => boolean,
   timeoutMs = 2000,
@@ -37,8 +49,7 @@ beforeAll(async () => {
     server.listen(0, resolve);
   });
 
-  const addr = server.address() as { port: number };
-  port = addr.port;
+  port = serverPort(server);
 });
 
 afterAll(async () => {
@@ -104,14 +115,8 @@ describe('@localsink/console transport', () => {
       console.trace('trace message');
       // Vitest's console.trace internally calls console.error, so multiple
       // bodies may arrive. Wait for the one with level 'trace' specifically.
-      await waitFor(() =>
-        receivedBodies.some(
-          (b) => (b as Record<string, unknown>)['level'] === 'trace',
-        ),
-      );
-      const traceBody = receivedBodies.find(
-        (b) => (b as Record<string, unknown>)['level'] === 'trace',
-      );
+      await waitFor(() => receivedBodies.some((b) => bodyLevel(b) === 'trace'));
+      const traceBody = receivedBodies.find((b) => bodyLevel(b) === 'trace');
       expect(traceBody).toMatchObject({
         service_name: 'test-service',
         level: 'trace',
@@ -168,6 +173,7 @@ describe('@localsink/console transport', () => {
       await new Promise<void>((resolve) => {
         setTimeout(resolve, 500);
       });
+      expect(receivedBodies).toHaveLength(0);
     } finally {
       uninstall();
     }
@@ -186,7 +192,7 @@ describe('@localsink/console transport', () => {
       errorServer.listen(0, resolve);
     });
 
-    const errorPort = (errorServer.address() as { port: number }).port;
+    const errorPort = serverPort(errorServer);
     const uninstall = localsink({
       serviceName: 'test-service',
       url: `http://localhost:${String(errorPort)}`,
@@ -197,6 +203,7 @@ describe('@localsink/console transport', () => {
       await new Promise<void>((resolve) => {
         setTimeout(resolve, 500);
       });
+      expect(receivedBodies).toHaveLength(0);
     } finally {
       uninstall();
       await new Promise<void>((resolve, reject) => {

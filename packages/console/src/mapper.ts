@@ -9,13 +9,13 @@ export function mapConsoleArgs(
   const message = format(...args);
 
   const firstArg = args[0];
-  const error =
+  const error: IngestPayload['error'] =
     firstArg instanceof Error
-      ? ({
+      ? {
           message: firstArg.message,
-          stack: firstArg.stack,
+          ...(firstArg.stack !== undefined && { stack: firstArg.stack }),
           type: firstArg.constructor.name,
-        } as IngestPayload['error'])
+        }
       : null;
 
   return {
