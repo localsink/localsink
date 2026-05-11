@@ -9,7 +9,7 @@
   },
   "type": "module",
   "scripts": {
-    "build": "tsc -b .",
+    "build": "tsgo -b .",
     "lint": "oxlint .",
     "test": "vitest run",
     "dev": "node --watch --watch-path=src src/server.ts",
