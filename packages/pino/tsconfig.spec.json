@@ -4,7 +4,9 @@
     "rootDir": "../../",
     "outDir": "out-tsc/spec",
     "types": ["node", "vitest/globals"],
-    "noEmit": true
+    "noEmit": true,
+    "rewriteRelativeImportExtensions": false,
+    "allowImportingTsExtensions": true
   },
   "include": ["vitest.config.ts", "src/**/*.spec.ts"],
   "references": [{ "path": "./tsconfig.lib.json" }]
