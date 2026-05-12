@@ -152,6 +152,8 @@ importers:
 
   packages/winston: {}
 
+  scripts: {}
+
 packages:
 
   '@drizzle-team/brocli@0.10.2':

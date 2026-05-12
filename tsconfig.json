@@ -7,6 +7,7 @@
     { "path": "./packages/pino" },
     { "path": "./packages/sdk" },
     { "path": "./packages/winston" },
-    { "path": "./packages/localsink" }
+    { "path": "./packages/localsink" },
+    { "path": "./scripts" }
   ]
 }
