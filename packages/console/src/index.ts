@@ -7,10 +7,6 @@ type Level = IngestPayload['level'];
 
 let installed = false;
 
-const noop = (): void => {
-  // noop
-};
-
 export function localsink(opts: unknown): () => void {
   const parsed = TransportOptionsSchema.safeParse(opts);
   if (!parsed.success) {
@@ -18,12 +14,12 @@ export function localsink(opts: unknown): () => void {
       '[localsink] Invalid options — transport disabled.',
       parsed.error.issues,
     );
-    return noop;
+    return () => {};
   }
 
   if (installed) {
     console.warn('[localsink] Already installed — ignoring duplicate call.');
-    return noop;
+    return () => {};
   }
 
   const { serviceName, url } = parsed.data;
