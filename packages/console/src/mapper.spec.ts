@@ -49,6 +49,15 @@ describe('mapConsoleArgs', () => {
       expect(result.error?.stack).toContain('TypeError');
     });
 
+    it('extracts error when it is not the first argument', () => {
+      const err = new TypeError('something went wrong');
+      const result = mapConsoleArgs('error', ['DB failed', err], 'svc');
+      expect(result.error).toMatchObject({
+        message: 'something went wrong',
+        type: 'TypeError',
+      });
+    });
+
     it('sets error to null when first arg is a string', () => {
       const result = mapConsoleArgs('error', ['plain message'], 'svc');
       expect(result.error).toBeNull();

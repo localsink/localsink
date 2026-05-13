@@ -8,15 +8,14 @@ export function mapConsoleArgs(
 ): IngestPayload {
   const message = format(...args);
 
-  const firstArg = args[0];
-  const error: IngestPayload['error'] =
-    firstArg instanceof Error
-      ? {
-          message: firstArg.message,
-          ...(firstArg.stack !== undefined && { stack: firstArg.stack }),
-          type: firstArg.constructor.name,
-        }
-      : null;
+  const errorArg = args.find((a): a is Error => a instanceof Error);
+  const error: IngestPayload['error'] = errorArg
+    ? {
+        message: errorArg.message,
+        ...(errorArg.stack !== undefined && { stack: errorArg.stack }),
+        type: errorArg.constructor.name,
+      }
+    : null;
 
   return {
     service_name: serviceName,
