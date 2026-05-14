@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const TransportOptionsSchema = z.object({
   serviceName: z.string().min(1),
-  url: z.url().optional(),
+  url: z.httpUrl().optional(),
 });
 
 export type TransportOptions = z.infer<typeof TransportOptionsSchema>;
