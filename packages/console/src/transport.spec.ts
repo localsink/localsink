@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { localsink } from './index.ts';
+import { localsink } from './transport.ts';
 
 let server: http.Server;
 let port: number;
