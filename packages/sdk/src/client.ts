@@ -15,7 +15,7 @@ export interface LocalsinkClient {
 
 export function createClient(opts: TransportOptions): LocalsinkClient {
   const { serviceName, url } = TransportOptionsSchema.parse(opts);
-  const endpoint = `${url ?? DEFAULT_URL}/api/logs`;
+  const endpoint = new URL('/api/logs', url ?? DEFAULT_URL).toString();
 
   return {
     log(input: LogInput): void {
