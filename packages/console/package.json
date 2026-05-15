@@ -8,9 +8,20 @@
     "url": "https://github.com/localsink/localsink"
   },
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsgo -b .",
     "lint": "oxlint .",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "catalog:"
   }
 }
