@@ -1,4 +1,5 @@
 import http from 'node:http';
+
 import { sendLog } from './send.js';
 import type { IngestPayload } from './types.js';
 
@@ -50,7 +51,8 @@ beforeAll(async () => {
     server.listen(0, resolve);
   });
 
-  const addr = server.address() as { port: number };
+  const addr = server.address();
+  if (!addr || typeof addr === 'string') throw new Error('Expected TCP address');
   port = addr.port;
 });
 
@@ -88,7 +90,9 @@ describe('sendLog', () => {
     await new Promise<void>((resolve) => {
       headerServer.listen(0, resolve);
     });
-    const p = (headerServer.address() as { port: number }).port;
+    const headerAddr = headerServer.address();
+    if (!headerAddr || typeof headerAddr === 'string') throw new Error('Expected TCP address');
+    const p = headerAddr.port;
 
     sendLog(`http://localhost:${String(p)}/api/logs`, FIXTURE);
     await waitFor(() => receivedContentType !== undefined);
@@ -123,7 +127,9 @@ describe('sendLog', () => {
     await new Promise<void>((resolve) => {
       errorServer.listen(0, resolve);
     });
-    const p = (errorServer.address() as { port: number }).port;
+    const errorAddr = errorServer.address();
+    if (!errorAddr || typeof errorAddr === 'string') throw new Error('Expected TCP address');
+    const p = errorAddr.port;
 
     expect(() => {
       sendLog(`http://localhost:${String(p)}/api/logs`, FIXTURE);

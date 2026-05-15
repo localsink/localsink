@@ -1,12 +1,5 @@
-import {
-  DEFAULT_URL,
-  TransportOptionsSchema,
-  sendLog,
-  type IngestPayload,
-  type TransportOptions,
-} from '@localsink/http';
-
-export type { TransportOptions };
+import { DEFAULT_URL, TransportOptionsSchema, sendLog } from '@localsink/http';
+import type { IngestPayload, TransportOptions } from '@localsink/http';
 
 export type LogInput = Pick<IngestPayload, 'level' | 'message'> &
   Partial<
