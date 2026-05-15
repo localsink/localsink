@@ -116,9 +116,9 @@ importers:
 
   packages/console:
     dependencies:
-      zod:
-        specifier: 'catalog:'
-        version: 4.4.3
+      '@localsink/sdk':
+        specifier: workspace:*
+        version: link:../sdk
 
   packages/http:
     dependencies:

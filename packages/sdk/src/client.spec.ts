@@ -71,12 +71,23 @@ describe('createClient', () => {
   });
 
   describe('.log()', () => {
+    const baseLog = {
+      level: 'info',
+      message: 'hello',
+      timestamp: Date.now(),
+      trace_id: null,
+      span_id: null,
+      logger: null,
+      error: null,
+      attributes: null,
+    };
+
     it('sends correct service_name, level, and message', async () => {
       const client = createClient({
         serviceName: 'test-service',
         url: `http://localhost:${String(port)}`,
       });
-      client.log({ level: 'info', message: 'hello from sdk' });
+      client.log({ ...baseLog, level: 'info', message: 'hello from sdk' });
       await waitFor(() => receivedBodies.length > 0);
       expect(receivedBodies[0]).toMatchObject({
         service_name: 'test-service',
@@ -85,39 +96,20 @@ describe('createClient', () => {
       });
     });
 
-    it('sets timestamp close to Date.now()', async () => {
-      const before = Date.now();
+    it('uses provided timestamp', async () => {
       const client = createClient({
         serviceName: 'test-service',
         url: `http://localhost:${String(port)}`,
       });
-      client.log({ level: 'info', message: 'ts test' });
-      const after = Date.now();
+      client.log({ ...baseLog, timestamp: 1000 });
       await waitFor(() => receivedBodies.length > 0);
       const body = receivedBodies[0];
       if (typeof body !== 'object' || body === null || !('timestamp' in body))
         throw new Error('Expected body with timestamp');
-      expect(body.timestamp).toBeGreaterThanOrEqual(before);
-      expect(body.timestamp).toBeLessThanOrEqual(after);
+      expect(body.timestamp).toBe(1000);
     });
 
-    it('sends null for absent optional fields', async () => {
-      const client = createClient({
-        serviceName: 'test-service',
-        url: `http://localhost:${String(port)}`,
-      });
-      client.log({ level: 'debug', message: 'optional fields' });
-      await waitFor(() => receivedBodies.length > 0);
-      expect(receivedBodies[0]).toMatchObject({
-        trace_id: null,
-        span_id: null,
-        logger: null,
-        error: null,
-        attributes: null,
-      });
-    });
-
-    it('forwards optional fields when provided', async () => {
+    it('passes through all payload fields', async () => {
       const client = createClient({
         serviceName: 'test-service',
         url: `http://localhost:${String(port)}`,
@@ -125,6 +117,7 @@ describe('createClient', () => {
       client.log({
         level: 'error',
         message: 'something went wrong',
+        timestamp: 2000,
         trace_id: 'abc-123',
         span_id: 'def-456',
         logger: 'my-module',
@@ -138,6 +131,7 @@ describe('createClient', () => {
         logger: 'my-module',
         error: { message: 'boom', type: 'TypeError' },
         attributes: { userId: 'u1' },
+        timestamp: 2000,
       });
     });
 
@@ -147,7 +141,7 @@ describe('createClient', () => {
         url: 'http://localhost:1',
       });
       expect(() => {
-        client.log({ level: 'info', message: 'test' });
+        client.log({ ...baseLog });
       }).not.toThrow();
       await new Promise<void>((resolve) => {
         setTimeout(resolve, 500);
