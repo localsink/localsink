@@ -16,12 +16,12 @@ export function localsink(opts: unknown): () => void {
     return () => {};
   }
 
-  const client: LocalsinkClient = createClient(parsed.data);
-
   if (installed) {
     console.warn('[localsink] Already installed — ignoring duplicate call.');
     return () => {};
   }
+
+  const client: LocalsinkClient = createClient(parsed.data);
 
   function send(level: Level, args: unknown[]): void {
     client.log(mapConsoleArgs(level, args));
