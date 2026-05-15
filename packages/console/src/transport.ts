@@ -1,5 +1,6 @@
 import { mapConsoleArgs } from './mapper.ts';
-import { type IngestPayload, TransportOptionsSchema } from './types.ts';
+import { TransportOptionsSchema } from './types.ts';
+import type { IngestPayload } from './types.ts';
 
 type Level = IngestPayload['level'];
 
