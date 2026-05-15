@@ -2,8 +2,10 @@ import { serve } from '@hono/node-server';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';
+
+import { initializeDatabase } from './database.ts';
+import type { Database } from './database.ts';
 import { logsApiInsertSchema } from './db/schema.ts';
-import { initializeDatabase, type Database } from './database.ts';
 
 let database: Database;
 try {
