@@ -38,7 +38,9 @@ beforeAll(async () => {
     server.listen(0, resolve);
   });
 
-  const addr = server.address() as { port: number };
+  const addr = server.address();
+  if (!addr || typeof addr === 'string')
+    throw new Error('Expected TCP address');
   port = addr.port;
 });
 
@@ -59,13 +61,13 @@ describe('createClient', () => {
   it('throws synchronously when serviceName is empty', () => {
     expect(() => {
       createClient({ serviceName: '' });
-    }).toThrow();
+    }).toThrow('Too small');
   });
 
   it('throws synchronously when url is not a valid URL', () => {
     expect(() => {
       createClient({ serviceName: 'svc', url: 'not-a-url' });
-    }).toThrow();
+    }).toThrow('Invalid URL');
   });
 
   describe('.log()', () => {
@@ -92,7 +94,9 @@ describe('createClient', () => {
       client.log({ level: 'info', message: 'ts test' });
       const after = Date.now();
       await waitFor(() => receivedBodies.length > 0);
-      const body = receivedBodies[0] as { timestamp: number };
+      const body = receivedBodies[0];
+      if (typeof body !== 'object' || body === null || !('timestamp' in body))
+        throw new Error('Expected body with timestamp');
       expect(body.timestamp).toBeGreaterThanOrEqual(before);
       expect(body.timestamp).toBeLessThanOrEqual(after);
     });

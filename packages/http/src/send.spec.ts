@@ -52,7 +52,8 @@ beforeAll(async () => {
   });
 
   const addr = server.address();
-  if (!addr || typeof addr === 'string') throw new Error('Expected TCP address');
+  if (!addr || typeof addr === 'string')
+    throw new Error('Expected TCP address');
   port = addr.port;
 });
 
@@ -91,7 +92,8 @@ describe('sendLog', () => {
       headerServer.listen(0, resolve);
     });
     const headerAddr = headerServer.address();
-    if (!headerAddr || typeof headerAddr === 'string') throw new Error('Expected TCP address');
+    if (!headerAddr || typeof headerAddr === 'string')
+      throw new Error('Expected TCP address');
     const p = headerAddr.port;
 
     sendLog(`http://localhost:${String(p)}/api/logs`, FIXTURE);
@@ -128,7 +130,8 @@ describe('sendLog', () => {
       errorServer.listen(0, resolve);
     });
     const errorAddr = errorServer.address();
-    if (!errorAddr || typeof errorAddr === 'string') throw new Error('Expected TCP address');
+    if (!errorAddr || typeof errorAddr === 'string')
+      throw new Error('Expected TCP address');
     const p = errorAddr.port;
 
     expect(() => {
