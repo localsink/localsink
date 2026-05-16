@@ -1,6 +1,6 @@
 import type { LogInput } from '@localsink/sdk';
 
-import { PinoLogSchema } from './types.js';
+import { PinoLogSchema } from './types.ts';
 
 const LEVEL_MAP: Record<number, string> = {
   10: 'trace',

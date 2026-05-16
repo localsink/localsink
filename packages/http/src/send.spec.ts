@@ -1,7 +1,7 @@
 import http from 'node:http';
 
-import { sendLog } from './send.js';
-import type { IngestPayload } from './types.js';
+import { sendLog } from './send.ts';
+import type { IngestPayload } from './types.ts';
 
 const FIXTURE: IngestPayload = {
   service_name: 'test-service',

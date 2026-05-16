@@ -1,4 +1,4 @@
-import { mapPinoLog } from './mapper.js';
+import { mapPinoLog } from './mapper.ts';
 
 function notNull<T>(val: T | null): T {
   if (val === null) throw new Error('mapPinoLog unexpectedly returned null');

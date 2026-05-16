@@ -2,7 +2,7 @@ import build from 'pino-abstract-transport';
 
 import { createClient, TransportOptionsSchema } from '@localsink/sdk';
 
-import { mapPinoLog } from './mapper.js';
+import { mapPinoLog } from './mapper.ts';
 
 export default function (opts: unknown) {
   const client = createClient(TransportOptionsSchema.parse(opts));
