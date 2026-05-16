@@ -26,6 +26,15 @@ export default defineConfig({
     'typescript/prefer-nullish-coalescing': 'error',
     'typescript/prefer-optional-chain': 'error',
     'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+    'import/extensions': [
+      'error',
+      {
+        ts: 'always',
+        js: 'never',
+        ignorePackages: true,
+        checkTypeImports: true,
+      },
+    ],
     'import/no-anonymous-default-export': 'off',
   },
   options: {
