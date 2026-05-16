@@ -1,4 +1,5 @@
 import http from 'node:http';
+
 import pino from 'pino';
 
 type ThreadStream = ReturnType<typeof pino.transport>;
@@ -46,7 +47,9 @@ beforeAll(async () => {
     server.listen(0, resolve);
   });
 
-  const addr = server.address() as { port: number };
+  const addr = server.address();
+  if (!addr || typeof addr === 'string')
+    throw new Error('Expected AddressInfo');
   port = addr.port;
 });
 
@@ -101,6 +104,8 @@ describe('@localsink/pino transport', () => {
       setTimeout(resolve, 500);
     });
 
+    expect(receivedBodies.length).toBe(0);
+
     await endTransport(transport);
   });
 
@@ -117,7 +122,10 @@ describe('@localsink/pino transport', () => {
       errorServer.listen(0, resolve);
     });
 
-    const errorPort = (errorServer.address() as { port: number }).port;
+    const errorAddr = errorServer.address();
+    if (!errorAddr || typeof errorAddr === 'string')
+      throw new Error('Expected AddressInfo');
+    const errorPort = errorAddr.port;
 
     const transport = pino.transport({
       target: '@localsink/pino',
@@ -134,6 +142,8 @@ describe('@localsink/pino transport', () => {
     await new Promise<void>((resolve) => {
       setTimeout(resolve, 500);
     });
+
+    expect(receivedBodies.length).toBe(0);
 
     await endTransport(transport);
 

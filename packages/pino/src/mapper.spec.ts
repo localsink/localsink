@@ -15,16 +15,12 @@ describe('mapPinoLog', () => {
       [50, 'error'],
       [60, 'fatal'],
     ])('maps level %i to %s', (num, text) => {
-      const result = notNull(
-        mapPinoLog({ level: num, time: 0, msg: '' }, 'svc'),
-      );
+      const result = notNull(mapPinoLog({ level: num, time: 0, msg: '' }));
       expect(result.level).toBe(text);
     });
 
     it('maps unknown level to its string representation', () => {
-      const result = notNull(
-        mapPinoLog({ level: 35, time: 0, msg: '' }, 'svc'),
-      );
+      const result = notNull(mapPinoLog({ level: 35, time: 0, msg: '' }));
       expect(result.level).toBe('35');
     });
   });
@@ -32,28 +28,21 @@ describe('mapPinoLog', () => {
   describe('field mapping', () => {
     it('maps obj.msg to message', () => {
       const result = notNull(
-        mapPinoLog({ level: 30, time: 0, msg: 'hello world' }, 'svc'),
+        mapPinoLog({ level: 30, time: 0, msg: 'hello world' }),
       );
       expect(result.message).toBe('hello world');
     });
 
     it('maps obj.time to timestamp unchanged', () => {
       const result = notNull(
-        mapPinoLog({ level: 30, time: 1700000000000, msg: '' }, 'svc'),
+        mapPinoLog({ level: 30, time: 1700000000000, msg: '' }),
       );
       expect(result.timestamp).toBe(1700000000000);
     });
 
-    it('maps serviceName argument to service_name', () => {
-      const result = notNull(
-        mapPinoLog({ level: 30, time: 0, msg: '' }, 'my-service'),
-      );
-      expect(result.service_name).toBe('my-service');
-    });
-
     it('maps obj.logger to logger', () => {
       const result = notNull(
-        mapPinoLog({ level: 30, time: 0, msg: '', logger: 'app' }, 'svc'),
+        mapPinoLog({ level: 30, time: 0, msg: '', logger: 'app' }),
       );
       expect(result.logger).toBe('app');
     });
@@ -62,19 +51,16 @@ describe('mapPinoLog', () => {
   describe('error mapping', () => {
     it('maps obj.err with message, stack, type to structured error', () => {
       const result = notNull(
-        mapPinoLog(
-          {
-            level: 50,
-            time: 0,
-            msg: 'boom',
-            err: {
-              message: 'oops',
-              stack: 'Error: oops\n  at ...',
-              type: 'TypeError',
-            },
+        mapPinoLog({
+          level: 50,
+          time: 0,
+          msg: 'boom',
+          err: {
+            message: 'oops',
+            stack: 'Error: oops\n  at ...',
+            type: 'TypeError',
           },
-          'svc',
-        ),
+        }),
       );
       expect(result.error).toEqual({
         message: 'oops',
@@ -84,9 +70,7 @@ describe('mapPinoLog', () => {
     });
 
     it('sets error to null when obj.err and obj.error are absent', () => {
-      const result = notNull(
-        mapPinoLog({ level: 30, time: 0, msg: '' }, 'svc'),
-      );
+      const result = notNull(mapPinoLog({ level: 30, time: 0, msg: '' }));
       expect(result.error).toBeNull();
     });
   });
@@ -94,32 +78,27 @@ describe('mapPinoLog', () => {
   describe('trace context', () => {
     it('maps obj.traceId to trace_id', () => {
       const result = notNull(
-        mapPinoLog({ level: 30, time: 0, msg: '', traceId: 'abc123' }, 'svc'),
+        mapPinoLog({ level: 30, time: 0, msg: '', traceId: 'abc123' }),
       );
       expect(result.trace_id).toBe('abc123');
     });
 
     it('falls back to obj.trace_id for trace_id', () => {
       const result = notNull(
-        mapPinoLog(
-          { level: 30, time: 0, msg: '', trace_id: 'fallback' },
-          'svc',
-        ),
+        mapPinoLog({ level: 30, time: 0, msg: '', trace_id: 'fallback' }),
       );
       expect(result.trace_id).toBe('fallback');
     });
 
     it('maps obj.spanId to span_id', () => {
       const result = notNull(
-        mapPinoLog({ level: 30, time: 0, msg: '', spanId: 'span-xyz' }, 'svc'),
+        mapPinoLog({ level: 30, time: 0, msg: '', spanId: 'span-xyz' }),
       );
       expect(result.span_id).toBe('span-xyz');
     });
 
     it('sets trace_id and span_id to null when neither is present', () => {
-      const result = notNull(
-        mapPinoLog({ level: 30, time: 0, msg: '' }, 'svc'),
-      );
+      const result = notNull(mapPinoLog({ level: 30, time: 0, msg: '' }));
       expect(result.trace_id).toBeNull();
       expect(result.span_id).toBeNull();
     });
@@ -128,44 +107,45 @@ describe('mapPinoLog', () => {
   describe('attributes', () => {
     it('excludes pino internal fields pid, hostname, v from attributes', () => {
       const result = notNull(
-        mapPinoLog(
-          { level: 30, time: 0, msg: '', pid: 1234, hostname: 'box', v: 1 },
-          'svc',
-        ),
+        mapPinoLog({
+          level: 30,
+          time: 0,
+          msg: '',
+          pid: 1234,
+          hostname: 'box',
+          v: 1,
+        }),
       );
       expect(result.attributes).toBeNull();
     });
 
     it('excludes extracted fields level, time, msg from attributes', () => {
-      const result = notNull(
-        mapPinoLog({ level: 30, time: 0, msg: 'hi' }, 'svc'),
-      );
+      const result = notNull(mapPinoLog({ level: 30, time: 0, msg: 'hi' }));
       expect(result.attributes).toBeNull();
     });
 
     it('includes arbitrary fields userId and requestId in attributes', () => {
       const result = notNull(
-        mapPinoLog(
-          { level: 30, time: 0, msg: '', userId: 'u1', requestId: 'r1' },
-          'svc',
-        ),
+        mapPinoLog({
+          level: 30,
+          time: 0,
+          msg: '',
+          userId: 'u1',
+          requestId: 'r1',
+        }),
       );
       expect(result.attributes).toEqual({ userId: 'u1', requestId: 'r1' });
     });
 
     it('sets attributes to null when no extra fields are present', () => {
-      const result = notNull(
-        mapPinoLog({ level: 30, time: 0, msg: '' }, 'svc'),
-      );
+      const result = notNull(mapPinoLog({ level: 30, time: 0, msg: '' }));
       expect(result.attributes).toBeNull();
     });
   });
 
   describe('null safety', () => {
     it('sets all optional fields to null (not undefined) when absent', () => {
-      const result = notNull(
-        mapPinoLog({ level: 30, time: 0, msg: '' }, 'svc'),
-      );
+      const result = notNull(mapPinoLog({ level: 30, time: 0, msg: '' }));
       expect(result.trace_id).toBeNull();
       expect(result.span_id).toBeNull();
       expect(result.logger).toBeNull();
@@ -182,15 +162,13 @@ describe('mapPinoLog', () => {
 
   describe('schema validation', () => {
     it('returns null when required fields are missing', () => {
-      expect(mapPinoLog({ time: 0, msg: 'hello' }, 'svc')).toBeNull();
-      expect(mapPinoLog({ level: 30, msg: 'hello' }, 'svc')).toBeNull();
-      expect(mapPinoLog({ level: 30, time: 0 }, 'svc')).toBeNull();
+      expect(mapPinoLog({ time: 0, msg: 'hello' })).toBeNull();
+      expect(mapPinoLog({ level: 30, msg: 'hello' })).toBeNull();
+      expect(mapPinoLog({ level: 30, time: 0 })).toBeNull();
     });
 
     it('returns null when field types are wrong', () => {
-      expect(
-        mapPinoLog({ level: 'info', time: 0, msg: 'hello' }, 'svc'),
-      ).toBeNull();
+      expect(mapPinoLog({ level: 'info', time: 0, msg: 'hello' })).toBeNull();
     });
   });
 });

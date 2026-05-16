@@ -158,6 +158,9 @@ importers:
 
   packages/pino:
     dependencies:
+      '@localsink/sdk':
+        specifier: workspace:*
+        version: link:../sdk
       pino-abstract-transport:
         specifier: 'catalog:'
         version: 3.0.0

@@ -1,4 +1,6 @@
-import { PinoLogSchema, type IngestPayload } from './types.js';
+import type { LogInput } from '@localsink/sdk';
+
+import { PinoLogSchema } from './types.js';
 
 const LEVEL_MAP: Record<number, string> = {
   10: 'trace',
@@ -9,10 +11,7 @@ const LEVEL_MAP: Record<number, string> = {
   60: 'fatal',
 };
 
-export function mapPinoLog(
-  obj: Record<string, unknown>,
-  serviceName: string,
-): IngestPayload | null {
+export function mapPinoLog(obj: unknown): LogInput | null {
   const result = PinoLogSchema.safeParse(obj);
   if (!result.success) return null;
 
@@ -36,7 +35,6 @@ export function mapPinoLog(
   const errSrc = err ?? error;
 
   return {
-    service_name: serviceName,
     timestamp: time,
     level: LEVEL_MAP[level] ?? String(level),
     message: msg,
@@ -44,11 +42,11 @@ export function mapPinoLog(
     span_id: spanId ?? span_id ?? null,
     logger: logger ?? null,
     error: errSrc
-      ? ({
-          message: errSrc.message,
-          stack: errSrc.stack,
-          type: errSrc.type,
-        } as IngestPayload['error'])
+      ? {
+          ...(errSrc.message !== undefined && { message: errSrc.message }),
+          ...(errSrc.stack !== undefined && { stack: errSrc.stack }),
+          ...(errSrc.type !== undefined && { type: errSrc.type }),
+        }
       : null,
     attributes: Object.keys(rest).length > 0 ? rest : null,
   };
