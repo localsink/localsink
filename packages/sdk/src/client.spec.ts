@@ -1,6 +1,6 @@
 import http from 'node:http';
 
-import { createClient } from './client.js';
+import { createClient } from './client.ts';
 
 async function waitFor(
   condition: () => boolean,

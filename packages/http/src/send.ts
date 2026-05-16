@@ -1,4 +1,4 @@
-import type { IngestPayload } from './types.js';
+import type { IngestPayload } from './types.ts';
 
 export function sendLog(endpoint: string, payload: IngestPayload): void {
   try {

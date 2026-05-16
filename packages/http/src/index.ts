@@ -3,5 +3,5 @@ export {
   TransportOptionsSchema,
   type TransportOptions,
   type IngestPayload,
-} from './types.js';
-export { sendLog } from './send.js';
+} from './types.ts';
+export { sendLog } from './send.ts';
