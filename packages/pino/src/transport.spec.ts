@@ -165,9 +165,11 @@ describe('@localsink/pino transport', () => {
     });
     const logger = pino(transport);
 
-    // Write a record directly that is missing the required `msg` field —
-    // this simulates a custom messageKey or other schema mismatch.
-    transport.write(JSON.stringify({ level: 30, time: Date.now() }) + '\n');
+    // Write a record directly that is missing the required `level` field —
+    // this simulates a schema mismatch that should be silently dropped.
+    transport.write(
+      JSON.stringify({ time: Date.now(), msg: 'bad record' }) + '\n',
+    );
 
     // The transport must survive the bad record and continue processing.
     logger.info('still alive');
