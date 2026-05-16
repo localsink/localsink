@@ -2,37 +2,34 @@
   "name": "localsink",
   "private": true,
   "license": "BUSL-1.1",
-  "packageManager": "pnpm@10.28.2+sha224.fa1514f54e3833a73be0d1ee702820bf72a8c49a00b8b496bbf7ae52",
   "type": "module",
-  "engines": {
-    "node": "24.13.0",
-    "pnpm": "10.28.2"
-  },
   "scripts": {
     "build:all": "pnpm --recursive build",
     "test:all": "pnpm --recursive test",
-    "lint": "eslint eslint.config.js lint-staged.config.js vitest.config.ts vitest.shared.ts --max-warnings 0",
+    "lint": "oxlint oxfmt.config.ts oxlint.config.ts lint-staged.config.ts vitest.config.ts vitest.shared.ts",
     "lint:all": "pnpm --recursive --include-workspace-root lint",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
     "prepare": "husky"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
     "@tsconfig/node-ts": "catalog:",
     "@tsconfig/node24": "catalog:",
     "@tsconfig/strictest": "catalog:",
     "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "drizzle-kit": "catalog:",
-    "eslint": "catalog:",
-    "eslint-config-prettier": "catalog:",
-    "eslint-import-resolver-typescript": "catalog:",
-    "eslint-plugin-import": "catalog:",
     "husky": "catalog:",
     "lint-staged": "catalog:",
-    "prettier": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
     "vitest": "catalog:"
-  }
+  },
+  "engines": {
+    "node": "24.15.0",
+    "pnpm": "11.0.9"
+  },
+  "packageManager": "pnpm@11.0.9+sha512.34ce82e6780233cf9cad8685029a8f81d2e06196c5a9bad98879f7424940c6817c4e4524fb7d38b8553ceed48b9758b8ebaf1abd3600c232c4c8cf7366086f38"
 }

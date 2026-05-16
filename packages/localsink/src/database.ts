@@ -1,5 +1,6 @@
-import { drizzle } from 'drizzle-orm/libsql';
 import { eq, sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/libsql';
+
 import { logsTable } from './db/schema.ts';
 
 export async function initializeDatabase() {
