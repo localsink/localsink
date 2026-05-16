@@ -42,9 +42,9 @@ export function mapPinoLog(obj: unknown): LogInput | null {
     : null;
 
   return {
-    timestamp: time,
+    timestamp: time ?? Date.now(),
     level: LEVEL_MAP[level] ?? String(level),
-    message: msg,
+    message: msg ?? '',
     trace_id: traceId ?? trace_id ?? null,
     span_id: spanId ?? span_id ?? null,
     logger: logger ?? null,

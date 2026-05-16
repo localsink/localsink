@@ -168,10 +168,21 @@ describe('mapPinoLog', () => {
   });
 
   describe('schema validation', () => {
-    it('returns null when required fields are missing', () => {
+    it('returns null when level is missing', () => {
       expect(mapPinoLog({ time: 0, msg: 'hello' })).toBeNull();
-      expect(mapPinoLog({ level: 30, msg: 'hello' })).toBeNull();
-      expect(mapPinoLog({ level: 30, time: 0 })).toBeNull();
+    });
+
+    it('defaults timestamp to Date.now() when time is absent', () => {
+      const before = Date.now();
+      const result = notNull(mapPinoLog({ level: 30, msg: 'hello' }));
+      const after = Date.now();
+      expect(result.timestamp).toBeGreaterThanOrEqual(before);
+      expect(result.timestamp).toBeLessThanOrEqual(after);
+    });
+
+    it('defaults message to empty string when msg is absent', () => {
+      const result = notNull(mapPinoLog({ level: 30, time: 0 }));
+      expect(result.message).toBe('');
     });
 
     it('returns null when field types are wrong', () => {

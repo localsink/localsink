@@ -3,8 +3,8 @@ import { z } from 'zod';
 export const PinoLogSchema = z
   .object({
     level: z.number(),
-    time: z.number(),
-    msg: z.string(),
+    time: z.number().optional(),
+    msg: z.string().optional(),
     pid: z.number().optional(),
     hostname: z.string().optional(),
     v: z.number().optional(),
