@@ -1,8 +1,8 @@
-import { mapConsoleArgs } from './mapper.ts';
-import { TransportOptionsSchema } from './types.ts';
-import type { IngestPayload } from './types.ts';
+import { TransportOptionsSchema, createClient } from '@localsink/sdk';
+import type { LocalsinkClient } from '@localsink/sdk';
 
-type Level = IngestPayload['level'];
+import { mapConsoleArgs } from './mapper.ts';
+import type { Level } from './mapper.ts';
 
 let installed = false;
 
@@ -21,24 +21,10 @@ export function localsink(opts: unknown): () => void {
     return () => {};
   }
 
-  const { serviceName, url } = parsed.data;
-  const baseUrl = url ?? 'http://localhost:3000';
-  const endpoint = new URL('/api/logs', baseUrl).toString();
+  const client: LocalsinkClient = createClient(parsed.data);
 
   function send(level: Level, args: unknown[]): void {
-    try {
-      const payload = mapConsoleArgs(level, args, serviceName);
-      fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(3000),
-      }).catch(() => {
-        // localsink being down must never affect the application
-      });
-    } catch {
-      // serialization errors must never surface to the caller
-    }
+    client.log(mapConsoleArgs(level, args));
   }
 
   const orig = {

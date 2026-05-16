@@ -1,16 +1,14 @@
 import { format } from 'node:util';
 
-import type { IngestPayload } from './types.ts';
+import type { LogInput } from '@localsink/sdk';
 
-export function mapConsoleArgs(
-  level: IngestPayload['level'],
-  args: unknown[],
-  serviceName: string,
-): IngestPayload {
+export type Level = 'log' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
+
+export function mapConsoleArgs(level: Level, args: unknown[]): LogInput {
   const message = format(...args);
 
   const errorArg = args.find((a): a is Error => a instanceof Error);
-  const error: IngestPayload['error'] = errorArg
+  const error: LogInput['error'] = errorArg
     ? {
         message: errorArg.message,
         ...(errorArg.stack !== undefined && { stack: errorArg.stack }),
@@ -19,7 +17,6 @@ export function mapConsoleArgs(
     : null;
 
   return {
-    service_name: serviceName,
     timestamp: Date.now(),
     level,
     message,
