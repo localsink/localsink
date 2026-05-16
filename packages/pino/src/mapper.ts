@@ -33,6 +33,13 @@ export function mapPinoLog(obj: unknown): LogInput | null {
   } = result.data;
 
   const errSrc = err ?? error;
+  const errObj = errSrc
+    ? {
+        ...(errSrc.message !== undefined && { message: errSrc.message }),
+        ...(errSrc.stack !== undefined && { stack: errSrc.stack }),
+        ...(errSrc.type !== undefined && { type: errSrc.type }),
+      }
+    : null;
 
   return {
     timestamp: time,
@@ -41,13 +48,7 @@ export function mapPinoLog(obj: unknown): LogInput | null {
     trace_id: traceId ?? trace_id ?? null,
     span_id: spanId ?? span_id ?? null,
     logger: logger ?? null,
-    error: errSrc
-      ? {
-          ...(errSrc.message !== undefined && { message: errSrc.message }),
-          ...(errSrc.stack !== undefined && { stack: errSrc.stack }),
-          ...(errSrc.type !== undefined && { type: errSrc.type }),
-        }
-      : null,
+    error: errObj && Object.keys(errObj).length > 0 ? errObj : null,
     attributes: Object.keys(rest).length > 0 ? rest : null,
   };
 }

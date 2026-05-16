@@ -73,6 +73,13 @@ describe('mapPinoLog', () => {
       const result = notNull(mapPinoLog({ level: 30, time: 0, msg: '' }));
       expect(result.error).toBeNull();
     });
+
+    it('sets error to null when obj.err is an empty object', () => {
+      const result = notNull(
+        mapPinoLog({ level: 50, time: 0, msg: '', err: {} }),
+      );
+      expect(result.error).toBeNull();
+    });
   });
 
   describe('trace context', () => {
