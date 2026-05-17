@@ -186,6 +186,9 @@ importers:
 
   packages/winston:
     dependencies:
+      '@localsink/sdk':
+        specifier: workspace:*
+        version: link:../sdk
       winston-transport:
         specifier: 'catalog:'
         version: 4.9.0

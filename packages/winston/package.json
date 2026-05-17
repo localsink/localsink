@@ -22,6 +22,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@localsink/sdk": "workspace:*",
     "winston-transport": "catalog:",
     "zod": "catalog:"
   },

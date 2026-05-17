@@ -1,9 +1,8 @@
-import { WinstonLogSchema, type IngestPayload } from './types.js';
+import type { LogInput } from '@localsink/sdk';
 
-export function mapWinstonLog(
-  obj: Record<string, unknown>,
-  serviceName: string,
-): IngestPayload | null {
+import { WinstonLogSchema } from './types.ts';
+
+export function mapWinstonLog(obj: unknown): LogInput | null {
   const result = WinstonLogSchema.safeParse(obj);
   if (!result.success) return null;
 
@@ -29,22 +28,17 @@ export function mapWinstonLog(
         : timestamp;
 
   const errSrc = err ?? error;
+  const errObj =
+    errSrc && Object.keys(errSrc).length > 0 ? { ...errSrc } : null;
 
   return {
-    service_name: serviceName,
     timestamp: ts,
     level,
     message,
     trace_id: traceId ?? trace_id ?? null,
     span_id: spanId ?? span_id ?? null,
     logger: logger ?? null,
-    error: errSrc
-      ? ({
-          message: errSrc.message,
-          stack: errSrc.stack,
-          type: errSrc.type,
-        } as IngestPayload['error'])
-      : null,
+    error: errObj,
     attributes: Object.keys(rest).length > 0 ? rest : null,
   };
 }

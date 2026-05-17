@@ -1,6 +1,8 @@
 import http from 'node:http';
+
 import winston from 'winston';
-import { LocalsinkTransport } from './index.js';
+
+import { LocalsinkTransport } from './index.ts';
 
 let server: http.Server;
 let port: number;
@@ -38,7 +40,9 @@ beforeAll(async () => {
     server.listen(0, resolve);
   });
 
-  const addr = server.address() as { port: number };
+  const addr = server.address();
+  if (!addr || typeof addr === 'string')
+    throw new Error('Expected AddressInfo');
   port = addr.port;
 });
 
@@ -87,6 +91,8 @@ describe('@localsink/winston transport', () => {
     await new Promise<void>((resolve) => {
       setTimeout(resolve, 500);
     });
+
+    expect(receivedBodies).toHaveLength(0);
   });
 
   it('does not throw when the mock server returns 500', async () => {
@@ -102,7 +108,10 @@ describe('@localsink/winston transport', () => {
       errorServer.listen(0, resolve);
     });
 
-    const errorPort = (errorServer.address() as { port: number }).port;
+    const errorAddr = errorServer.address();
+    if (!errorAddr || typeof errorAddr === 'string')
+      throw new Error('Expected AddressInfo');
+    const errorPort = errorAddr.port;
 
     const transport = new LocalsinkTransport({
       serviceName: 'test-service',
@@ -116,6 +125,8 @@ describe('@localsink/winston transport', () => {
     await new Promise<void>((resolve) => {
       setTimeout(resolve, 500);
     });
+
+    expect(receivedBodies).toHaveLength(0);
 
     await new Promise<void>((resolve, reject) => {
       errorServer.close((err) => {
