@@ -11,14 +11,13 @@ afterAll(() => server.close());
 
 describe('@localsink/winston transport', () => {
   it('sends a log emitted via winston to the mock server', async () => {
-    const received = new Promise<unknown>((resolve) => {
-      server.use(
-        http.post('http://localhost/api/logs', async ({ request }) => {
-          resolve(await request.json());
-          return HttpResponse.json({});
-        }),
-      );
-    });
+    const { promise: received, resolve } = Promise.withResolvers<unknown>();
+    server.use(
+      http.post('http://localhost/api/logs', async ({ request }) => {
+        resolve(await request.json());
+        return HttpResponse.json({});
+      }),
+    );
     const transport = new LocalsinkTransport({
       serviceName: 'test-service',
       url: 'http://localhost',
@@ -34,7 +33,7 @@ describe('@localsink/winston transport', () => {
     });
   });
 
-  it('does not throw when pointed at a port with nothing listening', async () => {
+  it('does not throw when pointed at a port with nothing listening', () => {
     server.use(
       http.post('http://localhost/api/logs', () => HttpResponse.error()),
     );
@@ -43,12 +42,10 @@ describe('@localsink/winston transport', () => {
       url: 'http://localhost',
     });
     const logger = winston.createLogger({ transports: [transport] });
-
     expect(() => logger.info('test')).not.toThrow();
-    await new Promise<void>((resolve) => setTimeout(resolve, 0));
   });
 
-  it('does not throw when the mock server returns 500', async () => {
+  it('does not throw when the mock server returns 500', () => {
     server.use(
       http.post(
         'http://localhost/api/logs',
@@ -60,20 +57,17 @@ describe('@localsink/winston transport', () => {
       url: 'http://localhost',
     });
     const logger = winston.createLogger({ transports: [transport] });
-
     expect(() => logger.info('test')).not.toThrow();
-    await new Promise<void>((resolve) => setTimeout(resolve, 0));
   });
 
   it('silently drops records that fail schema validation and continues processing', async () => {
-    const received = new Promise<unknown>((resolve) => {
-      server.use(
-        http.post('http://localhost/api/logs', async ({ request }) => {
-          resolve(await request.json());
-          return HttpResponse.json({});
-        }),
-      );
-    });
+    const { promise: received, resolve } = Promise.withResolvers<unknown>();
+    server.use(
+      http.post('http://localhost/api/logs', async ({ request }) => {
+        resolve(await request.json());
+        return HttpResponse.json({});
+      }),
+    );
     const transport = new LocalsinkTransport({
       serviceName: 'test-service',
       url: 'http://localhost',
