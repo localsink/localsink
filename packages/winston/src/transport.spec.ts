@@ -154,4 +154,24 @@ describe('@localsink/winston transport', () => {
 
     expect(receivedBodies[0]).toMatchObject({ message: 'still alive' });
   });
+
+  it('emits finish after close() drains in-flight logs', async () => {
+    const transport = new LocalsinkTransport({
+      serviceName: 'test-service',
+      url: `http://localhost:${String(port)}`,
+    });
+    const logger = winston.createLogger({ transports: [transport] });
+
+    logger.info('before close');
+
+    const finished = new Promise<void>((resolve) => {
+      transport.once('finish', resolve);
+    });
+
+    transport.close();
+    await finished;
+
+    expect(receivedBodies).toHaveLength(1);
+    expect(receivedBodies[0]).toMatchObject({ message: 'before close' });
+  });
 });

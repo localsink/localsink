@@ -25,6 +25,7 @@ export function mapWinstonLog(obj: unknown): LogInput | null {
     typeof rawTs === 'string' ? new Date(rawTs).getTime() : rawTs;
   const ts = Number.isNaN(parsedTs) ? Date.now() : parsedTs;
 
+  // err takes precedence over error when both are present
   const errSrc = err ?? error;
   const errObj =
     errSrc && Object.keys(errSrc).length > 0 ? { ...errSrc } : null;

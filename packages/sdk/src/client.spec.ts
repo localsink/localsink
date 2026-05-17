@@ -87,7 +87,7 @@ describe('createClient', () => {
         serviceName: 'test-service',
         url: `http://localhost:${String(port)}`,
       });
-      client.log({ ...baseLog, level: 'info', message: 'hello from sdk' });
+      void client.log({ ...baseLog, level: 'info', message: 'hello from sdk' });
       await waitFor(() => receivedBodies.length > 0);
       expect(receivedBodies[0]).toMatchObject({
         service_name: 'test-service',
@@ -101,7 +101,7 @@ describe('createClient', () => {
         serviceName: 'test-service',
         url: `http://localhost:${String(port)}`,
       });
-      client.log({ ...baseLog, timestamp: 1000 });
+      void client.log({ ...baseLog, timestamp: 1000 });
       await waitFor(() => receivedBodies.length > 0);
       const body = receivedBodies[0];
       if (typeof body !== 'object' || body === null || !('timestamp' in body))
@@ -114,7 +114,7 @@ describe('createClient', () => {
         serviceName: 'test-service',
         url: `http://localhost:${String(port)}`,
       });
-      client.log({
+      void client.log({
         level: 'error',
         message: 'something went wrong',
         timestamp: 2000,
@@ -141,7 +141,7 @@ describe('createClient', () => {
         url: 'http://localhost:1',
       });
       expect(() => {
-        client.log({ ...baseLog });
+        void client.log({ ...baseLog });
       }).not.toThrow();
       await new Promise<void>((resolve) => {
         setTimeout(resolve, 500);
