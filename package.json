@@ -21,6 +21,7 @@
     "drizzle-kit": "catalog:",
     "husky": "catalog:",
     "lint-staged": "catalog:",
+    "msw": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",

@@ -1,61 +1,12 @@
-import http from 'node:http';
+import { http, HttpResponse } from 'msw';
+import { setupServer } from 'msw/node';
 
 import { createClient } from './client.ts';
 
-async function waitFor(
-  condition: () => boolean,
-  timeoutMs = 2000,
-): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (!condition()) {
-    if (Date.now() >= deadline) {
-      throw new Error(`Condition not met within ${String(timeoutMs)}ms`);
-    }
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 50);
-    });
-  }
-}
-
-let server: http.Server;
-let port: number;
-const receivedBodies: unknown[] = [];
-
-beforeAll(async () => {
-  server = http.createServer((req, res) => {
-    let body = '';
-    req.on('data', (chunk: Buffer) => {
-      body += chunk.toString();
-    });
-    req.on('end', () => {
-      receivedBodies.push(JSON.parse(body) as unknown);
-      res.writeHead(200);
-      res.end();
-    });
-  });
-
-  await new Promise<void>((resolve) => {
-    server.listen(0, resolve);
-  });
-
-  const addr = server.address();
-  if (!addr || typeof addr === 'string')
-    throw new Error('Expected TCP address');
-  port = addr.port;
-});
-
-afterAll(async () => {
-  await new Promise<void>((resolve, reject) => {
-    server.close((err) => {
-      if (err) reject(err);
-      else resolve();
-    });
-  });
-});
-
-beforeEach(() => {
-  receivedBodies.length = 0;
-});
+const server = setupServer();
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 describe('createClient', () => {
   it('throws synchronously when serviceName is empty', () => {
@@ -83,13 +34,23 @@ describe('createClient', () => {
     };
 
     it('sends correct service_name, level, and message', async () => {
+      let received: unknown;
+      server.use(
+        http.post('http://localhost/api/logs', async ({ request }) => {
+          received = await request.json();
+          return HttpResponse.json({});
+        }),
+      );
       const client = createClient({
         serviceName: 'test-service',
-        url: `http://localhost:${String(port)}`,
+        url: 'http://localhost',
       });
-      void client.log({ ...baseLog, level: 'info', message: 'hello from sdk' });
-      await waitFor(() => receivedBodies.length > 0);
-      expect(receivedBodies[0]).toMatchObject({
+      await client.log({
+        ...baseLog,
+        level: 'info',
+        message: 'hello from sdk',
+      });
+      expect(received).toMatchObject({
         service_name: 'test-service',
         level: 'info',
         message: 'hello from sdk',
@@ -97,24 +58,40 @@ describe('createClient', () => {
     });
 
     it('uses provided timestamp', async () => {
+      let received: unknown;
+      server.use(
+        http.post('http://localhost/api/logs', async ({ request }) => {
+          received = await request.json();
+          return HttpResponse.json({});
+        }),
+      );
       const client = createClient({
         serviceName: 'test-service',
-        url: `http://localhost:${String(port)}`,
+        url: 'http://localhost',
       });
-      void client.log({ ...baseLog, timestamp: 1000 });
-      await waitFor(() => receivedBodies.length > 0);
-      const body = receivedBodies[0];
-      if (typeof body !== 'object' || body === null || !('timestamp' in body))
+      await client.log({ ...baseLog, timestamp: 1000 });
+      if (
+        typeof received !== 'object' ||
+        received === null ||
+        !('timestamp' in received)
+      )
         throw new Error('Expected body with timestamp');
-      expect(body.timestamp).toBe(1000);
+      expect(received.timestamp).toBe(1000);
     });
 
     it('passes through all payload fields', async () => {
+      let received: unknown;
+      server.use(
+        http.post('http://localhost/api/logs', async ({ request }) => {
+          received = await request.json();
+          return HttpResponse.json({});
+        }),
+      );
       const client = createClient({
         serviceName: 'test-service',
-        url: `http://localhost:${String(port)}`,
+        url: 'http://localhost',
       });
-      void client.log({
+      await client.log({
         level: 'error',
         message: 'something went wrong',
         timestamp: 2000,
@@ -124,8 +101,7 @@ describe('createClient', () => {
         error: { message: 'boom', type: 'TypeError' },
         attributes: { userId: 'u1' },
       });
-      await waitFor(() => receivedBodies.length > 0);
-      expect(receivedBodies[0]).toMatchObject({
+      expect(received).toMatchObject({
         trace_id: 'abc-123',
         span_id: 'def-456',
         logger: 'my-module',
@@ -136,16 +112,14 @@ describe('createClient', () => {
     });
 
     it('does not throw when the endpoint is unreachable', async () => {
+      server.use(
+        http.post('http://localhost/api/logs', () => HttpResponse.error()),
+      );
       const client = createClient({
         serviceName: 'test-service',
-        url: 'http://localhost:1',
+        url: 'http://localhost',
       });
-      expect(() => {
-        void client.log({ ...baseLog });
-      }).not.toThrow();
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 500);
-      });
+      await expect(client.log({ ...baseLog })).resolves.toBeUndefined();
     });
   });
 });

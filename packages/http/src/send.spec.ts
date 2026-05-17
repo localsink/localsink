@@ -1,4 +1,5 @@
-import http from 'node:http';
+import { http, HttpResponse } from 'msw';
+import { setupServer } from 'msw/node';
 
 import { sendLog } from './send.ts';
 import type { IngestPayload } from './types.ts';
@@ -15,138 +16,54 @@ const FIXTURE: IngestPayload = {
   attributes: null,
 };
 
-async function waitFor(
-  condition: () => boolean,
-  timeoutMs = 2000,
-): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (!condition()) {
-    if (Date.now() >= deadline) {
-      throw new Error(`Condition not met within ${String(timeoutMs)}ms`);
-    }
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 50);
-    });
-  }
-}
-
-let server: http.Server;
-let port: number;
-const receivedBodies: unknown[] = [];
-
-beforeAll(async () => {
-  server = http.createServer((req, res) => {
-    let body = '';
-    req.on('data', (chunk: Buffer) => {
-      body += chunk.toString();
-    });
-    req.on('end', () => {
-      receivedBodies.push(JSON.parse(body) as unknown);
-      res.writeHead(200);
-      res.end();
-    });
-  });
-
-  await new Promise<void>((resolve) => {
-    server.listen(0, resolve);
-  });
-
-  const addr = server.address();
-  if (!addr || typeof addr === 'string')
-    throw new Error('Expected TCP address');
-  port = addr.port;
-});
-
-afterAll(async () => {
-  await new Promise<void>((resolve, reject) => {
-    server.close((err) => {
-      if (err) reject(err);
-      else resolve();
-    });
-  });
-});
-
-beforeEach(() => {
-  receivedBodies.length = 0;
-});
+const server = setupServer();
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 describe('sendLog', () => {
   it('POSTs the payload as JSON to the given endpoint', async () => {
-    void sendLog(`http://localhost:${String(port)}/api/logs`, FIXTURE);
-    await waitFor(() => receivedBodies.length > 0);
-    expect(receivedBodies[0]).toEqual(FIXTURE);
+    let received: unknown;
+    server.use(
+      http.post('http://localhost/api/logs', async ({ request }) => {
+        received = await request.json();
+        return HttpResponse.json({});
+      }),
+    );
+    await sendLog('http://localhost/api/logs', FIXTURE);
+    expect(received).toEqual(FIXTURE);
   });
 
   it('sets Content-Type to application/json', async () => {
-    let receivedContentType: string | undefined;
-    const headerServer = http.createServer((req, res) => {
-      receivedContentType = req.headers['content-type'];
-      req.resume();
-      req.on('end', () => {
-        res.writeHead(200);
-        res.end();
-      });
-    });
-
-    await new Promise<void>((resolve) => {
-      headerServer.listen(0, resolve);
-    });
-    const headerAddr = headerServer.address();
-    if (!headerAddr || typeof headerAddr === 'string')
-      throw new Error('Expected TCP address');
-    const p = headerAddr.port;
-
-    void sendLog(`http://localhost:${String(p)}/api/logs`, FIXTURE);
-    await waitFor(() => receivedContentType !== undefined);
-    expect(receivedContentType).toBe('application/json');
-
-    await new Promise<void>((resolve, reject) => {
-      headerServer.close((err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    let contentType: string | null = null;
+    server.use(
+      http.post('http://localhost/api/logs', ({ request }) => {
+        contentType = request.headers.get('content-type');
+        return HttpResponse.json({});
+      }),
+    );
+    await sendLog('http://localhost/api/logs', FIXTURE);
+    expect(contentType).toBe('application/json');
   });
 
   it('does not throw when the endpoint is unreachable', async () => {
-    expect(() => {
-      void sendLog('http://localhost:1/api/logs', FIXTURE);
-    }).not.toThrow();
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 500);
-    });
+    server.use(
+      http.post('http://localhost/api/logs', () => HttpResponse.error()),
+    );
+    await expect(
+      sendLog('http://localhost/api/logs', FIXTURE),
+    ).resolves.toBeUndefined();
   });
 
   it('does not throw when the server returns 500', async () => {
-    const errorServer = http.createServer((req, res) => {
-      req.resume();
-      req.on('end', () => {
-        res.writeHead(500);
-        res.end();
-      });
-    });
-
-    await new Promise<void>((resolve) => {
-      errorServer.listen(0, resolve);
-    });
-    const errorAddr = errorServer.address();
-    if (!errorAddr || typeof errorAddr === 'string')
-      throw new Error('Expected TCP address');
-    const p = errorAddr.port;
-
-    expect(() => {
-      void sendLog(`http://localhost:${String(p)}/api/logs`, FIXTURE);
-    }).not.toThrow();
-
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 500);
-    });
-
-    await new Promise<void>((resolve, reject) => {
-      errorServer.close((err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    server.use(
+      http.post(
+        'http://localhost/api/logs',
+        () => new HttpResponse(null, { status: 500 }),
+      ),
+    );
+    await expect(
+      sendLog('http://localhost/api/logs', FIXTURE),
+    ).resolves.toBeUndefined();
   });
 });
