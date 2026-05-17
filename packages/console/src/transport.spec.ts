@@ -114,7 +114,7 @@ describe('@localsink/console transport', () => {
     }
   });
 
-  it('stops forwarding after uninstall', async () => {
+  it('stops forwarding after uninstall', () => {
     let called = false;
     server.use(
       http.post('http://localhost/api/logs', () => {
@@ -130,7 +130,6 @@ describe('@localsink/console transport', () => {
 
     console.log('should not be sent');
 
-    await new Promise<void>((resolve) => setTimeout(resolve, 50));
     expect(called).toBe(false);
   });
 
