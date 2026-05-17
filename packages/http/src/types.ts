@@ -17,6 +17,11 @@ export interface IngestPayload {
   trace_id: string | null;
   span_id: string | null;
   logger: string | null;
-  error: { message?: string; stack?: string; type?: string } | null;
+  error: {
+    message?: string | undefined;
+    stack?: string | undefined;
+    type?: string | undefined;
+    [key: string]: unknown;
+  } | null;
   attributes: Record<string, unknown> | null;
 }

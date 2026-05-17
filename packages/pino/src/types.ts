@@ -14,14 +14,14 @@ export const PinoLogSchema = z
     span_id: z.string().optional(),
     logger: z.string().optional(),
     err: z
-      .object({
+      .looseObject({
         message: z.string().optional(),
         stack: z.string().optional(),
         type: z.string().optional(),
       })
       .optional(),
     error: z
-      .object({
+      .looseObject({
         message: z.string().optional(),
         stack: z.string().optional(),
         type: z.string().optional(),
