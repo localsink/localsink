@@ -24,7 +24,7 @@ export function localsink(opts: unknown): () => void {
   const client: LocalsinkClient = createClient(parsed.data);
 
   function send(level: Level, args: unknown[]): void {
-    client.log(mapConsoleArgs(level, args));
+    void client.log(mapConsoleArgs(level, args));
   }
 
   const orig = {

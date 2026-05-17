@@ -12,7 +12,7 @@ export default function (opts: unknown) {
       for await (const obj of source) {
         const payload = mapPinoLog(obj);
         if (!payload) continue;
-        client.log(payload);
+        void client.log(payload);
       }
     },
     {

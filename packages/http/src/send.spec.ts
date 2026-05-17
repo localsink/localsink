@@ -72,7 +72,7 @@ beforeEach(() => {
 
 describe('sendLog', () => {
   it('POSTs the payload as JSON to the given endpoint', async () => {
-    sendLog(`http://localhost:${String(port)}/api/logs`, FIXTURE);
+    void sendLog(`http://localhost:${String(port)}/api/logs`, FIXTURE);
     await waitFor(() => receivedBodies.length > 0);
     expect(receivedBodies[0]).toEqual(FIXTURE);
   });
@@ -96,7 +96,7 @@ describe('sendLog', () => {
       throw new Error('Expected TCP address');
     const p = headerAddr.port;
 
-    sendLog(`http://localhost:${String(p)}/api/logs`, FIXTURE);
+    void sendLog(`http://localhost:${String(p)}/api/logs`, FIXTURE);
     await waitFor(() => receivedContentType !== undefined);
     expect(receivedContentType).toBe('application/json');
 
@@ -110,7 +110,7 @@ describe('sendLog', () => {
 
   it('does not throw when the endpoint is unreachable', async () => {
     expect(() => {
-      sendLog('http://localhost:1/api/logs', FIXTURE);
+      void sendLog('http://localhost:1/api/logs', FIXTURE);
     }).not.toThrow();
     await new Promise<void>((resolve) => {
       setTimeout(resolve, 500);
@@ -135,7 +135,7 @@ describe('sendLog', () => {
     const p = errorAddr.port;
 
     expect(() => {
-      sendLog(`http://localhost:${String(p)}/api/logs`, FIXTURE);
+      void sendLog(`http://localhost:${String(p)}/api/logs`, FIXTURE);
     }).not.toThrow();
 
     await new Promise<void>((resolve) => {
