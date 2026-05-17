@@ -1,81 +1,35 @@
-import http from 'node:http';
+import { http, HttpResponse } from 'msw';
+import { setupServer } from 'msw/node';
 
 import { localsink } from './transport.ts';
-
-let server: http.Server;
-let port: number;
-const receivedBodies: unknown[] = [];
 
 function bodyLevel(b: unknown): unknown {
   if (typeof b !== 'object' || b === null) return undefined;
   return Reflect.get(b, 'level');
 }
 
-function serverPort(s: http.Server): number {
-  const addr = s.address();
-  if (typeof addr !== 'object' || addr === null)
-    throw new Error('Server not bound');
-  return addr.port;
-}
-
-async function waitFor(
-  condition: () => boolean,
-  timeoutMs = 2000,
-): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (!condition()) {
-    if (Date.now() >= deadline) {
-      throw new Error(`Condition not met within ${String(timeoutMs)}ms`);
-    }
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 50);
-    });
-  }
-}
-
-beforeAll(async () => {
-  server = http.createServer((req, res) => {
-    let body = '';
-    req.on('data', (chunk: Buffer) => {
-      body += chunk.toString();
-    });
-    req.on('end', () => {
-      receivedBodies.push(JSON.parse(body) as unknown);
-      res.writeHead(200);
-      res.end();
-    });
-  });
-
-  await new Promise<void>((resolve) => {
-    server.listen(0, resolve);
-  });
-
-  port = serverPort(server);
-});
-
-afterAll(async () => {
-  await new Promise<void>((resolve, reject) => {
-    server.close((err) => {
-      if (err) reject(err);
-      else resolve();
-    });
-  });
-});
-
-beforeEach(() => {
-  receivedBodies.length = 0;
-});
+const server = setupServer();
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 describe('@localsink/console transport', () => {
   it('sends a console.log call to the mock server', async () => {
+    const received = new Promise<unknown>((resolve) => {
+      server.use(
+        http.post('http://localhost/api/logs', async ({ request }) => {
+          resolve(await request.json());
+          return HttpResponse.json({});
+        }),
+      );
+    });
     const uninstall = localsink({
       serviceName: 'test-service',
-      url: `http://localhost:${String(port)}`,
+      url: 'http://localhost',
     });
     try {
       console.log('hello world');
-      await waitFor(() => receivedBodies.length > 0);
-      expect(receivedBodies[0]).toMatchObject({
+      expect(await received).toMatchObject({
         service_name: 'test-service',
         level: 'log',
         message: 'hello world',
@@ -89,14 +43,21 @@ describe('@localsink/console transport', () => {
   it.each(['warn', 'info', 'debug'] as const)(
     'sends a console.%s call to the mock server',
     async (method) => {
+      const received = new Promise<unknown>((resolve) => {
+        server.use(
+          http.post('http://localhost/api/logs', async ({ request }) => {
+            resolve(await request.json());
+            return HttpResponse.json({});
+          }),
+        );
+      });
       const uninstall = localsink({
         serviceName: 'test-service',
-        url: `http://localhost:${String(port)}`,
+        url: 'http://localhost',
       });
       try {
         console[method](`${method} message`);
-        await waitFor(() => receivedBodies.length > 0);
-        expect(receivedBodies[0]).toMatchObject({
+        expect(await received).toMatchObject({
           service_name: 'test-service',
           level: method,
           message: `${method} message`,
@@ -108,17 +69,27 @@ describe('@localsink/console transport', () => {
   );
 
   it('sends a console.trace call to the mock server', async () => {
+    const bodies: unknown[] = [];
+    // Vitest's console.trace internally calls console.error, so multiple
+    // bodies may arrive. Resolve once the one with level 'trace' is received.
+    const traceReceived = new Promise<void>((resolve) => {
+      server.use(
+        http.post('http://localhost/api/logs', async ({ request }) => {
+          const body = await request.json();
+          bodies.push(body);
+          if (bodyLevel(body) === 'trace') resolve();
+          return HttpResponse.json({});
+        }),
+      );
+    });
     const uninstall = localsink({
       serviceName: 'test-service',
-      url: `http://localhost:${String(port)}`,
+      url: 'http://localhost',
     });
     try {
       console.trace('trace message');
-      // Vitest's console.trace internally calls console.error, so multiple
-      // bodies may arrive. Wait for the one with level 'trace' specifically.
-      await waitFor(() => receivedBodies.some((b) => bodyLevel(b) === 'trace'));
-      const traceBody = receivedBodies.find((b) => bodyLevel(b) === 'trace');
-      expect(traceBody).toMatchObject({
+      await traceReceived;
+      expect(bodies.find((b) => bodyLevel(b) === 'trace')).toMatchObject({
         service_name: 'test-service',
         level: 'trace',
         message: 'trace message',
@@ -129,18 +100,16 @@ describe('@localsink/console transport', () => {
   });
 
   it('still calls the original console method after install', () => {
+    server.use(
+      http.post('http://localhost/api/logs', () => HttpResponse.error()),
+    );
     const spy = vi.spyOn(console, 'log');
-
-    // Use a port that rejects immediately so no request reaches the shared
-    // mock server and pollutes receivedBodies for subsequent tests.
     const uninstall = localsink({
       serviceName: 'test-service',
-      url: 'http://localhost:1',
+      url: 'http://localhost',
     });
     try {
       console.log('test message');
-      // localsink captures the spy as "orig.log", so the spy is called
-      // when our patched version delegates to the original.
       expect(spy).toHaveBeenCalledWith('test message');
     } finally {
       uninstall();
@@ -149,82 +118,76 @@ describe('@localsink/console transport', () => {
   });
 
   it('stops forwarding after uninstall', async () => {
+    let called = false;
+    server.use(
+      http.post('http://localhost/api/logs', () => {
+        called = true;
+        return HttpResponse.json({});
+      }),
+    );
     const uninstall = localsink({
       serviceName: 'test-service',
-      url: `http://localhost:${String(port)}`,
+      url: 'http://localhost',
     });
     uninstall();
 
     console.log('should not be sent');
 
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 300);
-    });
-
-    expect(receivedBodies).toHaveLength(0);
+    await new Promise<void>((resolve) => setTimeout(resolve, 50));
+    expect(called).toBe(false);
   });
 
   it('does not throw when pointed at a port with nothing listening', async () => {
+    server.use(
+      http.post('http://localhost/api/logs', () => HttpResponse.error()),
+    );
     const uninstall = localsink({
       serviceName: 'test-service',
-      url: 'http://localhost:1',
+      url: 'http://localhost',
     });
     try {
-      console.log('test');
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 500);
-      });
-      expect(receivedBodies).toHaveLength(0);
+      expect(() => console.log('test')).not.toThrow();
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
     } finally {
       uninstall();
     }
   });
 
   it('does not throw when the mock server returns 500', async () => {
-    const errorServer = http.createServer((req, res) => {
-      req.resume();
-      req.on('end', () => {
-        res.writeHead(500);
-        res.end();
-      });
-    });
-
-    await new Promise<void>((resolve) => {
-      errorServer.listen(0, resolve);
-    });
-
-    const errorPort = serverPort(errorServer);
+    server.use(
+      http.post(
+        'http://localhost/api/logs',
+        () => new HttpResponse(null, { status: 500 }),
+      ),
+    );
     const uninstall = localsink({
       serviceName: 'test-service',
-      url: `http://localhost:${String(errorPort)}`,
+      url: 'http://localhost',
     });
-
     try {
-      console.log('test');
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 500);
-      });
-      expect(receivedBodies).toHaveLength(0);
+      expect(() => console.log('test')).not.toThrow();
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
     } finally {
       uninstall();
-      await new Promise<void>((resolve, reject) => {
-        errorServer.close((err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
     }
   });
 
   it('extracts error details when console.error is called with an Error', async () => {
+    const received = new Promise<unknown>((resolve) => {
+      server.use(
+        http.post('http://localhost/api/logs', async ({ request }) => {
+          resolve(await request.json());
+          return HttpResponse.json({});
+        }),
+      );
+    });
     const uninstall = localsink({
       serviceName: 'test-service',
-      url: `http://localhost:${String(port)}`,
+      url: 'http://localhost',
     });
     try {
       console.error(new TypeError('boom'));
-      await waitFor(() => receivedBodies.length > 0);
-      expect(receivedBodies[0]).toMatchObject({
+      expect(await received).toMatchObject({
         level: 'error',
         error: { message: 'boom', type: 'TypeError' },
       });
@@ -248,26 +211,27 @@ describe('@localsink/console transport', () => {
   });
 
   it('ignores a duplicate install and returns a no-op', () => {
+    server.use(
+      http.post('http://localhost/api/logs', () => HttpResponse.json({})),
+    );
     const warnSpy = vi.spyOn(console, 'warn');
     const uninstall1 = localsink({
       serviceName: 'test-service',
-      url: `http://localhost:${String(port)}`,
+      url: 'http://localhost',
     });
     const uninstall2 = localsink({
       serviceName: 'test-service',
-      url: `http://localhost:${String(port)}`,
+      url: 'http://localhost',
     });
     try {
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining('[localsink]'),
       );
-      // uninstall2 is a no-op; uninstall1 should still work
       uninstall2();
       uninstall1();
-      // After proper uninstall, a fresh install should succeed
       const uninstall3 = localsink({
         serviceName: 'test-service',
-        url: `http://localhost:${String(port)}`,
+        url: 'http://localhost',
       });
       uninstall3();
     } finally {
@@ -276,9 +240,12 @@ describe('@localsink/console transport', () => {
   });
 
   it('does not throw when an argument has a circular reference', () => {
+    server.use(
+      http.post('http://localhost/api/logs', () => HttpResponse.error()),
+    );
     const uninstall = localsink({
       serviceName: 'test-service',
-      url: 'http://localhost:1',
+      url: 'http://localhost',
     });
     try {
       const circular: Record<string, unknown> = {};
