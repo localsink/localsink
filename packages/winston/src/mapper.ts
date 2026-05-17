@@ -20,12 +20,10 @@ export function mapWinstonLog(obj: unknown): LogInput | null {
     ...rest
   } = result.data;
 
-  const ts =
-    timestamp === undefined
-      ? Date.now()
-      : typeof timestamp === 'string'
-        ? new Date(timestamp).getTime()
-        : timestamp;
+  const rawTs = timestamp ?? Date.now();
+  const parsedTs =
+    typeof rawTs === 'string' ? new Date(rawTs).getTime() : rawTs;
+  const ts = Number.isNaN(parsedTs) ? Date.now() : parsedTs;
 
   const errSrc = err ?? error;
   const errObj =

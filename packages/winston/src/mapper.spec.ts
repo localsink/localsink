@@ -58,6 +58,16 @@ describe('mapWinstonLog', () => {
       expect(result.timestamp).toBe(1700000000000);
     });
 
+    it('falls back to Date.now() when timestamp is an invalid date string', () => {
+      const before = Date.now();
+      const result = notNull(
+        mapWinstonLog({ level: 'info', message: '', timestamp: 'not-a-date' }),
+      );
+      const after = Date.now();
+      expect(result.timestamp).toBeGreaterThanOrEqual(before);
+      expect(result.timestamp).toBeLessThanOrEqual(after);
+    });
+
     it('defaults to the current time when timestamp is absent', () => {
       const before = Date.now();
       const result = notNull(mapWinstonLog({ level: 'info', message: '' }));
