@@ -80,6 +80,22 @@ describe('mapPinoLog', () => {
       );
       expect(result.error).toBeNull();
     });
+
+    it('preserves custom error properties such as code', () => {
+      const result = notNull(
+        mapPinoLog({
+          level: 50,
+          time: 0,
+          msg: 'fs error',
+          err: { message: 'not found', type: 'Error', code: 'ENOENT' },
+        }),
+      );
+      expect(result.error).toEqual({
+        message: 'not found',
+        type: 'Error',
+        code: 'ENOENT',
+      });
+    });
   });
 
   describe('trace context', () => {

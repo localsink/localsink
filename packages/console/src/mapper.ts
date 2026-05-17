@@ -10,6 +10,7 @@ export function mapConsoleArgs(level: Level, args: unknown[]): LogInput {
   const errorArg = args.find((a): a is Error => a instanceof Error);
   const error: LogInput['error'] = errorArg
     ? {
+        ...Object.fromEntries(Object.entries(errorArg)),
         message: errorArg.message,
         ...(errorArg.stack !== undefined && { stack: errorArg.stack }),
         type: errorArg.constructor.name,

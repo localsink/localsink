@@ -11,9 +11,10 @@ export const logsTable = sqliteTable('logs', {
   span_id: text(),
   logger: text(),
   error: text({ mode: 'json' }).$type<{
-    message?: string;
-    stack?: string;
-    type?: string;
+    message?: string | undefined;
+    stack?: string | undefined;
+    type?: string | undefined;
+    [key: string]: unknown;
   }>(),
   attributes: text({ mode: 'json' }).$type<Record<string, unknown>>(),
 });

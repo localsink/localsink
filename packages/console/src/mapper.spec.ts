@@ -58,6 +58,16 @@ describe('mapConsoleArgs', () => {
       });
     });
 
+    it('preserves custom enumerable error properties such as code', () => {
+      const err = Object.assign(new Error('not found'), { code: 'ENOENT' });
+      const result = mapConsoleArgs('error', [err]);
+      expect(result.error).toMatchObject({
+        message: 'not found',
+        type: 'Error',
+        code: 'ENOENT',
+      });
+    });
+
     it('sets error to null when first arg is a string', () => {
       const result = mapConsoleArgs('error', ['plain message']);
       expect(result.error).toBeNull();

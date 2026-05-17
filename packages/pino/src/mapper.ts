@@ -33,13 +33,8 @@ export function mapPinoLog(obj: unknown): LogInput | null {
   } = result.data;
 
   const errSrc = err ?? error;
-  const errObj = errSrc
-    ? {
-        ...(errSrc.message !== undefined && { message: errSrc.message }),
-        ...(errSrc.stack !== undefined && { stack: errSrc.stack }),
-        ...(errSrc.type !== undefined && { type: errSrc.type }),
-      }
-    : null;
+  const errObj =
+    errSrc && Object.keys(errSrc).length > 0 ? { ...errSrc } : null;
 
   return {
     timestamp: time ?? Date.now(),
