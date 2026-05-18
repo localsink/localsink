@@ -53,9 +53,10 @@ export async function pollUntil<T>(
 }
 
 export function first<T>(arr: readonly T[]): T {
-  const [value] = arr;
-  if (value === undefined) {
-    throw new Error('expected at least one row');
+  // for-of distinguishes empty from a present-but-undefined first element,
+  // and yields `T` (not `T | undefined`) without a non-null assertion.
+  for (const value of arr) {
+    return value;
   }
-  return value;
+  throw new Error('expected a non-empty array');
 }
