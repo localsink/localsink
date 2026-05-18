@@ -19,9 +19,13 @@
   "scripts": {
     "build": "tsgo -b .",
     "lint": "oxlint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "integration": "vitest run"
   },
   "dependencies": {
     "@localsink/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@localsink/test-harness": "workspace:*"
   }
 }

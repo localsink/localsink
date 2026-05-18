@@ -8,6 +8,12 @@
     "url": "https://github.com/localsink/localsink"
   },
   "type": "module",
+  "exports": {
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "default": "./dist/testing.js"
+    }
+  },
   "scripts": {
     "build": "tsgo -b .",
     "lint": "oxlint .",

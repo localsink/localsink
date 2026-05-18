@@ -1,7 +1,8 @@
 {
-  "name": "@localsink/pino",
+  "name": "@localsink/test-harness",
   "version": "0.0.0",
-  "description": "Pino transport for localsink (reserved).",
+  "private": true,
+  "description": "Private in-process server + DB harness for transport integration tests.",
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
@@ -19,19 +20,10 @@
   "scripts": {
     "build": "tsgo -b .",
     "lint": "oxlint .",
-    "test": "vitest run",
-    "integration": "vitest run"
+    "test": "vitest run"
   },
   "dependencies": {
-    "@localsink/sdk": "workspace:*",
-    "pino-abstract-transport": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@localsink/test-harness": "workspace:*",
-    "pino": "catalog:"
-  },
-  "peerDependencies": {
-    "pino": "catalog:"
+    "@hono/node-server": "catalog:",
+    "localsink": "workspace:*"
   }
 }
