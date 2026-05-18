@@ -3,7 +3,7 @@ import { defineConfig } from 'oxfmt';
 export default defineConfig({
   printWidth: 80,
   singleQuote: true,
-  ignorePatterns: ['pnpm-lock.yaml', 'LICENSE'],
+  ignorePatterns: ['pnpm-lock.yaml', 'LICENSE', 'packages/*/drizzle/**'],
   sortImports: {
     internalPattern: ['@localsink/'],
   },

@@ -9,8 +9,5 @@
     "allowImportingTsExtensions": true
   },
   "include": ["vitest.config.ts", "src/**/*.spec.ts"],
-  "references": [
-    { "path": "./tsconfig.lib.json" },
-    { "path": "../test-harness/tsconfig.lib.json" }
-  ]
+  "references": [{ "path": "./tsconfig.lib.json" }]
 }
