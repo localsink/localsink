@@ -201,7 +201,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.0.2(hono@4.12.18)
+        version: 2.0.3(hono@4.12.22)
       localsink:
         specifier: workspace:*
         version: link:../localsink
