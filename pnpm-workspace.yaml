@@ -16,7 +16,7 @@ catalog:
   '@tsconfig/node24': 24.0.4
   '@tsconfig/strictest': 2.0.8
   '@types/node': 24.12.4
-  '@typescript/native-preview': 7.0.0-dev.20260421.2
+  '@typescript/native-preview': beta
   drizzle-kit: 0.31.10
   drizzle-orm: ^0.45.2
   drizzle-zod: ^0.8.3

@@ -28,7 +28,7 @@ catalogs:
       specifier: 24.12.4
       version: 24.12.4
     '@typescript/native-preview':
-      specifier: 7.0.0-dev.20260421.2
+      specifier: beta
       version: 7.0.0-dev.20260421.2
     drizzle-kit:
       specifier: 0.31.10
