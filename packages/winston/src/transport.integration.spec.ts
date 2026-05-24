@@ -31,7 +31,7 @@ describe('@localsink/winston → server → DB', () => {
     await flushTransport(transport);
 
     await vi.waitFor(async () => {
-      expect(await db.findAllLogs()).toEqual([
+      await expect(db.findAllLogs()).resolves.toEqual([
         {
           id: 1,
           service_name: 'test-service',
@@ -62,7 +62,7 @@ describe('@localsink/winston → server → DB', () => {
     await flushTransport(transport);
 
     await vi.waitFor(async () => {
-      expect(await db.findAllLogs()).toEqual([
+      await expect(db.findAllLogs()).resolves.toEqual([
         {
           id: 1,
           service_name: 'test-service',
@@ -97,7 +97,7 @@ describe('@localsink/winston → server → DB', () => {
     await flushTransport(transport);
 
     await vi.waitFor(async () => {
-      expect(await db.findAllLogs()).toEqual([
+      await expect(db.findAllLogs()).resolves.toEqual([
         {
           id: 1,
           service_name: 'test-service',

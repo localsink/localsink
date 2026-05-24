@@ -32,7 +32,7 @@ describe('@localsink/pino transport', () => {
     const logger = pino(transport);
     try {
       logger.info('hello world');
-      expect(await received).toMatchObject({
+      await expect(received).resolves.toMatchObject({
         service_name: 'test-service',
         level: 'info',
         message: 'hello world',
@@ -95,7 +95,7 @@ describe('@localsink/pino transport', () => {
         JSON.stringify({ time: Date.now(), msg: 'bad record' }) + '\n',
       );
       logger.info('still alive');
-      expect(await received).toMatchObject({ message: 'still alive' });
+      await expect(received).resolves.toMatchObject({ message: 'still alive' });
     } finally {
       await endTransport(transport);
     }

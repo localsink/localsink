@@ -26,7 +26,7 @@ describe('@localsink/winston transport', () => {
 
     logger.info('hello world');
 
-    expect(await received).toMatchObject({
+    await expect(received).resolves.toMatchObject({
       service_name: 'test-service',
       level: 'info',
       message: 'hello world',
@@ -77,7 +77,7 @@ describe('@localsink/winston transport', () => {
     transport.log({ level: 42, message: 123 }, () => undefined);
     logger.info('still alive');
 
-    expect(await received).toMatchObject({ message: 'still alive' });
+    await expect(received).resolves.toMatchObject({ message: 'still alive' });
   });
 
   it('emits finish after close() drains in-flight logs', async () => {

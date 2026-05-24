@@ -12,7 +12,7 @@ describe('@localsink/console → server → DB', () => {
     console.error(new Error('kaboom'));
 
     await vi.waitFor(async () => {
-      expect(await db.findAllLogs()).toEqual([
+      await expect(db.findAllLogs()).resolves.toEqual([
         {
           id: 1,
           service_name: 'test-service',
@@ -41,7 +41,7 @@ describe('@localsink/console → server → DB', () => {
     console.info('hello world');
 
     await vi.waitFor(async () => {
-      expect(await db.findAllLogs()).toEqual([
+      await expect(db.findAllLogs()).resolves.toEqual([
         {
           id: 1,
           service_name: 'test-service',
