@@ -48,4 +48,84 @@ describe('@localsink/pino → server → DB', () => {
       ]);
     });
   });
+
+  it('persists a minimal log with no error or attributes', async () => {
+    const { url, db } = await startTestServer();
+
+    const transport = buildTransport({ serviceName: 'test-service', url });
+    const logger = pino(transport);
+
+    logger.info('hello world');
+
+    await endTransport(transport);
+
+    await vi.waitFor(async () => {
+      expect(await db.findAllLogs()).toEqual([
+        {
+          id: 1,
+          service_name: 'test-service',
+          timestamp: expect.any(Number),
+          level: 'info',
+          message: 'hello world',
+          trace_id: null,
+          span_id: null,
+          logger: null,
+          error: null,
+          attributes: null,
+        },
+      ]);
+    });
+  });
+
+  it('round-trips trace_id and span_id into their columns', async () => {
+    const { url, db } = await startTestServer();
+
+    const transport = buildTransport({ serviceName: 'test-service', url });
+    const logger = pino(transport);
+
+    logger.info(
+      { trace_id: 'trace-abc', span_id: 'span-xyz', userId: 1 },
+      'hello',
+    );
+
+    await endTransport(transport);
+
+    await vi.waitFor(async () => {
+      expect(await db.findAllLogs()).toEqual([
+        {
+          id: 1,
+          service_name: 'test-service',
+          timestamp: expect.any(Number),
+          level: 'info',
+          message: 'hello',
+          trace_id: 'trace-abc',
+          span_id: 'span-xyz',
+          logger: null,
+          error: null,
+          attributes: { userId: 1 },
+        },
+      ]);
+    });
+  });
+
+  it('persists multiple logs from one transport', async () => {
+    const { url, db } = await startTestServer();
+
+    const transport = buildTransport({ serviceName: 'test-service', url });
+    const logger = pino(transport);
+
+    logger.info('one');
+    logger.info('two');
+
+    await endTransport(transport);
+
+    await vi.waitFor(async () => {
+      const rows = await db.findAllLogs();
+      expect(rows).toHaveLength(2);
+      expect(rows.map((r) => r.message).toSorted()).toEqual(['one', 'two']);
+      expect(
+        rows.map((r) => r.id).toSorted((a: number, b: number) => a - b),
+      ).toEqual([1, 2]);
+    });
+  });
 });
