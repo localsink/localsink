@@ -56,12 +56,19 @@ describe('GET /api/logs/:id', () => {
     const { app } = await createTestApp();
     const res = await app.request('/api/logs/999');
     expect(res.status).toBe(404);
+    await expect(res.json()).resolves.toEqual({
+      error: 'Log with ID 999 not found.',
+    });
   });
 
   it('returns 400 when the id is not a valid number', async () => {
     const { app } = await createTestApp();
     const res = await app.request('/api/logs/abc');
     expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toMatchObject({
+      success: false,
+      error: { name: 'ZodError' },
+    });
   });
 });
 
@@ -74,7 +81,9 @@ describe('POST /api/logs', () => {
       body: JSON.stringify(minimalPayload),
     });
     expect(res.status).toBe(201);
-    await expect(db.findAllLogs()).resolves.toHaveLength(1);
+    await expect(db.findAllLogs()).resolves.toEqual([
+      expect.objectContaining(minimalPayload),
+    ]);
   });
 
   it('returns 400 when required fields are missing', async () => {
@@ -85,6 +94,10 @@ describe('POST /api/logs', () => {
       body: JSON.stringify({ message: 'missing required fields' }),
     });
     expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toMatchObject({
+      success: false,
+      error: { name: 'ZodError' },
+    });
   });
 
   it('returns 400 when the body is not JSON', async () => {
