@@ -1,9 +1,7 @@
-import { fileURLToPath } from 'node:url';
-
 import type { drizzle } from 'drizzle-orm/libsql';
 import { migrate } from 'drizzle-orm/libsql/migrator';
 
-const migrationsFolder = fileURLToPath(new URL('../drizzle', import.meta.url));
+const migrationsFolder = `${import.meta.dirname}/../drizzle`;
 
 export async function applySchema(
   db: ReturnType<typeof drizzle>,
