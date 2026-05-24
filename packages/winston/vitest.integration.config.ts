@@ -1,13 +1,13 @@
 import { defineProject, mergeConfig } from 'vitest/config';
 
-import configShared from '../../vitest.shared.ts';
+import configShared, { INTEGRATION_GLOB } from '../../vitest.shared.ts';
 
 export default mergeConfig(
   configShared,
   defineProject({
     test: {
       name: 'winston-integration',
-      include: ['src/**/*.integration.spec.ts'],
+      include: INTEGRATION_GLOB,
     },
   }),
 );
