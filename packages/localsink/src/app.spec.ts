@@ -20,23 +20,108 @@ const minimalPayload = {
 };
 
 describe('GET /api/logs', () => {
-  it('returns 200 with an empty array when no logs exist', async () => {
+  it('returns 200 with envelope when no logs exist', async () => {
     const { app } = await createTestApp();
     const res = await app.request('/api/logs');
     expect(res.status).toBe(200);
-    await expect(res.json()).resolves.toEqual([]);
+    await expect(res.json()).resolves.toEqual({ data: [], next_cursor: null });
   });
 
-  it('returns 200 with all logs when rows exist', async () => {
+  it('returns 200 with envelope when rows exist, ordered timestamp DESC id DESC', async () => {
     const { app, db } = await createTestApp();
     await db.createLog(minimalPayload);
     await db.createLog({ ...minimalPayload, message: 'world' });
     const res = await app.request('/api/logs');
     expect(res.status).toBe(200);
-    await expect(res.json()).resolves.toEqual([
-      expect.objectContaining({ service_name: 'svc', message: 'hello' }),
-      expect.objectContaining({ service_name: 'svc', message: 'world' }),
-    ]);
+    await expect(res.json()).resolves.toMatchObject({
+      data: [
+        expect.objectContaining({ message: 'world' }),
+        expect.objectContaining({ message: 'hello' }),
+      ],
+      next_cursor: null,
+    });
+  });
+
+  describe('query params', () => {
+    it('filters by service_name', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog({ ...minimalPayload, service_name: 'auth' });
+      await db.createLog({ ...minimalPayload, service_name: 'payments' });
+      const res = await app.request('/api/logs?service_name=auth');
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toMatchObject({
+        data: [expect.objectContaining({ service_name: 'auth' })],
+      });
+    });
+
+    it('filters by level', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog({ ...minimalPayload, level: 'error' });
+      await db.createLog({ ...minimalPayload, level: 'info' });
+      const res = await app.request('/api/logs?level=error');
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toMatchObject({
+        data: [expect.objectContaining({ level: 'error' })],
+      });
+    });
+
+    it('respects limit and returns a string next_cursor on a full page', async () => {
+      const { app, db } = await createTestApp();
+      for (let i = 0; i < 3; i++) await db.createLog(minimalPayload);
+      const res = await app.request('/api/logs?limit=2');
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toMatchObject({
+        data: [expect.anything(), expect.anything()],
+        next_cursor: expect.stringMatching(/^\d+:\d+$/),
+      });
+    });
+
+    it('advances pages using the cursor', async () => {
+      const { app, db } = await createTestApp();
+      for (let i = 0; i < 4; i++) await db.createLog(minimalPayload);
+      // Compute the cursor that page 1 (limit=2) would return — the 2nd row in
+      // (timestamp DESC, id DESC) order, encoded as `<timestamp>:<id>`.
+      const { data: allLogs } = await db.findLogs({ limit: 50 });
+      const secondRow = allLogs[1];
+      if (!secondRow) throw new Error('expected at least 2 logs');
+      const cursor = `${String(secondRow.timestamp)}:${String(secondRow.id)}`;
+      const res = await app.request(`/api/logs?limit=2&cursor=${cursor}`);
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toMatchObject({
+        data: [expect.anything(), expect.anything()],
+        next_cursor: null,
+      });
+    });
+
+    it('returns 400 when both cursor and offset are provided', async () => {
+      const { app } = await createTestApp();
+      const res = await app.request('/api/logs?cursor=1000:1&offset=10');
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 400 when cursor has an invalid format', async () => {
+      const { app } = await createTestApp();
+      const res = await app.request('/api/logs?cursor=not-a-cursor');
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 400 when limit is non-numeric', async () => {
+      const { app } = await createTestApp();
+      const res = await app.request('/api/logs?limit=abc');
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 400 when limit exceeds 500', async () => {
+      const { app } = await createTestApp();
+      const res = await app.request('/api/logs?limit=501');
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 400 when service_name is empty', async () => {
+      const { app } = await createTestApp();
+      const res = await app.request('/api/logs?service_name=');
+      expect(res.status).toBe(400);
+    });
   });
 });
 
@@ -61,13 +146,13 @@ describe('GET /api/logs/:id', () => {
     });
   });
 
-  it('returns 400 when the id is not a valid number', async () => {
+  it('returns 400 with cleaned-up error shape when the id is not a valid number', async () => {
     const { app } = await createTestApp();
     const res = await app.request('/api/logs/abc');
     expect(res.status).toBe(400);
     await expect(res.json()).resolves.toMatchObject({
-      success: false,
-      error: { name: 'ZodError' },
+      error: 'Invalid request.',
+      issues: expect.any(Array),
     });
   });
 });
@@ -81,12 +166,10 @@ describe('POST /api/logs', () => {
       body: JSON.stringify(minimalPayload),
     });
     expect(res.status).toBe(201);
-    await expect(db.findAllLogs()).resolves.toEqual([
-      expect.objectContaining(minimalPayload),
-    ]);
+    await expect(db.findLogById(1)).resolves.toMatchObject(minimalPayload);
   });
 
-  it('returns 400 when required fields are missing', async () => {
+  it('returns 400 with cleaned-up error shape when required fields are missing', async () => {
     const { app } = await createTestApp();
     const res = await app.request('/api/logs', {
       method: 'POST',
@@ -95,8 +178,8 @@ describe('POST /api/logs', () => {
     });
     expect(res.status).toBe(400);
     await expect(res.json()).resolves.toMatchObject({
-      success: false,
-      error: { name: 'ZodError' },
+      error: 'Invalid request.',
+      issues: expect.any(Array),
     });
   });
 
@@ -108,5 +191,57 @@ describe('POST /api/logs', () => {
       body: 'not json',
     });
     expect(res.status).toBe(400);
+  });
+});
+
+describe('GET /api/logs/meta', () => {
+  it('returns 200 with zero-state shape when table is empty', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/logs/meta');
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({
+      total: 0,
+      services: [],
+      levels: [],
+      loggers: [],
+      timestamp_range: null,
+    });
+  });
+
+  it('returns 200 with populated shape after seeding', async () => {
+    const { app, db } = await createTestApp();
+    await db.createLog({
+      ...minimalPayload,
+      service_name: 'auth',
+      level: 'error',
+      logger: 'winston',
+    });
+    await db.createLog({
+      ...minimalPayload,
+      service_name: 'payments',
+      level: 'info',
+      logger: null,
+    });
+    const res = await app.request('/api/logs/meta');
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({
+      total: 2,
+      services: ['auth', 'payments'],
+      levels: ['error', 'info'],
+      loggers: ['winston'],
+      timestamp_range: expect.objectContaining({
+        min: expect.any(Number),
+        max: expect.any(Number),
+      }),
+    });
+  });
+
+  it('is not handled by the /:id route (router-ordering regression)', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/logs/meta');
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({
+      total: expect.any(Number),
+    });
   });
 });

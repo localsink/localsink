@@ -4,14 +4,30 @@ import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 
 import type { Database } from './database.ts';
+import { logsQuerySchema } from './database.ts';
 import { logsApiInsertSchema } from './db/schema.ts';
 
 const logIdParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
 
+function validate<T extends z.ZodType>(
+  target: 'query' | 'param' | 'json',
+  schema: T,
+) {
+  return zValidator(target, schema, (result, c) => {
+    if (!result.success) {
+      return c.json(
+        { error: 'Invalid request.', issues: result.error.issues },
+        400,
+      );
+    }
+    return undefined;
+  });
+}
+
 export function createApp(database: Database) {
-  const { findAllLogs, findLogById, createLog } = database;
+  const { findLogs, getMeta, findLogById, createLog } = database;
 
   const app = new Hono();
 
@@ -23,12 +39,18 @@ export function createApp(database: Database) {
     return c.json({ error: 'Internal server error.' }, 500);
   });
 
-  app.get('/api/logs', async (c) => {
-    const logs = await findAllLogs();
-    return c.json(logs);
+  app.get('/api/logs/meta', async (c) => {
+    const meta = await getMeta();
+    return c.json(meta);
   });
 
-  app.get('/api/logs/:id', zValidator('param', logIdParamSchema), async (c) => {
+  app.get('/api/logs', validate('query', logsQuerySchema), async (c) => {
+    const filter = c.req.valid('query');
+    const page = await findLogs(filter);
+    return c.json(page);
+  });
+
+  app.get('/api/logs/:id', validate('param', logIdParamSchema), async (c) => {
     const { id } = c.req.valid('param');
     const log = await findLogById(id);
     if (!log) {
@@ -37,7 +59,7 @@ export function createApp(database: Database) {
     return c.json(log);
   });
 
-  app.post('/api/logs', zValidator('json', logsApiInsertSchema), async (c) => {
+  app.post('/api/logs', validate('json', logsApiInsertSchema), async (c) => {
     const log = c.req.valid('json');
     await createLog(log);
     return c.body(null, 201);

@@ -30,7 +30,9 @@ describe('@localsink/pino → server → DB', () => {
     await endTransport(transport);
 
     await vi.waitFor(async () => {
-      await expect(db.findAllLogs()).resolves.toEqual([
+      await expect(
+        db.findLogs({ limit: 500 }).then((p) => p.data),
+      ).resolves.toEqual([
         {
           id: 1,
           service_name: 'test-service',
@@ -60,7 +62,9 @@ describe('@localsink/pino → server → DB', () => {
     await endTransport(transport);
 
     await vi.waitFor(async () => {
-      await expect(db.findAllLogs()).resolves.toEqual([
+      await expect(
+        db.findLogs({ limit: 500 }).then((p) => p.data),
+      ).resolves.toEqual([
         {
           id: 1,
           service_name: 'test-service',
@@ -91,7 +95,9 @@ describe('@localsink/pino → server → DB', () => {
     await endTransport(transport);
 
     await vi.waitFor(async () => {
-      await expect(db.findAllLogs()).resolves.toEqual([
+      await expect(
+        db.findLogs({ limit: 500 }).then((p) => p.data),
+      ).resolves.toEqual([
         {
           id: 1,
           service_name: 'test-service',
@@ -120,7 +126,7 @@ describe('@localsink/pino → server → DB', () => {
     await endTransport(transport);
 
     await vi.waitFor(async () => {
-      const rows = await db.findAllLogs();
+      const rows = await db.findLogs({ limit: 500 }).then((p) => p.data);
       expect(rows).toHaveLength(2);
       expect(rows.map((r) => r.message).toSorted()).toEqual(['one', 'two']);
       expect(
