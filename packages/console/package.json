@@ -20,7 +20,7 @@
     "build": "tsgo -b .",
     "lint": "oxlint .",
     "test": "vitest run",
-    "integration": "vitest run"
+    "integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@localsink/sdk": "workspace:*"

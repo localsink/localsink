@@ -6,7 +6,9 @@ export default mergeConfig(
   configShared,
   defineProject({
     test: {
-      name: 'winston',
+      name: 'winston-unit',
+      include: ['src/**/*.spec.ts'],
+      exclude: ['src/**/*.integration.spec.ts'],
     },
   }),
 );

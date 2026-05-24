@@ -6,7 +6,9 @@ export default mergeConfig(
   configShared,
   defineProject({
     test: {
-      name: 'console',
+      name: 'console-unit',
+      include: ['src/**/*.spec.ts'],
+      exclude: ['src/**/*.integration.spec.ts'],
     },
   }),
 );

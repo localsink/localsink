@@ -6,7 +6,8 @@ export default mergeConfig(
   configShared,
   defineProject({
     test: {
-      name: 'test-harness',
+      name: 'test-harness-unit',
+      include: ['src/**/*.spec.ts'],
     },
   }),
 );

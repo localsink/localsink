@@ -6,7 +6,8 @@ export default mergeConfig(
   configShared,
   defineProject({
     test: {
-      name: 'sdk',
+      name: 'sdk-unit',
+      include: ['src/**/*.spec.ts'],
     },
   }),
 );

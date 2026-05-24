@@ -6,7 +6,8 @@ export default mergeConfig(
   configShared,
   defineProject({
     test: {
-      name: 'http',
+      name: 'http-unit',
+      include: ['src/**/*.spec.ts'],
     },
   }),
 );

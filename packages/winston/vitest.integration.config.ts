@@ -6,8 +6,8 @@ export default mergeConfig(
   configShared,
   defineProject({
     test: {
-      name: 'localsink-unit',
-      include: ['src/**/*.spec.ts'],
+      name: 'winston-integration',
+      include: ['src/**/*.integration.spec.ts'],
     },
   }),
 );
