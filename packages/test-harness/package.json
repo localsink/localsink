@@ -1,7 +1,8 @@
 {
-  "name": "localsink",
+  "name": "@localsink/test-harness",
   "version": "0.0.0",
-  "description": "Local-first log sink with a searchable UI and API (reserved).",
+  "private": true,
+  "description": "Private in-process server + DB harness for transport integration tests.",
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
@@ -19,20 +20,12 @@
   "scripts": {
     "build": "tsgo -b .",
     "lint": "oxlint .",
-    "test": "vitest run",
-    "dev": "node --watch --watch-path=src src/server.ts",
-    "start": "node src/server.ts",
-    "drizzle-kit:push": "drizzle-kit push",
-    "drizzle-kit:generate": "drizzle-kit generate",
-    "drizzle-kit:migrate": "drizzle-kit migrate"
+    "test": "vitest run"
   },
   "dependencies": {
     "@hono/node-server": "catalog:",
-    "@hono/zod-validator": "catalog:",
     "@libsql/client": "catalog:",
     "drizzle-orm": "catalog:",
-    "drizzle-zod": "catalog:",
-    "hono": "catalog:",
-    "zod": "catalog:"
+    "localsink": "workspace:*"
   }
 }

@@ -137,6 +137,10 @@ importers:
       '@localsink/sdk':
         specifier: workspace:*
         version: link:../sdk
+    devDependencies:
+      '@localsink/test-harness':
+        specifier: workspace:*
+        version: link:../test-harness
 
   packages/http:
     dependencies:
@@ -180,6 +184,9 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
+      '@localsink/test-harness':
+        specifier: workspace:*
+        version: link:../test-harness
       pino:
         specifier: 'catalog:'
         version: 10.3.1
@@ -189,6 +196,21 @@ importers:
       '@localsink/http':
         specifier: workspace:*
         version: link:../http
+
+  packages/test-harness:
+    dependencies:
+      '@hono/node-server':
+        specifier: 'catalog:'
+        version: 2.0.3(hono@4.12.22)
+      '@libsql/client':
+        specifier: 'catalog:'
+        version: 0.17.3
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.2(@libsql/client@0.17.3)
+      localsink:
+        specifier: workspace:*
+        version: link:../localsink
 
   packages/winston:
     dependencies:
@@ -202,6 +224,9 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
+      '@localsink/test-harness':
+        specifier: workspace:*
+        version: link:../test-harness
       winston:
         specifier: 'catalog:'
         version: 3.19.0

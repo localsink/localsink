@@ -3,16 +3,9 @@ import { drizzle } from 'drizzle-orm/libsql';
 
 import { logsTable } from './db/schema.ts';
 
-export async function initializeDatabase() {
-  process.loadEnvFile();
-  const dbFileName = process.env['DB_FILE_NAME'];
-  if (!dbFileName) {
-    throw new Error('DB_FILE_NAME environment variable is not set.');
-  }
+type DrizzleClient = ReturnType<typeof drizzle>;
 
-  const db = drizzle(dbFileName);
-  await db.run(sql`PRAGMA journal_mode = WAL`);
-
+export function makeDatabase(db: DrizzleClient) {
   async function findAllLogs() {
     return await db.select().from(logsTable);
   }
@@ -37,4 +30,17 @@ export async function initializeDatabase() {
   };
 }
 
-export type Database = Awaited<ReturnType<typeof initializeDatabase>>;
+export async function initializeDatabase() {
+  process.loadEnvFile();
+  const dbFileName = process.env['DB_FILE_NAME'];
+  if (!dbFileName) {
+    throw new Error('DB_FILE_NAME environment variable is not set.');
+  }
+
+  const db = drizzle(dbFileName);
+  await db.run(sql`PRAGMA journal_mode = WAL`);
+
+  return makeDatabase(db);
+}
+
+export type Database = ReturnType<typeof makeDatabase>;

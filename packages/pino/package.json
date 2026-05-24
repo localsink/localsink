@@ -19,7 +19,8 @@
   "scripts": {
     "build": "tsgo -b .",
     "lint": "oxlint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@localsink/sdk": "workspace:*",
@@ -27,6 +28,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@localsink/test-harness": "workspace:*",
     "pino": "catalog:"
   },
   "peerDependencies": {

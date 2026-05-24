@@ -8,6 +8,7 @@
     { "path": "./packages/sdk" },
     { "path": "./packages/winston" },
     { "path": "./packages/localsink" },
+    { "path": "./packages/test-harness" },
     { "path": "./scripts" }
   ]
 }

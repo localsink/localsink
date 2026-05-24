@@ -9,7 +9,7 @@ export default mergeConfig(
   configShared,
   defineProject({
     test: {
-      name: 'winston-unit',
+      name: 'test-harness-unit',
       include: SPEC_GLOB,
       exclude: INTEGRATION_GLOB,
     },
