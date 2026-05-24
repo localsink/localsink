@@ -1,7 +1,6 @@
 import pino from 'pino';
 
-import { first, pollUntil, startTestServer } from '@localsink/test-harness';
-import type { TestServer } from '@localsink/test-harness';
+import { startTestServer } from '@localsink/test-harness';
 
 import buildTransport from './transport.ts';
 
@@ -13,20 +12,10 @@ function endTransport(stream: NodeJS.WritableStream): Promise<void> {
 }
 
 describe('@localsink/pino → server → DB', () => {
-  let testServer: TestServer;
-
-  beforeEach(async () => {
-    testServer = await startTestServer();
-  });
-  afterEach(async () => {
-    await testServer.close();
-  });
-
   it('persists a pino log through the real server into the DB', async () => {
-    const transport = buildTransport({
-      serviceName: 'test-service',
-      url: testServer.url,
-    });
+    const { url, db } = await startTestServer();
+
+    const transport = buildTransport({ serviceName: 'test-service', url });
     const logger = pino(transport);
 
     logger.error(
@@ -40,20 +29,23 @@ describe('@localsink/pino → server → DB', () => {
 
     await endTransport(transport);
 
-    const rows = await pollUntil(
-      () => testServer.db.findAllLogs(),
-      (r) => r.length === 1,
-    );
-
-    expect(rows).toHaveLength(1);
-    const row = first(rows);
-    expect(row).toMatchObject({
-      service_name: 'test-service',
-      level: 'error',
-      message: 'something failed',
+    await vi.waitFor(async () => {
+      expect(await db.findAllLogs()).toEqual([
+        {
+          id: 1,
+          service_name: 'test-service',
+          timestamp: expect.any(Number),
+          level: 'error',
+          message: 'something failed',
+          trace_id: null,
+          span_id: null,
+          logger: null,
+          // pino's built-in err serializer rewrites the plain object —
+          // assert only the essence, not the serializer's added keys.
+          error: expect.objectContaining({ message: 'kaboom' }),
+          attributes: { userId: 7, region: 'us' },
+        },
+      ]);
     });
-    expect(typeof row.timestamp).toBe('number');
-    expect(row.error).toMatchObject({ message: 'kaboom' });
-    expect(row.attributes).toEqual({ userId: 7, region: 'us' });
   });
 });

@@ -48,6 +48,16 @@ export default defineConfig({
       env: {
         vitest: true,
       },
+      // Vitest's asymmetric matchers (expect.any, expect.objectContaining, …)
+      // are typed as `any` upstream, so the typescript/no-unsafe-* family
+      // fires on routine test code. Relaxed for spec files only.
+      rules: {
+        'typescript/no-unsafe-assignment': 'off',
+        'typescript/no-unsafe-argument': 'off',
+        'typescript/no-unsafe-call': 'off',
+        'typescript/no-unsafe-member-access': 'off',
+        'typescript/no-unsafe-return': 'off',
+      },
     },
   ],
 });
