@@ -28,7 +28,7 @@ describe('@localsink/console transport', () => {
     });
     try {
       console.log('hello world');
-      expect(await received).toMatchObject({
+      await expect(received).resolves.toMatchObject({
         service_name: 'test-service',
         level: 'log',
         message: 'hello world',
@@ -55,7 +55,7 @@ describe('@localsink/console transport', () => {
       });
       try {
         console[method](`${method} message`);
-        expect(await received).toMatchObject({
+        await expect(received).resolves.toMatchObject({
           service_name: 'test-service',
           level: method,
           message: `${method} message`,
@@ -180,7 +180,7 @@ describe('@localsink/console transport', () => {
     });
     try {
       console.error(new TypeError('boom'));
-      expect(await received).toMatchObject({
+      await expect(received).resolves.toMatchObject({
         level: 'error',
         error: { message: 'boom', type: 'TypeError' },
       });

@@ -31,7 +31,11 @@ export function makeDatabase(db: DrizzleClient) {
 }
 
 export async function initializeDatabase() {
-  process.loadEnvFile();
+  try {
+    process.loadEnvFile();
+  } catch {
+    // .env is optional; env vars may be set via shell
+  }
   const dbFileName = process.env['DB_FILE_NAME'];
   if (!dbFileName) {
     throw new Error('DB_FILE_NAME environment variable is not set.');
