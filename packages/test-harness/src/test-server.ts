@@ -1,10 +1,17 @@
 import { serve } from '@hono/node-server';
-import { createApp, createTestDatabase } from 'localsink/testing';
-import type { Database } from 'localsink/testing';
+import { drizzle } from 'drizzle-orm/libsql';
+import { applySchema, createApp, makeDatabase } from 'localsink';
+import type { Database } from 'localsink';
 
 export interface TestServer {
   url: string;
   db: Database;
+}
+
+async function createTestDatabase(): Promise<Database> {
+  const client = drizzle(':memory:');
+  await applySchema(client);
+  return makeDatabase(client);
 }
 
 export async function startTestServer(): Promise<TestServer> {

@@ -24,6 +24,8 @@
   },
   "dependencies": {
     "@hono/node-server": "catalog:",
+    "@libsql/client": "catalog:",
+    "drizzle-orm": "catalog:",
     "localsink": "workspace:*"
   }
 }

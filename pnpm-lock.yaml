@@ -202,6 +202,12 @@ importers:
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.0.3(hono@4.12.22)
+      '@libsql/client':
+        specifier: 'catalog:'
+        version: 0.17.3
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.2(@libsql/client@0.17.3)
       localsink:
         specifier: workspace:*
         version: link:../localsink
