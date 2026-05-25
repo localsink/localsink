@@ -163,6 +163,12 @@ describe('GET /api/logs', () => {
       const res = await app.request('/api/logs?q=');
       expect(res.status).toBe(400);
     });
+
+    it('returns 400 when q is whitespace-only', async () => {
+      const { app } = await createTestApp();
+      const res = await app.request('/api/logs?q=%20%20%20');
+      expect(res.status).toBe(400);
+    });
   });
 });
 

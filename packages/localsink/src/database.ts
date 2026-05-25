@@ -43,7 +43,7 @@ export const logsQuerySchema = z
     trace_id: z.string().min(1).optional(),
     from: z.coerce.number().int().optional(),
     to: z.coerce.number().int().optional(),
-    q: z.string().min(1).optional(),
+    q: z.string().trim().min(1).optional(),
     limit: z.coerce.number().int().min(1).max(MAX_LIMIT).default(DEFAULT_LIMIT),
     cursor: cursorSchema.optional(),
     offset: z.coerce.number().int().min(0).optional(),
