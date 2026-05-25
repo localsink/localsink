@@ -297,4 +297,95 @@ describe('makeDatabase', () => {
       expect(meta.loggers).toEqual(['console']);
     });
   });
+
+  describe('findLogs q (FTS5)', () => {
+    it('matches a log by a token in message', async () => {
+      const db = await createDb();
+      await db.createLog({ ...minimalLog, message: 'user signed in' });
+      await db.createLog({ ...minimalLog, message: 'payment failed' });
+      const { data } = await db.findLogs({ limit: 50, q: 'signed' });
+      expect(data).toHaveLength(1);
+      expect(data[0]?.message).toBe('user signed in');
+    });
+
+    it('returns empty when no message matches', async () => {
+      const db = await createDb();
+      await db.createLog(minimalLog);
+      const { data } = await db.findLogs({ limit: 50, q: 'nonexistent' });
+      expect(data).toEqual([]);
+    });
+
+    it('ANDs q with other filters', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        service_name: 'auth',
+        message: 'login failed',
+      });
+      await db.createLog({
+        ...minimalLog,
+        service_name: 'payments',
+        message: 'login failed',
+      });
+      await db.createLog({
+        ...minimalLog,
+        service_name: 'auth',
+        message: 'logout success',
+      });
+      const { data } = await db.findLogs({
+        limit: 50,
+        q: 'failed',
+        service_name: 'auth',
+      });
+      expect(data).toHaveLength(1);
+      expect(data[0]?.service_name).toBe('auth');
+      expect(data[0]?.message).toBe('login failed');
+    });
+
+    it('combines q with cursor pagination', async () => {
+      const db = await createDb();
+      for (let i = 0; i < 4; i++) {
+        await db.createLog({
+          ...minimalLog,
+          message: `error number ${String(i)}`,
+        });
+      }
+      await db.createLog({ ...minimalLog, message: 'success' }); // won't match `error`
+
+      const page1 = await db.findLogs({ limit: 2, q: 'error' });
+      expect(page1.data).toHaveLength(2);
+      expect(page1.next_cursor).not.toBeNull();
+
+      const last1 = page1.data[1];
+      if (!last1) throw new Error('expected page to have 2 rows');
+      const page2 = await db.findLogs({
+        limit: 2,
+        q: 'error',
+        cursor: { timestamp: last1.timestamp, id: last1.id },
+      });
+      expect(page2.data).toHaveLength(2);
+      expect(page2.next_cursor).toBeNull();
+
+      const allIds = [...page1.data, ...page2.data].map((r) => r.id);
+      expect(new Set(allIds).size).toBe(4);
+    });
+
+    it('supports FTS5 prefix queries (token*)', async () => {
+      const db = await createDb();
+      await db.createLog({ ...minimalLog, message: 'errored out' });
+      await db.createLog({ ...minimalLog, message: 'errors abound' });
+      await db.createLog({ ...minimalLog, message: 'fine' });
+      const { data } = await db.findLogs({ limit: 50, q: 'err*' });
+      expect(data).toHaveLength(2);
+    });
+  });
+
+  describe('FTS5 INSERT trigger sync', () => {
+    it('makes a new log searchable immediately after createLog', async () => {
+      const db = await createDb();
+      await db.createLog({ ...minimalLog, message: 'uniquemarker' });
+      const { data } = await db.findLogs({ limit: 50, q: 'uniquemarker' });
+      expect(data).toHaveLength(1);
+    });
+  });
 });

@@ -10,3 +10,18 @@ CREATE TABLE `logs` (
 	`error` text,
 	`attributes` text
 );
+--> statement-breakpoint
+CREATE INDEX `idx_logs_timestamp` ON `logs` (`timestamp`,`id`);--> statement-breakpoint
+CREATE INDEX `idx_logs_service_name` ON `logs` (`service_name`,`timestamp`,`id`);--> statement-breakpoint
+CREATE INDEX `idx_logs_level` ON `logs` (`level`,`timestamp`,`id`);--> statement-breakpoint
+CREATE INDEX `idx_logs_trace_id` ON `logs` (`trace_id`);--> statement-breakpoint
+CREATE INDEX `idx_logs_logger` ON `logs` (`logger`);--> statement-breakpoint
+CREATE VIRTUAL TABLE logs_fts USING fts5(
+  message,
+  content='logs',
+  content_rowid='id'
+);
+--> statement-breakpoint
+CREATE TRIGGER logs_ai AFTER INSERT ON logs BEGIN
+  INSERT INTO logs_fts(rowid, message) VALUES (new.id, new.message);
+END;

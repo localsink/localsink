@@ -78,7 +78,48 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_logs_timestamp": {
+          "name": "idx_logs_timestamp",
+          "columns": [
+            "timestamp",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "idx_logs_service_name": {
+          "name": "idx_logs_service_name",
+          "columns": [
+            "service_name",
+            "timestamp",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "idx_logs_level": {
+          "name": "idx_logs_level",
+          "columns": [
+            "level",
+            "timestamp",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "idx_logs_trace_id": {
+          "name": "idx_logs_trace_id",
+          "columns": [
+            "trace_id"
+          ],
+          "isUnique": false
+        },
+        "idx_logs_logger": {
+          "name": "idx_logs_logger",
+          "columns": [
+            "logger"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
