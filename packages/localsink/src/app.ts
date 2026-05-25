@@ -11,20 +11,18 @@ const logIdParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
 
-function validate<T extends z.ZodType>(
-  target: 'query' | 'param' | 'json',
-  schema: T,
-) {
-  return zValidator(target, schema, (result, c) => {
-    if (!result.success) {
-      return c.json(
-        { error: 'Invalid request.', issues: result.error.issues },
-        400,
-      );
-    }
-    return undefined;
-  });
-}
+const validationErrorHandler: NonNullable<Parameters<typeof zValidator>[2]> = (
+  result,
+  c,
+) => {
+  if (!result.success) {
+    return c.json(
+      { error: 'Invalid request.', issues: result.error.issues },
+      400,
+    );
+  }
+  return undefined;
+};
 
 export function createApp(database: Database) {
   const { findLogs, getMeta, findLogById, createLog } = database;
@@ -44,26 +42,38 @@ export function createApp(database: Database) {
     return c.json(meta);
   });
 
-  app.get('/api/logs', validate('query', logsQuerySchema), async (c) => {
-    const filter = c.req.valid('query');
-    const page = await findLogs(filter);
-    return c.json(page);
-  });
+  app.get(
+    '/api/logs',
+    zValidator('query', logsQuerySchema, validationErrorHandler),
+    async (c) => {
+      const filter = c.req.valid('query');
+      const page = await findLogs(filter);
+      return c.json(page);
+    },
+  );
 
-  app.get('/api/logs/:id', validate('param', logIdParamSchema), async (c) => {
-    const { id } = c.req.valid('param');
-    const log = await findLogById(id);
-    if (!log) {
-      return c.json({ error: `Log with ID ${String(id)} not found.` }, 404);
-    }
-    return c.json(log);
-  });
+  app.get(
+    '/api/logs/:id',
+    zValidator('param', logIdParamSchema, validationErrorHandler),
+    async (c) => {
+      const { id } = c.req.valid('param');
+      const log = await findLogById(id);
+      if (!log) {
+        return c.json({ error: `Log with ID ${String(id)} not found.` }, 404);
+      }
+      return c.json(log);
+    },
+  );
 
-  app.post('/api/logs', validate('json', logsApiInsertSchema), async (c) => {
-    const log = c.req.valid('json');
-    await createLog(log);
-    return c.body(null, 201);
-  });
+  app.post(
+    '/api/logs',
+    zValidator('json', logsApiInsertSchema, validationErrorHandler),
+    async (c) => {
+      const log = c.req.valid('json');
+      await createLog(log);
+      return c.body(null, 201);
+    },
+  );
 
   return app;
 }
