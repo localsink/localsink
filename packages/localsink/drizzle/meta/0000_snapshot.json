@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "e611301a-2b5f-48e6-843a-5a7f08be1ac0",
+  "id": "21cea0ce-a657-4075-aa62-4e4b48f5d060",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "logs": {
@@ -78,7 +78,48 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_logs_timestamp": {
+          "name": "idx_logs_timestamp",
+          "columns": [
+            "timestamp",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "idx_logs_service_name": {
+          "name": "idx_logs_service_name",
+          "columns": [
+            "service_name",
+            "timestamp",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "idx_logs_level": {
+          "name": "idx_logs_level",
+          "columns": [
+            "level",
+            "timestamp",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "idx_logs_trace_id": {
+          "name": "idx_logs_trace_id",
+          "columns": [
+            "trace_id"
+          ],
+          "isUnique": false
+        },
+        "idx_logs_logger": {
+          "name": "idx_logs_logger",
+          "columns": [
+            "logger"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},

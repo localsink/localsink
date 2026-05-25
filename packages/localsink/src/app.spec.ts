@@ -122,6 +122,47 @@ describe('GET /api/logs', () => {
       const res = await app.request('/api/logs?service_name=');
       expect(res.status).toBe(400);
     });
+
+    it('filters by q via FTS5', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog({ ...minimalPayload, message: 'payment failed' });
+      await db.createLog({ ...minimalPayload, message: 'user signed in' });
+      const res = await app.request('/api/logs?q=payment');
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toMatchObject({
+        data: [expect.objectContaining({ message: 'payment failed' })],
+      });
+    });
+
+    it('ANDs q with other filters', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog({
+        ...minimalPayload,
+        service_name: 'auth',
+        message: 'login failed',
+      });
+      await db.createLog({
+        ...minimalPayload,
+        service_name: 'payments',
+        message: 'login failed',
+      });
+      const res = await app.request('/api/logs?q=failed&service_name=auth');
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toMatchObject({
+        data: [
+          expect.objectContaining({
+            service_name: 'auth',
+            message: 'login failed',
+          }),
+        ],
+      });
+    });
+
+    it('returns 400 when q is empty', async () => {
+      const { app } = await createTestApp();
+      const res = await app.request('/api/logs?q=');
+      expect(res.status).toBe(400);
+    });
   });
 });
 

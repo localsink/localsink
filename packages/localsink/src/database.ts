@@ -43,6 +43,7 @@ export const logsQuerySchema = z
     trace_id: z.string().min(1).optional(),
     from: z.coerce.number().int().optional(),
     to: z.coerce.number().int().optional(),
+    q: z.string().min(1).optional(),
     limit: z.coerce.number().int().min(1).max(MAX_LIMIT).default(DEFAULT_LIMIT),
     cursor: cursorSchema.optional(),
     offset: z.coerce.number().int().min(0).optional(),
@@ -84,6 +85,9 @@ export function makeDatabase(db: DrizzleClient) {
         ? gte(logsTable.timestamp, filter.from)
         : undefined,
       filter.to !== undefined ? lt(logsTable.timestamp, filter.to) : undefined,
+      filter.q !== undefined
+        ? sql`${logsTable.id} IN (SELECT rowid FROM logs_fts WHERE logs_fts MATCH ${filter.q})`
+        : undefined,
       filter.cursor !== undefined
         ? or(
             lt(logsTable.timestamp, filter.cursor.timestamp),
