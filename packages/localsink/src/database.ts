@@ -20,15 +20,15 @@ import { logsTable } from './db/schema.ts';
 type DrizzleClient = ReturnType<typeof drizzle>;
 type LogRow = typeof logsTable.$inferSelect;
 
-export const DEFAULT_LIMIT = 50;
-export const MAX_LIMIT = 500;
+const DEFAULT_LIMIT = 50;
+const MAX_LIMIT = 500;
 const CURSOR_REGEX = /^(\d+):(\d+)$/;
 
 function encodeCursor(row: { timestamp: number; id: number }): string {
   return `${String(row.timestamp)}:${String(row.id)}`;
 }
 
-export const cursorSchema = z
+const cursorSchema = z
   .string()
   .regex(CURSOR_REGEX, 'Cursor must be in the format "<timestamp>:<id>".')
   .transform((s) => {

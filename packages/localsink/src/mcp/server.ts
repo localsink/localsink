@@ -42,7 +42,7 @@ export function createMcpServer(database: Database): McpServer {
     {
       description:
         'Fetch a single log by its numeric ID. Use after search_logs to drill into a specific row.',
-      inputSchema: { id: z.number().int().positive() },
+      inputSchema: z.object({ id: z.number().int().positive() }),
     },
     async ({ id }) => {
       const log = await database.findLogById(id);
