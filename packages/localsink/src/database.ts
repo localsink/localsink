@@ -20,15 +20,15 @@ import { logsTable } from './db/schema.ts';
 type DrizzleClient = ReturnType<typeof drizzle>;
 type LogRow = typeof logsTable.$inferSelect;
 
-const DEFAULT_LIMIT = 50;
-const MAX_LIMIT = 500;
+export const DEFAULT_LIMIT = 50;
+export const MAX_LIMIT = 500;
 const CURSOR_REGEX = /^(\d+):(\d+)$/;
 
 function encodeCursor(row: { timestamp: number; id: number }): string {
   return `${String(row.timestamp)}:${String(row.id)}`;
 }
 
-const cursorSchema = z
+export const cursorSchema = z
   .string()
   .regex(CURSOR_REGEX, 'Cursor must be in the format "<timestamp>:<id>".')
   .transform((s) => {
@@ -38,15 +38,55 @@ const cursorSchema = z
 
 export const logsQuerySchema = z
   .object({
-    service_name: z.string().min(1).optional(),
-    level: z.string().min(1).optional(),
-    trace_id: z.string().min(1).optional(),
-    from: z.coerce.number().int().optional(),
-    to: z.coerce.number().int().optional(),
-    q: z.string().trim().min(1).optional(),
-    limit: z.coerce.number().int().min(1).max(MAX_LIMIT).default(DEFAULT_LIMIT),
-    cursor: cursorSchema.optional(),
-    offset: z.coerce.number().int().min(0).optional(),
+    service_name: z
+      .string()
+      .min(1)
+      .describe('Filter logs by service name.')
+      .optional(),
+    level: z
+      .string()
+      .min(1)
+      .describe('Filter logs by level (e.g., info, error, debug).')
+      .optional(),
+    trace_id: z.string().min(1).describe('Filter logs by trace ID.').optional(),
+    from: z.coerce
+      .number()
+      .int()
+      .describe('Filter logs starting from this epoch millisecond timestamp.')
+      .optional(),
+    to: z.coerce
+      .number()
+      .int()
+      .describe('Filter logs up to this epoch millisecond timestamp.')
+      .optional(),
+    q: z
+      .string()
+      .trim()
+      .min(1)
+      .describe(
+        'FTS5 free-text query on message. Supports prefix queries like "err*", phrases like "\\"failed connection\\"", and boolean operators like "AND/OR/NOT".',
+      )
+      .optional(),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_LIMIT)
+      .default(DEFAULT_LIMIT)
+      .describe(
+        `Maximum number of logs to return (default ${String(DEFAULT_LIMIT)}, max ${String(MAX_LIMIT)}).`,
+      ),
+    cursor: cursorSchema
+      .describe(
+        "Opaque pagination cursor from a previous response's next_cursor field.",
+      )
+      .optional(),
+    offset: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .describe('Pagination offset (cannot be used with cursor).')
+      .optional(),
   })
   .superRefine((d, ctx) => {
     if (d.cursor !== undefined && d.offset !== undefined) {

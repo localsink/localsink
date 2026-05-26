@@ -27,9 +27,11 @@
     "drizzle-kit:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@hono/mcp": "catalog:",
     "@hono/node-server": "catalog:",
     "@hono/zod-validator": "catalog:",
     "@libsql/client": "catalog:",
+    "@modelcontextprotocol/sdk": "catalog:",
     "drizzle-orm": "catalog:",
     "drizzle-zod": "catalog:",
     "hono": "catalog:",

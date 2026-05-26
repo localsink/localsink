@@ -1,3 +1,4 @@
+import { StreamableHTTPTransport } from '@hono/mcp';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
@@ -6,6 +7,7 @@ import { z } from 'zod';
 import type { Database } from './database.ts';
 import { logsQuerySchema } from './database.ts';
 import { logsApiInsertSchema } from './db/schema.ts';
+import { createMcpServer } from './mcp/server.ts';
 
 const logIdParamSchema = z.object({
   id: z.coerce.number().int().positive(),
@@ -27,6 +29,9 @@ const validationErrorHandler: NonNullable<Parameters<typeof zValidator>[2]> = (
 export function createApp(database: Database) {
   const { findLogs, getMeta, findLogById, createLog } = database;
 
+  const mcpServer = createMcpServer(database);
+  const mcpTransport = new StreamableHTTPTransport();
+
   const app = new Hono();
 
   app.onError((error, c) => {
@@ -35,6 +40,13 @@ export function createApp(database: Database) {
     }
     console.error(error);
     return c.json({ error: 'Internal server error.' }, 500);
+  });
+
+  app.all('/mcp', async (c) => {
+    if (!mcpServer.isConnected()) {
+      await mcpServer.connect(mcpTransport);
+    }
+    return mcpTransport.handleRequest(c);
   });
 
   app.get('/api/logs/meta', async (c) => {
