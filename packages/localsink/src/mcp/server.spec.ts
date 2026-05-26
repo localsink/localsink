@@ -1,6 +1,6 @@
-// eslint-disable-next-line import/extensions -- SDK uses ./* wildcard exports; .js is required for resolution
+// oxlint-disable-next-line import/extensions -- SDK uses ./* wildcard exports; .js is required for resolution
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-// eslint-disable-next-line import/extensions -- same as above
+// oxlint-disable-next-line import/extensions -- same as above
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { drizzle } from 'drizzle-orm/libsql';
 

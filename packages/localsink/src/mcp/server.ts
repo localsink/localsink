@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/extensions -- SDK uses ./* wildcard exports; .js is required for resolution
+// oxlint-disable-next-line import/extensions -- SDK uses ./* wildcard exports; .js is required for resolution
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
