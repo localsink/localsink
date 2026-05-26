@@ -292,3 +292,81 @@ describe('GET /api/logs/meta', () => {
     });
   });
 });
+
+function parseSseResponse(text: string) {
+  const lines = text.split('\n');
+  const dataLine = lines.find((l) => l.startsWith('data: '));
+  if (!dataLine) {
+    throw new Error(`No data line found in SSE response. Full text:\n${text}`);
+  }
+  const jsonStr = dataLine.slice('data: '.length);
+  return JSON.parse(jsonStr);
+}
+
+describe('POST /mcp', () => {
+  it('handles tools/list request', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/mcp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'tools/list',
+        params: {},
+      }),
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toContain('text/event-stream');
+    const text = await res.text();
+    const body = parseSseResponse(text);
+    expect(body).toMatchObject({
+      jsonrpc: '2.0',
+      id: 1,
+      result: {
+        tools: expect.any(Array),
+      },
+    });
+
+    const tools = body.result.tools
+      .map((t: { name: string }) => t.name)
+      .toSorted((a: string, b: string) => a.localeCompare(b));
+    expect(tools).toEqual(['describe_logs', 'get_log_by_id', 'search_logs']);
+  });
+
+  it('handles tools/call request for describe_logs', async () => {
+    const { app, db } = await createTestApp();
+    await db.createLog(minimalPayload);
+
+    const res = await app.request('/mcp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'tools/call',
+        params: {
+          name: 'describe_logs',
+          arguments: {},
+        },
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toContain('text/event-stream');
+    const text = await res.text();
+    const body = parseSseResponse(text);
+    expect(body).toMatchObject({
+      jsonrpc: '2.0',
+      id: 1,
+      result: {
+        content: [
+          {
+            type: 'text',
+            text: expect.stringContaining('"total": 1'),
+          },
+        ],
+      },
+    });
+  });
+});

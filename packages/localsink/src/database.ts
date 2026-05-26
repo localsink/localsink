@@ -38,15 +38,57 @@ const cursorSchema = z
 
 export const logsQuerySchema = z
   .object({
-    service_name: z.string().min(1).optional(),
-    level: z.string().min(1).optional(),
-    trace_id: z.string().min(1).optional(),
-    from: z.coerce.number().int().optional(),
-    to: z.coerce.number().int().optional(),
-    q: z.string().trim().min(1).optional(),
-    limit: z.coerce.number().int().min(1).max(MAX_LIMIT).default(DEFAULT_LIMIT),
-    cursor: cursorSchema.optional(),
-    offset: z.coerce.number().int().min(0).optional(),
+    service_name: z
+      .string()
+      .min(1)
+      .describe('Filter logs by service name.')
+      .optional(),
+    level: z
+      .string()
+      .min(1)
+      .describe('Filter logs by level (e.g., info, error, debug).')
+      .optional(),
+    trace_id: z.string().min(1).describe('Filter logs by trace ID.').optional(),
+    from: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .describe('Filter logs starting from this epoch millisecond timestamp.')
+      .optional(),
+    to: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .describe('Filter logs up to this epoch millisecond timestamp.')
+      .optional(),
+    q: z
+      .string()
+      .trim()
+      .min(1)
+      .describe(
+        'FTS5 free-text query on message. Supports prefix queries like "err*", phrases like "\\"failed connection\\"", and boolean operators like "AND/OR/NOT".',
+      )
+      .optional(),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_LIMIT)
+      .default(DEFAULT_LIMIT)
+      .describe(
+        `Maximum number of logs to return (default ${String(DEFAULT_LIMIT)}, max ${String(MAX_LIMIT)}).`,
+      ),
+    cursor: cursorSchema
+      .describe(
+        "Opaque pagination cursor from a previous response's next_cursor field (cannot be used with offset).",
+      )
+      .optional(),
+    offset: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .describe('Pagination offset (cannot be used with cursor).')
+      .optional(),
   })
   .superRefine((d, ctx) => {
     if (d.cursor !== undefined && d.offset !== undefined) {
