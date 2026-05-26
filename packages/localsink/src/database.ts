@@ -52,11 +52,13 @@ export const logsQuerySchema = z
     from: z.coerce
       .number()
       .int()
+      .min(0)
       .describe('Filter logs starting from this epoch millisecond timestamp.')
       .optional(),
     to: z.coerce
       .number()
       .int()
+      .min(0)
       .describe('Filter logs up to this epoch millisecond timestamp.')
       .optional(),
     q: z
@@ -78,7 +80,7 @@ export const logsQuerySchema = z
       ),
     cursor: cursorSchema
       .describe(
-        "Opaque pagination cursor from a previous response's next_cursor field.",
+        "Opaque pagination cursor from a previous response's next_cursor field (cannot be used with offset).",
       )
       .optional(),
     offset: z.coerce
