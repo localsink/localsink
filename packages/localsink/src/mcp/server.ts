@@ -2,7 +2,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-import { logsQuerySchema } from '../database.ts';
+import { InvalidQueryError, logsQuerySchema } from '../database.ts';
 import type { Database } from '../database.ts';
 
 export function createMcpServer(database: Database): McpServer {
@@ -26,14 +26,24 @@ export function createMcpServer(database: Database): McpServer {
     'search_logs',
     {
       description:
-        'Search logs with optional filters; all params AND-ed together. Returns up to `limit` logs newest first, plus `next_cursor` for the next page. `q` runs FTS5 free-text search on message (supports prefix `err*`, phrase `"foo bar"`, boolean `AND/OR/NOT`).',
+        'Search logs with optional filters; all params AND-ed together. Returns up to `limit` logs newest first, plus `next_cursor` for the next page. `q` runs FTS5 free-text search on message (supports prefix `err*`, phrase `"foo bar"`, boolean `AND/OR/NOT`). Discover valid `service_name`, `level`, and `logger` values via describe_logs. `cursor` and `offset` are mutually exclusive — calling with both returns an error.',
       inputSchema: logsQuerySchema,
     },
     async (input) => {
-      const page = await database.findLogs(input);
-      return {
-        content: [{ type: 'text', text: JSON.stringify(page, null, 2) }],
-      };
+      try {
+        const page = await database.findLogs(input);
+        return {
+          content: [{ type: 'text', text: JSON.stringify(page, null, 2) }],
+        };
+      } catch (err) {
+        if (err instanceof InvalidQueryError) {
+          return {
+            content: [{ type: 'text', text: err.message }],
+            isError: true,
+          };
+        }
+        throw err;
+      }
     },
   );
 

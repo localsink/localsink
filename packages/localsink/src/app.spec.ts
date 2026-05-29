@@ -65,6 +65,17 @@ describe('GET /api/logs', () => {
       });
     });
 
+    it('filters by logger', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog({ ...minimalPayload, logger: 'winston' });
+      await db.createLog({ ...minimalPayload, logger: 'pino' });
+      const res = await app.request('/api/logs?logger=winston');
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toMatchObject({
+        data: [expect.objectContaining({ logger: 'winston' })],
+      });
+    });
+
     it('respects limit and returns a string next_cursor on a full page', async () => {
       const { app, db } = await createTestApp();
       for (let i = 0; i < 3; i++) await db.createLog(minimalPayload);
@@ -97,6 +108,9 @@ describe('GET /api/logs', () => {
       const { app } = await createTestApp();
       const res = await app.request('/api/logs?cursor=1000:1&offset=10');
       expect(res.status).toBe(400);
+      await expect(res.json()).resolves.toEqual({
+        error: 'Cannot use both cursor and offset.',
+      });
     });
 
     it('returns 400 when cursor has an invalid format', async () => {
@@ -169,6 +183,41 @@ describe('GET /api/logs', () => {
       const res = await app.request('/api/logs?q=%20%20%20');
       expect(res.status).toBe(400);
     });
+
+    it('returns 400 (not 500) when q has invalid FTS5 syntax', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog(minimalPayload);
+      const res = await app.request(
+        `/api/logs?q=${encodeURIComponent('foo"bar')}`,
+      );
+      expect(res.status).toBe(400);
+      await expect(res.json()).resolves.toMatchObject({
+        error: expect.stringContaining('FTS5'),
+      });
+    });
+  });
+
+  describe('CORS', () => {
+    it('returns Access-Control-Allow-Origin on /api/* responses', async () => {
+      const { app } = await createTestApp();
+      const res = await app.request('/api/logs', {
+        headers: { Origin: 'http://localhost:5173' },
+      });
+      expect(res.headers.get('Access-Control-Allow-Origin')).not.toBeNull();
+    });
+
+    it('responds to preflight OPTIONS on /api/*', async () => {
+      const { app } = await createTestApp();
+      const res = await app.request('/api/logs', {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'http://localhost:5173',
+          'Access-Control-Request-Method': 'GET',
+        },
+      });
+      expect(res.status).toBeLessThan(300);
+      expect(res.headers.get('Access-Control-Allow-Origin')).not.toBeNull();
+    });
   });
 });
 
@@ -236,6 +285,26 @@ describe('POST /api/logs', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: 'not json',
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when attributes is not an object', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...minimalPayload, attributes: 'not-an-object' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when error is not an object', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...minimalPayload, error: 42 }),
     });
     expect(res.status).toBe(400);
   });

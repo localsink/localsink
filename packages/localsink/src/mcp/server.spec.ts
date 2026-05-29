@@ -130,6 +130,19 @@ describe('MCP server', () => {
       });
     });
 
+    it('filters by logger', async () => {
+      const { client, db } = await connectedClient();
+      await db.createLog({ ...minimalLog, logger: 'winston' });
+      await db.createLog({ ...minimalLog, logger: 'pino' });
+      const result = await client.callTool({
+        name: 'search_logs',
+        arguments: { logger: 'winston' },
+      });
+      expect(parseJsonResult(result.content)).toMatchObject({
+        data: [expect.objectContaining({ logger: 'winston' })],
+      });
+    });
+
     it('filters by q via FTS5', async () => {
       const { client, db } = await connectedClient();
       await db.createLog({ ...minimalLog, message: 'payment failed' });
@@ -171,6 +184,16 @@ describe('MCP server', () => {
       const result = await client.callTool({
         name: 'search_logs',
         arguments: { cursor: '1000:1', offset: 10 },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it('returns isError when q has invalid FTS5 syntax', async () => {
+      const { client, db } = await connectedClient();
+      await db.createLog(minimalLog);
+      const result = await client.callTool({
+        name: 'search_logs',
+        arguments: { q: 'foo"bar' },
       });
       expect(result.isError).toBe(true);
     });
