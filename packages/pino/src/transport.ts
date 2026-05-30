@@ -20,7 +20,7 @@ export default function (opts: unknown) {
     },
     {
       async close(_err: Error | undefined) {
-        await Promise.all(pending);
+        await Promise.allSettled(pending);
       },
     },
   );

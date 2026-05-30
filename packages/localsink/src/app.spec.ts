@@ -108,8 +108,13 @@ describe('GET /api/logs', () => {
       const { app } = await createTestApp();
       const res = await app.request('/api/logs?cursor=1000:1&offset=10');
       expect(res.status).toBe(400);
-      await expect(res.json()).resolves.toEqual({
-        error: 'Cannot use both cursor and offset.',
+      await expect(res.json()).resolves.toMatchObject({
+        error: 'Invalid request.',
+        issues: expect.arrayContaining([
+          expect.objectContaining({
+            message: 'Cannot use both cursor and offset.',
+          }),
+        ]),
       });
     });
 
