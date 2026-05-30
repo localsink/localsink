@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/libsql';
 
-import { makeDatabase } from './database.ts';
+import { InvalidQueryError, makeDatabase } from './database.ts';
 import { applySchema } from './migrate.ts';
 
 async function createDb() {
@@ -125,6 +125,16 @@ describe('makeDatabase', () => {
       expect(data[0]?.trace_id).toBe('trace-1');
     });
 
+    it('filters by logger', async () => {
+      const db = await createDb();
+      await db.createLog({ ...minimalLog, logger: 'winston' });
+      await db.createLog({ ...minimalLog, logger: 'pino' });
+      await db.createLog({ ...minimalLog, logger: null });
+      const { data } = await db.findLogs({ limit: 50, logger: 'winston' });
+      expect(data).toHaveLength(1);
+      expect(data[0]?.logger).toBe('winston');
+    });
+
     it('filters by from (inclusive)', async () => {
       const db = await createDb();
       await db.createLog({ ...minimalLog, timestamp: 999 });
@@ -241,6 +251,17 @@ describe('makeDatabase', () => {
         const page2 = await db.findLogs({ limit: 2, offset: 2 });
         const allIds = [...page1.data, ...page2.data].map((r) => r.id);
         expect(new Set(allIds).size).toBe(4);
+      });
+
+      it('throws InvalidQueryError when both cursor and offset are provided', async () => {
+        const db = await createDb();
+        await expect(
+          db.findLogs({
+            limit: 2,
+            cursor: { timestamp: 1000, id: 1 },
+            offset: 0,
+          }),
+        ).rejects.toBeInstanceOf(InvalidQueryError);
       });
     });
   });
@@ -377,6 +398,14 @@ describe('makeDatabase', () => {
       await db.createLog({ ...minimalLog, message: 'fine' });
       const { data } = await db.findLogs({ limit: 50, q: 'err*' });
       expect(data).toHaveLength(2);
+    });
+
+    it('throws InvalidQueryError when FTS5 query has invalid syntax', async () => {
+      const db = await createDb();
+      await db.createLog({ ...minimalLog, message: 'anything' });
+      await expect(
+        db.findLogs({ limit: 50, q: 'foo"bar' }),
+      ).rejects.toBeInstanceOf(InvalidQueryError);
     });
   });
 

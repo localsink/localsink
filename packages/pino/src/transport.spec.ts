@@ -100,4 +100,27 @@ describe('@localsink/pino transport', () => {
       await endTransport(transport);
     }
   });
+
+  it('drains in-flight POSTs on close (no log loss at shutdown)', async () => {
+    // Server holds responses for ~50ms so multiple logs are in-flight when
+    // we end the transport. Without the pending drain, the close would
+    // resolve before the POSTs land and we'd see < 5 bodies.
+    const received: unknown[] = [];
+    server.use(
+      http.post('http://localhost/api/logs', async ({ request }) => {
+        const body = await request.json();
+        await new Promise((r) => setTimeout(r, 50));
+        received.push(body);
+        return HttpResponse.json({});
+      }),
+    );
+    const transport = buildTransport({
+      serviceName: 'test-service',
+      url: 'http://localhost',
+    });
+    const logger = pino(transport);
+    for (let i = 0; i < 5; i++) logger.info({ idx: i }, `msg-${String(i)}`);
+    await endTransport(transport);
+    expect(received).toHaveLength(5);
+  });
 });

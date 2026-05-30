@@ -24,6 +24,13 @@ const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 500;
 const CURSOR_REGEX = /^(\d+):(\d+)$/;
 
+export class InvalidQueryError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidQueryError';
+  }
+}
+
 function encodeCursor(row: { timestamp: number; id: number }): string {
   return `${String(row.timestamp)}:${String(row.id)}`;
 }
@@ -41,33 +48,53 @@ export const logsQuerySchema = z
     service_name: z
       .string()
       .min(1)
-      .describe('Filter logs by service name.')
+      .meta({ description: 'Filter logs by service name.' })
       .optional(),
     level: z
       .string()
       .min(1)
-      .describe('Filter logs by level (e.g., info, error, debug).')
+      .meta({
+        description: 'Filter logs by level (e.g., info, error, debug).',
+      })
       .optional(),
-    trace_id: z.string().min(1).describe('Filter logs by trace ID.').optional(),
+    logger: z
+      .string()
+      .min(1)
+      .meta({
+        description: 'Filter logs by logger (e.g., pino, winston, console).',
+      })
+      .optional(),
+    trace_id: z
+      .string()
+      .min(1)
+      .meta({ description: 'Filter logs by trace ID.' })
+      .optional(),
     from: z.coerce
       .number()
       .int()
       .min(0)
-      .describe('Filter logs starting from this epoch millisecond timestamp.')
+      .meta({
+        description:
+          'Filter logs starting from this epoch millisecond timestamp (inclusive).',
+      })
       .optional(),
     to: z.coerce
       .number()
       .int()
       .min(0)
-      .describe('Filter logs up to this epoch millisecond timestamp.')
+      .meta({
+        description:
+          'Filter logs up to this epoch millisecond timestamp (exclusive).',
+      })
       .optional(),
     q: z
       .string()
       .trim()
       .min(1)
-      .describe(
-        'FTS5 free-text query on message. Supports prefix queries like "err*", phrases like "\\"failed connection\\"", and boolean operators like "AND/OR/NOT".',
-      )
+      .meta({
+        description:
+          'FTS5 free-text query on message. Supports prefix queries like "err*", phrases like "\\"failed connection\\"", and boolean operators like "AND/OR/NOT". Malformed queries return 400.',
+      })
       .optional(),
     limit: z.coerce
       .number()
@@ -75,19 +102,22 @@ export const logsQuerySchema = z
       .min(1)
       .max(MAX_LIMIT)
       .default(DEFAULT_LIMIT)
-      .describe(
-        `Maximum number of logs to return (default ${String(DEFAULT_LIMIT)}, max ${String(MAX_LIMIT)}).`,
-      ),
+      .meta({
+        description: `Maximum number of logs to return (default ${String(DEFAULT_LIMIT)}, max ${String(MAX_LIMIT)}).`,
+      }),
     cursor: cursorSchema
-      .describe(
-        "Opaque pagination cursor from a previous response's next_cursor field (cannot be used with offset).",
-      )
+      .meta({
+        description:
+          "Opaque pagination cursor from a previous response's next_cursor field. Mutually exclusive with offset.",
+      })
       .optional(),
     offset: z.coerce
       .number()
       .int()
       .min(0)
-      .describe('Pagination offset (cannot be used with cursor).')
+      .meta({
+        description: 'Pagination offset. Mutually exclusive with cursor.',
+      })
       .optional(),
   })
   .superRefine((d, ctx) => {
@@ -113,12 +143,19 @@ export type LogMeta = {
 
 export function makeDatabase(db: DrizzleClient) {
   async function findLogs(filter: LogFilter): Promise<LogPage> {
+    if (filter.cursor !== undefined && filter.offset !== undefined) {
+      throw new InvalidQueryError('Cannot use both cursor and offset.');
+    }
+
     const conditions = [
       filter.service_name !== undefined
         ? eq(logsTable.service_name, filter.service_name)
         : undefined,
       filter.level !== undefined
         ? eq(logsTable.level, filter.level)
+        : undefined,
+      filter.logger !== undefined
+        ? eq(logsTable.logger, filter.logger)
         : undefined,
       filter.trace_id !== undefined
         ? eq(logsTable.trace_id, filter.trace_id)
@@ -153,7 +190,18 @@ export function makeDatabase(db: DrizzleClient) {
       query = query.offset(filter.offset);
     }
 
-    const rows = await query;
+    let rows: LogRow[];
+    try {
+      rows = await query;
+    } catch (err) {
+      // `q` is the only user-controlled SQL here; failures are FTS syntax.
+      if (filter.q !== undefined) {
+        throw new InvalidQueryError(
+          `Invalid FTS5 query: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+      throw err;
+    }
     const hasNextPage = rows.length > filter.limit;
     const data = hasNextPage ? rows.slice(0, filter.limit) : rows;
     const last = data.at(-1);
