@@ -8,9 +8,10 @@ import { cors } from 'hono/cors';
 import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 
+import { ingestPayloadSchema } from '@localsink/contract';
+
 import type { Database } from './database.ts';
 import { InvalidQueryError, logsQuerySchema } from './database.ts';
-import { logsApiInsertSchema } from './db/schema.ts';
 import { createMcpServer } from './mcp/server.ts';
 
 const logIdParamSchema = z.object({
@@ -83,7 +84,7 @@ export function createApp(database: Database) {
     return c.json(log);
   });
 
-  app.post('/api/logs', validate('json', logsApiInsertSchema), async (c) => {
+  app.post('/api/logs', validate('json', ingestPayloadSchema), async (c) => {
     const log = c.req.valid('json');
     await createLog(log);
     return c.body(null, 201);

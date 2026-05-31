@@ -22,6 +22,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@localsink/contract": "workspace:*",
     "zod": "catalog:"
   }
 }

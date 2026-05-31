@@ -31,6 +31,7 @@
     "@hono/node-server": "catalog:",
     "@hono/zod-validator": "catalog:",
     "@libsql/client": "catalog:",
+    "@localsink/contract": "workspace:*",
     "@modelcontextprotocol/sdk": "catalog:",
     "drizzle-orm": "catalog:",
     "drizzle-zod": "catalog:",

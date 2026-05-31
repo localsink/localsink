@@ -2,7 +2,9 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-import { InvalidQueryError, logsQuerySchema } from '../database.ts';
+import { logsQuerySchema } from '@localsink/contract';
+
+import { InvalidQueryError } from '../database.ts';
 import type { Database } from '../database.ts';
 
 export function createMcpServer(database: Database): McpServer {

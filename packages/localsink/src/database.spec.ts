@@ -212,7 +212,7 @@ describe('makeDatabase', () => {
         if (!last1) throw new Error('expected page to have 2 rows');
         const page2 = await db.findLogs({
           limit: 2,
-          cursor: { timestamp: last1.timestamp, id: last1.id },
+          cursor: `${String(last1.timestamp)}:${String(last1.id)}`,
         });
         expect(page2.data).toHaveLength(2);
         expect(page2.next_cursor).toBeNull();
@@ -237,7 +237,7 @@ describe('makeDatabase', () => {
         if (!last1) throw new Error('expected page to have 2 rows');
         const page2 = await db.findLogs({
           limit: 2,
-          cursor: { timestamp: last1.timestamp, id: last1.id },
+          cursor: `${String(last1.timestamp)}:${String(last1.id)}`,
         });
         expect(page2.data.map((r) => r.message)).toEqual(['c', 'a']);
       });
@@ -258,7 +258,7 @@ describe('makeDatabase', () => {
         await expect(
           db.findLogs({
             limit: 2,
-            cursor: { timestamp: 1000, id: 1 },
+            cursor: '1000:1',
             offset: 0,
           }),
         ).rejects.toBeInstanceOf(InvalidQueryError);
@@ -382,7 +382,7 @@ describe('makeDatabase', () => {
       const page2 = await db.findLogs({
         limit: 2,
         q: 'error',
-        cursor: { timestamp: last1.timestamp, id: last1.id },
+        cursor: `${String(last1.timestamp)}:${String(last1.id)}`,
       });
       expect(page2.data).toHaveLength(2);
       expect(page2.next_cursor).toBeNull();

@@ -1,8 +1,9 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 
+import type { IngestPayload } from '@localsink/contract';
+
 import { sendLog } from './send.ts';
-import type { IngestPayload } from './types.ts';
 
 const FIXTURE: IngestPayload = {
   service_name: 'test-service',
