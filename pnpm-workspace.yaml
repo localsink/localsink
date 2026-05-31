@@ -10,7 +10,7 @@ blockExoticSubdeps: true
 
 catalog:
   '@hono/mcp': ^0.3.0
-  '@hono/node-server': ^2.0.3
+  '@hono/node-server': ^2.0.4
   '@hono/zod-validator': ^0.8.0
   '@libsql/client': ^0.17.3
   '@modelcontextprotocol/sdk': ^1.29.0
@@ -22,12 +22,12 @@ catalog:
   drizzle-kit: 0.31.10
   drizzle-orm: ^0.45.2
   drizzle-zod: ^0.8.3
-  hono: ^4.12.22
+  hono: ^4.12.23
   husky: 9.1.7
-  lint-staged: 17.0.5
+  lint-staged: 17.0.6
   msw: 2.14.6
-  oxfmt: 0.51.0
-  oxlint: 1.65.0
+  oxfmt: 0.52.0
+  oxlint: 1.67.0
   oxlint-tsgolint: 0.23.0
   pino: ^10.0.0
   pino-abstract-transport: ^3.0.0
@@ -43,4 +43,4 @@ minimumReleaseAge: 1440
 
 overrides:
   esbuild: '>=0.28.0'
-  '@modelcontextprotocol/sdk>@hono/node-server': ^2.0.3
+  '@modelcontextprotocol/sdk>@hono/node-server': ^2.0.4
