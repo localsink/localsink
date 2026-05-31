@@ -35,11 +35,19 @@ function encodeCursor(row: { timestamp: number; id: number }): string {
   return `${String(row.timestamp)}:${String(row.id)}`;
 }
 
+function decodeCursor(cursor: string): { timestamp: number; id: number } {
+  const [tsStr = '', idStr = ''] = cursor.split(':');
+  return { timestamp: Number(tsStr), id: Number(idStr) };
+}
+
 export function makeDatabase(db: DrizzleClient) {
   async function findLogs(filter: LogFilter): Promise<LogPage> {
     if (filter.cursor !== undefined && filter.offset !== undefined) {
       throw new InvalidQueryError('Cannot use both cursor and offset.');
     }
+
+    const cursor =
+      filter.cursor !== undefined ? decodeCursor(filter.cursor) : undefined;
 
     const conditions = [
       filter.service_name !== undefined
@@ -61,12 +69,12 @@ export function makeDatabase(db: DrizzleClient) {
       filter.q !== undefined
         ? sql`${logsTable.id} IN (SELECT rowid FROM logs_fts WHERE logs_fts MATCH ${filter.q})`
         : undefined,
-      filter.cursor !== undefined
+      cursor !== undefined
         ? or(
-            lt(logsTable.timestamp, filter.cursor.timestamp),
+            lt(logsTable.timestamp, cursor.timestamp),
             and(
-              eq(logsTable.timestamp, filter.cursor.timestamp),
-              lt(logsTable.id, filter.cursor.id),
+              eq(logsTable.timestamp, cursor.timestamp),
+              lt(logsTable.id, cursor.id),
             ),
           )
         : undefined,

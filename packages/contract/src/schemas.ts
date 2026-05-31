@@ -28,14 +28,6 @@ const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 500;
 const CURSOR_REGEX = /^(\d+):(\d+)$/;
 
-const cursorSchema = z
-  .string()
-  .regex(CURSOR_REGEX, 'Cursor must be in the format "<timestamp>:<id>".')
-  .transform((s) => {
-    const [tsStr = '', idStr = ''] = s.split(':');
-    return { timestamp: Number(tsStr), id: Number(idStr) };
-  });
-
 export const logsQuerySchema = z
   .object({
     service_name: z
@@ -98,7 +90,9 @@ export const logsQuerySchema = z
       .meta({
         description: `Maximum number of logs to return (default ${String(DEFAULT_LIMIT)}, max ${String(MAX_LIMIT)}).`,
       }),
-    cursor: cursorSchema
+    cursor: z
+      .string()
+      .regex(CURSOR_REGEX, 'Cursor must be in the format "<timestamp>:<id>".')
       .meta({
         description:
           "Opaque pagination cursor from a previous response's next_cursor field. Mutually exclusive with offset.",
