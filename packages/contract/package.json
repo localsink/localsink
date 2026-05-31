@@ -1,7 +1,7 @@
 {
-  "name": "@localsink/sdk",
+  "name": "@localsink/contract",
   "version": "0.0.0",
-  "description": "SDK for sending logs to localsink programmatically.",
+  "description": "Shared wire-contract schemas and types for the localsink API.",
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
@@ -22,7 +22,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@localsink/contract": "workspace:*",
-    "@localsink/http": "workspace:*"
+    "zod": "catalog:"
   }
 }

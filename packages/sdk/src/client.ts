@@ -1,5 +1,6 @@
+import type { IngestPayload } from '@localsink/contract';
 import { DEFAULT_URL, TransportOptionsSchema, sendLog } from '@localsink/http';
-import type { IngestPayload, TransportOptions } from '@localsink/http';
+import type { TransportOptions } from '@localsink/http';
 
 export type LogInput = Omit<IngestPayload, 'service_name'>;
 

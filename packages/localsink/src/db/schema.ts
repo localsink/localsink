@@ -1,6 +1,4 @@
 import { index, int, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import { createInsertSchema } from 'drizzle-zod';
-import { z } from 'zod';
 
 export const logsTable = sqliteTable(
   'logs',
@@ -29,22 +27,3 @@ export const logsTable = sqliteTable(
     index('idx_logs_logger').on(t.logger),
   ],
 );
-
-const errorPayloadSchema = z
-  .looseObject({
-    message: z.string().optional(),
-    stack: z.string().optional(),
-    type: z.string().optional(),
-  })
-  .nullable()
-  .optional();
-
-const attributesSchema = z
-  .record(z.string(), z.unknown())
-  .nullable()
-  .optional();
-
-export const logsApiInsertSchema = createInsertSchema(logsTable, {
-  error: errorPayloadSchema,
-  attributes: attributesSchema,
-}).omit({ id: true });

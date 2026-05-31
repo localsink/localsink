@@ -68,14 +68,14 @@ describe('mapConsoleArgs', () => {
       });
     });
 
-    it('sets error to null when first arg is a string', () => {
+    it('omits error when first arg is a string', () => {
       const result = mapConsoleArgs('error', ['plain message']);
-      expect(result.error).toBeNull();
+      expect(result.error).toBeUndefined();
     });
 
-    it('sets error to null when args is empty', () => {
+    it('omits error when args is empty', () => {
       const result = mapConsoleArgs('log', []);
-      expect(result.error).toBeNull();
+      expect(result.error).toBeUndefined();
     });
   });
 
@@ -96,12 +96,12 @@ describe('mapConsoleArgs', () => {
     });
   });
 
-  describe('null fields', () => {
-    it('sets trace_id, span_id, and attributes to null', () => {
+  describe('optional fields', () => {
+    it('omits trace_id, span_id, and attributes when not present', () => {
       const result = mapConsoleArgs('log', ['msg']);
-      expect(result.trace_id).toBeNull();
-      expect(result.span_id).toBeNull();
-      expect(result.attributes).toBeNull();
+      expect(result.trace_id).toBeUndefined();
+      expect(result.span_id).toBeUndefined();
+      expect(result.attributes).toBeUndefined();
     });
   });
 });

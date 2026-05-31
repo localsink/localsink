@@ -149,8 +149,17 @@ importers:
         specifier: workspace:*
         version: link:../test-harness
 
+  packages/contract:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+
   packages/http:
     dependencies:
+      '@localsink/contract':
+        specifier: workspace:*
+        version: link:../contract
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -169,6 +178,9 @@ importers:
       '@libsql/client':
         specifier: 'catalog:'
         version: 0.17.3
+      '@localsink/contract':
+        specifier: workspace:*
+        version: link:../contract
       '@modelcontextprotocol/sdk':
         specifier: 'catalog:'
         version: 1.29.0(zod@4.4.3)
@@ -206,6 +218,9 @@ importers:
 
   packages/sdk:
     dependencies:
+      '@localsink/contract':
+        specifier: workspace:*
+        version: link:../contract
       '@localsink/http':
         specifier: workspace:*
         version: link:../http

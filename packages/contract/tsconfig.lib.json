@@ -9,5 +9,5 @@
   },
   "include": ["src/**/*.ts"],
   "exclude": ["vitest.config.ts", "src/**/*.spec.ts"],
-  "references": [{ "path": "../contract/tsconfig.lib.json" }]
+  "references": []
 }

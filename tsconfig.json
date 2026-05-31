@@ -2,6 +2,7 @@
   "extends": "./tsconfig.base.json",
   "files": [],
   "references": [
+    { "path": "./packages/contract" },
     { "path": "./packages/console" },
     { "path": "./packages/http" },
     { "path": "./packages/pino" },

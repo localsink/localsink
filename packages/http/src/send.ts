@@ -1,4 +1,4 @@
-import type { IngestPayload } from './types.ts';
+import type { IngestPayload } from '@localsink/contract';
 
 export function sendLog(
   endpoint: string,
