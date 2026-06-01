@@ -6,6 +6,8 @@ allowBuilds:
   esbuild: false
   msw: false
 
+bail: false
+
 blockExoticSubdeps: true
 
 catalog:
