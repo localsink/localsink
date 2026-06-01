@@ -18,12 +18,16 @@ catalog:
   '@tsconfig/node24': 24.0.4
   '@tsconfig/strictest': 2.0.8
   '@types/node': 24.12.4
+  '@types/react': 19.2.15
+  '@types/react-dom': 19.2.3
   '@typescript/native-preview': beta
+  '@vitejs/plugin-react': 6.0.2
   drizzle-kit: 0.31.10
   drizzle-orm: ^0.45.2
   drizzle-zod: ^0.8.3
   hono: ^4.12.23
   husky: 9.1.7
+  jsdom: 29.1.1
   lint-staged: 17.0.6
   msw: 2.14.6
   oxfmt: 0.52.0
@@ -31,7 +35,10 @@ catalog:
   oxlint-tsgolint: 0.23.0
   pino: ^10.0.0
   pino-abstract-transport: ^3.0.0
+  react: ^19.2.6
+  react-dom: ^19.2.6
   typescript: 6.0.3
+  vite: 8.0.14
   vitest: 4.1.7
   winston: ^3.0.0
   winston-transport: ^4.0.0

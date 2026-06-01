@@ -1,7 +1,7 @@
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
-  plugins: ['import'],
+  plugins: ['eslint', 'typescript', 'unicorn', 'oxc', 'import'],
   env: {
     builtin: true,
     node: true,
@@ -43,8 +43,8 @@ export default defineConfig({
   },
   overrides: [
     {
-      files: ['**/*.spec.ts'],
-      plugins: ['import', 'vitest'],
+      files: ['**/*.spec.ts', '**/*.spec.tsx'],
+      plugins: ['vitest'],
       env: {
         vitest: true,
       },

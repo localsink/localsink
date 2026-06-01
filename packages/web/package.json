@@ -1,0 +1,30 @@
+{
+  "name": "@localsink/web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Web UI for localsink.",
+  "license": "BUSL-1.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/localsink/localsink"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsgo -b . && vite build",
+    "dev": "vite",
+    "lint": "oxlint .",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "jsdom": "catalog:",
+    "vite": "catalog:"
+  }
+}

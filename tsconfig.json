@@ -10,6 +10,7 @@
     { "path": "./packages/winston" },
     { "path": "./packages/localsink" },
     { "path": "./packages/test-harness" },
+    { "path": "./packages/web" },
     { "path": "./scripts" }
   ]
 }
