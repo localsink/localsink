@@ -5,7 +5,7 @@ packages:
 allowBuilds:
   esbuild: false
   msw: false
-  playwright: true
+  playwright: false
 
 bail: false
 
