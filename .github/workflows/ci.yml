@@ -17,6 +17,7 @@ jobs:
           node-version-file: 'package.json'
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install
       - run: pnpm run build:all
       - run: pnpm run lint:all
       - run: pnpm run test:all
