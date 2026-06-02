@@ -1,3 +1,5 @@
+import react from '@vitejs/plugin-react';
+import { playwright } from '@vitest/browser-playwright';
 import { defineProject, mergeConfig } from 'vitest/config';
 
 import configShared, {
@@ -8,11 +10,17 @@ import configShared, {
 export default mergeConfig(
   configShared,
   defineProject({
+    plugins: [react()],
     test: {
       name: 'web-unit',
-      environment: 'jsdom',
       include: SPEC_GLOB,
       exclude: INTEGRATION_GLOB,
+      browser: {
+        enabled: true,
+        provider: playwright(),
+        headless: true,
+        instances: [{ browser: 'chromium' }],
+      },
     },
   }),
 );
