@@ -18,7 +18,11 @@
     "@tsconfig/node24": "catalog:",
     "@tsconfig/strictest": "catalog:",
     "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@typescript/native-preview": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
     "drizzle-kit": "catalog:",
     "husky": "catalog:",
     "lint-staged": "catalog:",
@@ -27,7 +31,9 @@
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "vitest-browser-react": "catalog:"
   },
   "engines": {
     "node": "24.16.0",

@@ -132,9 +132,21 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.12.4
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.15
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.3(@types/react@19.2.15)
       '@typescript/native-preview':
         specifier: 'catalog:'
         version: 7.0.0-dev.20260421.2
+      '@vitejs/plugin-react':
+        specifier: 'catalog:'
+        version: 6.0.2(vite@8.0.14(@types/node@24.12.4)(esbuild@0.28.0)(tsx@4.22.3)(yaml@2.9.0))
+      '@vitest/browser-playwright':
+        specifier: 'catalog:'
+        version: 4.1.7(msw@2.14.6(@types/node@24.12.4)(typescript@6.0.3))(playwright@1.60.0)(vite@8.0.14(@types/node@24.12.4)(esbuild@0.28.0)(tsx@4.22.3)(yaml@2.9.0))(vitest@4.1.7)
       drizzle-kit:
         specifier: 'catalog:'
         version: 0.31.10
@@ -159,9 +171,15 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      vite:
+        specifier: 'catalog:'
+        version: 8.0.14(@types/node@24.12.4)(esbuild@0.28.0)(tsx@4.22.3)(yaml@2.9.0)
       vitest:
         specifier: 'catalog:'
         version: 4.1.7(@types/node@24.12.4)(@vitest/browser-playwright@4.1.7)(msw@2.14.6(@types/node@24.12.4)(typescript@6.0.3))(vite@8.0.14(@types/node@24.12.4)(esbuild@0.28.0)(tsx@4.22.3)(yaml@2.9.0))
+      vitest-browser-react:
+        specifier: 'catalog:'
+        version: 2.2.0(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vitest@4.1.7)
 
   packages/console:
     dependencies:
@@ -272,25 +290,6 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.6(react@19.2.6)
-    devDependencies:
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.2.15
-      '@types/react-dom':
-        specifier: 'catalog:'
-        version: 19.2.3(@types/react@19.2.15)
-      '@vitejs/plugin-react':
-        specifier: 'catalog:'
-        version: 6.0.2(vite@8.0.14(@types/node@24.12.4)(esbuild@0.28.0)(tsx@4.22.3)(yaml@2.9.0))
-      '@vitest/browser-playwright':
-        specifier: 'catalog:'
-        version: 4.1.7(msw@2.14.6(@types/node@24.12.4)(typescript@6.0.3))(playwright@1.60.0)(vite@8.0.14(@types/node@24.12.4)(esbuild@0.28.0)(tsx@4.22.3)(yaml@2.9.0))(vitest@4.1.7)
-      vite:
-        specifier: 'catalog:'
-        version: 8.0.14(@types/node@24.12.4)(esbuild@0.28.0)(tsx@4.22.3)(yaml@2.9.0)
-      vitest-browser-react:
-        specifier: 'catalog:'
-        version: 2.2.0(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vitest@4.1.7)
 
   packages/winston:
     dependencies:
