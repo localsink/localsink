@@ -13,7 +13,7 @@ runs:
         path: |
           ${{ steps.pnpm-store.outputs.path }}
           ~/.cache/ms-playwright
-        key: ${{ runner.os }}-dependencies-${{ hashFiles('**/pnpm-lock.yaml') }}
+        key: node-cache-${{ runner.os }}-${{ runner.arch }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
     - run: pnpm install --frozen-lockfile
       shell: bash
     - run: pnpm exec playwright install chromium-headless-shell
