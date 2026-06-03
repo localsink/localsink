@@ -1,18 +1,13 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": [
+    "@tsconfig/strictest/tsconfig.json",
+    "@tsconfig/vite-react/tsconfig.json"
+  ],
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "react-jsx",
-    "types": ["vitest/globals", "vite/client"],
     "rootDir": "./src",
     "outDir": "out-tsc/spec",
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": false,
-    "moduleDetection": "force"
+    "tsBuildInfoFile": "out-tsc/tsconfig.spec.tsbuildinfo",
+    "types": ["vitest/globals", "vite/client"]
   },
   "include": ["src/**/*.spec.ts", "src/**/*.spec.tsx"],
   "references": [{ "path": "./tsconfig.lib.json" }]
