@@ -1,0 +1,21 @@
+name: Install dependencies
+description: Restore the cached pnpm store and playwright
+
+runs:
+  using: composite
+  steps:
+    - run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+      id: pnpm-store
+      shell: bash
+    - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      id: dependencies-cache
+      with:
+        path: |
+          ${{ steps.pnpm-store.outputs.path }}
+          ~/.cache/ms-playwright
+        key: node-cache-${{ runner.os }}-${{ runner.arch }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+    - run: pnpm install --frozen-lockfile
+      shell: bash
+    - run: pnpm exec playwright install chromium-headless-shell
+      if: steps.dependencies-cache.outputs.cache-hit != 'true'
+      shell: bash
