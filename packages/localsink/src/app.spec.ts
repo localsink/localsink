@@ -118,6 +118,36 @@ describe('GET /api/logs', () => {
       });
     });
 
+    it('returns 400 when both after_id and cursor are provided', async () => {
+      const { app } = await createTestApp();
+      const res = await app.request('/api/logs?after_id=5&cursor=1000:1');
+      expect(res.status).toBe(400);
+      await expect(res.json()).resolves.toMatchObject({
+        error: 'Invalid request.',
+        issues: expect.arrayContaining([
+          expect.objectContaining({
+            message: 'Cannot use both after_id and cursor.',
+          }),
+        ]),
+      });
+    });
+
+    it('returns logs with id > after_id ordered ASC', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog({ ...minimalPayload, message: 'first' });
+      await db.createLog({ ...minimalPayload, message: 'second' });
+      await db.createLog({ ...minimalPayload, message: 'third' });
+      const { data: all } = await db.findLogs({ limit: 50 });
+      const second = all.find((r) => r.message === 'second');
+      if (!second) throw new Error('expected second row');
+      const res = await app.request(`/api/logs?after_id=${String(second.id)}`);
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toMatchObject({
+        data: [expect.objectContaining({ message: 'third' })],
+        next_cursor: null,
+      });
+    });
+
     it('returns 400 when cursor has an invalid format', async () => {
       const { app } = await createTestApp();
       const res = await app.request('/api/logs?cursor=not-a-cursor');

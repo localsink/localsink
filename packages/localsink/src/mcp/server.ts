@@ -28,7 +28,7 @@ export function createMcpServer(database: Database): McpServer {
     'search_logs',
     {
       description:
-        'Search logs with optional filters; all params AND-ed together. Returns up to `limit` logs newest first, plus `next_cursor` for the next page. `q` runs FTS5 free-text search on message (supports prefix `err*`, phrase `"foo bar"`, boolean `AND/OR/NOT`). Discover valid `service_name`, `level`, and `logger` values via describe_logs. `cursor` and `offset` are mutually exclusive — calling with both returns an error.',
+        'Search logs with optional filters; all params AND-ed together. Default mode returns up to `limit` logs newest first plus `next_cursor` for the next page (back in time). Pass `after_id` to switch to forward-polling mode: returns matching logs with `id > after_id` ordered by id ASC (oldest first), `next_cursor` is always null, and the client uses `data.at(-1).id` as the next high-water mark. `q` runs FTS5 free-text search on message (supports prefix `err*`, phrase `"foo bar"`, boolean `AND/OR/NOT`). Discover valid `service_name`, `level`, and `logger` values via describe_logs. `cursor`, `offset`, and `after_id` are pairwise mutually exclusive — calling with any two returns an error.',
       inputSchema: logsQuerySchema,
     },
     async (input) => {

@@ -263,6 +263,152 @@ describe('makeDatabase', () => {
           }),
         ).rejects.toBeInstanceOf(InvalidQueryError);
       });
+
+      describe('after_id', () => {
+        it('returns only rows with id greater than after_id, ordered ASC', async () => {
+          const db = await createDb();
+          await db.createLog({ ...minimalLog, message: 'a' });
+          await db.createLog({ ...minimalLog, message: 'b' });
+          await db.createLog({ ...minimalLog, message: 'c' });
+          // findLogs default is DESC; pick the middle row
+          const { data: all } = await db.findLogs({ limit: 50 });
+          const b = all.find((r) => r.message === 'b');
+          if (!b) throw new Error('expected row b');
+          const { data, next_cursor } = await db.findLogs({
+            limit: 50,
+            after_id: b.id,
+          });
+          expect(data).toHaveLength(1);
+          expect(data[0]?.message).toBe('c');
+          expect(data[0]?.id).toBeGreaterThan(b.id);
+          expect(next_cursor).toBeNull();
+        });
+
+        it('returns empty when after_id is at or past the latest id', async () => {
+          const db = await createDb();
+          await db.createLog({ ...minimalLog, message: 'only' });
+          const { data: all } = await db.findLogs({ limit: 50 });
+          const only = all[0];
+          if (!only) throw new Error('expected a row');
+          const { data } = await db.findLogs({ limit: 50, after_id: only.id });
+          expect(data).toHaveLength(0);
+        });
+
+        it('respects limit and returns next_cursor null (client uses last row id)', async () => {
+          const db = await createDb();
+          await db.createLog({ ...minimalLog, message: 'seed' });
+          for (let i = 0; i < 5; i++) {
+            await db.createLog({ ...minimalLog, message: `new-${String(i)}` });
+          }
+          const { data: all } = await db.findLogs({ limit: 50 });
+          const seed = all.find((r) => r.message === 'seed');
+          if (!seed) throw new Error('expected seed row');
+          const { data, next_cursor } = await db.findLogs({
+            limit: 3,
+            after_id: seed.id,
+          });
+          expect(data).toHaveLength(3);
+          expect(next_cursor).toBeNull();
+          const ids = data.map((r) => r.id);
+          expect(ids).toEqual(ids.toSorted((a, b) => a - b));
+        });
+
+        it('respects active filters alongside after_id', async () => {
+          const db = await createDb();
+          await db.createLog({
+            ...minimalLog,
+            service_name: 'auth',
+            message: 'seed',
+          });
+          await db.createLog({
+            ...minimalLog,
+            service_name: 'auth',
+            message: 'auth-new',
+          });
+          await db.createLog({
+            ...minimalLog,
+            service_name: 'payments',
+            message: 'payments-new',
+          });
+          const { data: all } = await db.findLogs({ limit: 50 });
+          const seed = all.find((r) => r.message === 'seed');
+          if (!seed) throw new Error('expected seed row');
+          const { data } = await db.findLogs({
+            limit: 50,
+            after_id: seed.id,
+            service_name: 'auth',
+          });
+          expect(data).toHaveLength(1);
+          expect(data[0]?.message).toBe('auth-new');
+        });
+
+        it('throws InvalidQueryError when combined with cursor', async () => {
+          const db = await createDb();
+          await expect(
+            db.findLogs({ limit: 2, after_id: 0, cursor: '1000:1' }),
+          ).rejects.toBeInstanceOf(InvalidQueryError);
+        });
+
+        it('throws InvalidQueryError when combined with offset', async () => {
+          const db = await createDb();
+          await expect(
+            db.findLogs({ limit: 2, after_id: 0, offset: 0 }),
+          ).rejects.toBeInstanceOf(InvalidQueryError);
+        });
+
+        it('after_id=0 returns all rows from the beginning, ordered ASC', async () => {
+          const db = await createDb();
+          await db.createLog({ ...minimalLog, message: 'a' });
+          await db.createLog({ ...minimalLog, message: 'b' });
+          await db.createLog({ ...minimalLog, message: 'c' });
+          const { data } = await db.findLogs({ limit: 50, after_id: 0 });
+          expect(data.map((r) => r.message)).toEqual(['a', 'b', 'c']);
+        });
+
+        it('chained polling catches up without gaps or duplicates', async () => {
+          const db = await createDb();
+          for (let i = 1; i <= 5; i++) {
+            await db.createLog({ ...minimalLog, message: `m-${String(i)}` });
+          }
+          const page1 = await db.findLogs({ limit: 2, after_id: 0 });
+          expect(page1.data.map((r) => r.message)).toEqual(['m-1', 'm-2']);
+
+          const last1 = page1.data.at(-1);
+          if (!last1) throw new Error('expected page1 to have rows');
+          const page2 = await db.findLogs({ limit: 2, after_id: last1.id });
+          expect(page2.data.map((r) => r.message)).toEqual(['m-3', 'm-4']);
+
+          const last2 = page2.data.at(-1);
+          if (!last2) throw new Error('expected page2 to have rows');
+          const page3 = await db.findLogs({ limit: 2, after_id: last2.id });
+          expect(page3.data.map((r) => r.message)).toEqual(['m-5']);
+
+          const last3 = page3.data.at(-1);
+          if (!last3) throw new Error('expected page3 to have rows');
+          const page4 = await db.findLogs({ limit: 2, after_id: last3.id });
+          expect(page4.data).toHaveLength(0);
+        });
+
+        it('respects q (FTS5) alongside after_id', async () => {
+          const db = await createDb();
+          await db.createLog({ ...minimalLog, message: 'seed payment' });
+          await db.createLog({ ...minimalLog, message: 'payment failed' });
+          await db.createLog({ ...minimalLog, message: 'user signed in' });
+          await db.createLog({ ...minimalLog, message: 'payment retried' });
+          const { data: all } = await db.findLogs({ limit: 50 });
+          const seed = all.find((r) => r.message === 'seed payment');
+          if (!seed) throw new Error('expected seed row');
+          const { data } = await db.findLogs({
+            limit: 50,
+            after_id: seed.id,
+            q: 'payment',
+          });
+          expect(data.map((r) => r.message)).toEqual([
+            'payment failed',
+            'payment retried',
+          ]);
+        });
+      });
     });
   });
 
