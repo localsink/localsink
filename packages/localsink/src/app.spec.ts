@@ -118,6 +118,13 @@ describe('GET /api/logs', () => {
       });
     });
 
+    it('returns 400 when after_id is empty (does not silently switch to forward-polling mode)', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog({ ...minimalPayload, message: 'a' });
+      const res = await app.request('/api/logs?after_id=');
+      expect(res.status).toBe(400);
+    });
+
     it('returns 400 when both after_id and cursor are provided', async () => {
       const { app } = await createTestApp();
       const res = await app.request('/api/logs?after_id=5&cursor=1000:1');

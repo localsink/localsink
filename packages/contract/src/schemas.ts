@@ -106,10 +106,11 @@ export const logsQuerySchema = z
         description: 'Pagination offset. Mutually exclusive with cursor.',
       })
       .optional(),
-    after_id: z.coerce
-      .number()
-      .int()
-      .min(0)
+    after_id: z
+      .preprocess(
+        (val) => (val === null || val === '' ? undefined : val),
+        z.coerce.number().int().min(0),
+      )
       .meta({
         description:
           'Return only logs with id greater than this value, ordered by id ASC. Used for polling new logs since a known high-water mark. Mutually exclusive with cursor and offset.',
