@@ -8,16 +8,19 @@
     "url": "https://github.com/localsink/localsink"
   },
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsgo -b .",
+    "build": "tsdown",
+    "typecheck": "tsgo -b .",
     "lint": "oxlint .",
     "test": "vitest run"
   },

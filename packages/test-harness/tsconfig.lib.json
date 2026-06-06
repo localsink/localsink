@@ -5,10 +5,13 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "outDir": "dist",
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "outDir": "out-tsc/lib",
+    "tsBuildInfoFile": "out-tsc/tsconfig.lib.tsbuildinfo",
     "types": ["node", "vitest/globals"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["vitest.config.ts", "src/**/*.spec.ts"],
+  "exclude": ["vitest.config.ts", "tsdown.config.ts", "src/**/*.spec.ts"],
   "references": [{ "path": "../localsink/tsconfig.lib.json" }]
 }

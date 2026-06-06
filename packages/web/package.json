@@ -9,7 +9,8 @@
   },
   "type": "module",
   "scripts": {
-    "build": "tsgo -b . && vite build",
+    "build": "vite build",
+    "typecheck": "tsgo -b .",
     "dev": "vite",
     "lint": "oxlint .",
     "preview": "vite preview",

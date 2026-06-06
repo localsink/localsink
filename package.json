@@ -4,6 +4,7 @@
   "license": "BUSL-1.1",
   "type": "module",
   "scripts": {
+    "typecheck:all": "pnpm --recursive typecheck",
     "build:all": "pnpm --recursive build",
     "test:all": "pnpm --recursive test",
     "integration:all": "pnpm --recursive integration",
@@ -35,6 +36,7 @@
     "oxlint-tsgolint": "catalog:",
     "playwright": "catalog:",
     "tailwindcss": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:",
