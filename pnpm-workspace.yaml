@@ -17,6 +17,7 @@ catalog:
   '@hono/zod-validator': ^0.8.0
   '@libsql/client': ^0.17.3
   '@modelcontextprotocol/sdk': ^1.29.0
+  '@rolldown/plugin-babel': 0.2.3
   '@tsconfig/node-ts': 23.6.4
   '@tsconfig/node24': 24.0.4
   '@tsconfig/strictest': 2.0.8
@@ -27,9 +28,11 @@ catalog:
   '@typescript/native-preview': beta
   '@vitejs/plugin-react': 6.0.2
   '@vitest/browser-playwright': 4.1.7
+  babel-plugin-react-compiler: 1.0.0
   drizzle-kit: 0.31.10
   drizzle-orm: ^0.45.2
   drizzle-zod: ^0.8.3
+  eslint-plugin-react-hooks: 7.1.1
   hono: ^4.12.23
   husky: 9.1.7
   lint-staged: 17.0.6

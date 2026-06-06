@@ -14,6 +14,7 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@rolldown/plugin-babel": "catalog:",
     "@tsconfig/node-ts": "catalog:",
     "@tsconfig/node24": "catalog:",
     "@tsconfig/strictest": "catalog:",
@@ -22,7 +23,9 @@
     "@typescript/native-preview": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/browser-playwright": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
     "drizzle-kit": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
     "husky": "catalog:",
     "lint-staged": "catalog:",
     "msw": "catalog:",
