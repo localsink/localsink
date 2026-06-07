@@ -7,8 +7,6 @@ allowBuilds:
   msw: false
   playwright: false
 
-bail: false
-
 blockExoticSubdeps: true
 
 catalog:
