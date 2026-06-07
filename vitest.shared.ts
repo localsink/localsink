@@ -1,3 +1,4 @@
+import { defaultClientConditions, defaultServerConditions } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 export const SPEC_GLOB = ['src/**/*.spec.ts', 'src/**/*.spec.tsx'];
@@ -8,11 +9,11 @@ export const INTEGRATION_GLOB = [
 
 export default defineConfig({
   resolve: {
-    conditions: ['@localsink/source'],
+    conditions: ['@localsink/source', ...defaultClientConditions],
   },
   ssr: {
     resolve: {
-      conditions: ['@localsink/source'],
+      conditions: ['@localsink/source', ...defaultServerConditions],
     },
   },
   test: {

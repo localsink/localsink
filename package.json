@@ -8,7 +8,7 @@
     "build:all": "pnpm --recursive --no-bail build",
     "test:all": "pnpm --recursive --no-bail test",
     "integration:all": "pnpm --recursive --no-bail integration",
-    "lint": "oxlint oxfmt.config.ts oxlint.config.ts lint-staged.config.ts vitest.config.ts vitest.shared.ts",
+    "lint": "oxlint oxfmt.config.ts oxlint.config.ts lint-staged.config.ts vitest.config.ts vitest.shared.ts tsdown.base.ts",
     "lint:all": "pnpm --recursive --no-bail --include-workspace-root lint",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",

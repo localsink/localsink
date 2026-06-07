@@ -10,22 +10,11 @@
   },
   "type": "module",
   "sideEffects": false,
-  "types": "./dist/index.d.mts",
   "exports": {
-    ".": {
-      "@localsink/source": "./src/index.ts",
-      "default": "./dist/index.mjs"
-    },
+    ".": "./src/index.ts",
     "./package.json": "./package.json"
   },
-  "publishConfig": {
-    "exports": {
-      ".": "./dist/index.mjs",
-      "./package.json": "./package.json"
-    }
-  },
   "scripts": {
-    "build": "tsdown",
     "typecheck": "tsgo -b .",
     "lint": "oxlint .",
     "test": "vitest run"

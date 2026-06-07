@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git+https://github.com/localsink/localsink.git"
   },
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "sideEffects": false,
   "types": "./dist/index.d.mts",

@@ -5,6 +5,10 @@ export function libConfig(overrides: UserConfig = {}): UserConfig {
     exports: {
       devExports: '@localsink/source',
     },
+    tsconfig: 'tsconfig.lib.json',
+    dts: {
+      tsgo: true,
+    },
     publint: true,
     attw: {
       profile: 'esm-only',
