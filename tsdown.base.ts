@@ -5,7 +5,6 @@ export function libConfig(overrides: UserConfig = {}): UserConfig {
     exports: {
       devExports: '@localsink/source',
     },
-    dts: { build: true },
     publint: true,
     attw: {
       profile: 'esm-only',
