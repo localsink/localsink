@@ -3,12 +3,16 @@ import type { UserConfig } from 'tsdown';
 export function libConfig(overrides: UserConfig = {}): UserConfig {
   return {
     entry: ['src/index.ts'],
-    format: ['esm', 'cjs'],
+    format: ['esm'],
     platform: 'node',
-    dts: { cjsReexport: true },
     exports: true,
-    publint: 'ci-only',
-    attw: { enabled: 'ci-only', profile: 'node16' },
+    publint: true,
+    attw: {
+      enabled: true,
+      profile: 'node16',
+      ignoreRules: ['cjs-resolves-to-esm'],
+    },
+    failOnWarn: true,
     clean: true,
     ...overrides,
   };
