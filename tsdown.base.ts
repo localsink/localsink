@@ -2,7 +2,10 @@ import type { UserConfig } from 'tsdown';
 
 export function libConfig(overrides: UserConfig = {}): UserConfig {
   return {
-    exports: true,
+    exports: {
+      devExports: '@localsink/source',
+    },
+    dts: { build: true },
     publint: true,
     attw: {
       profile: 'esm-only',

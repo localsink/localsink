@@ -7,6 +7,14 @@ export const INTEGRATION_GLOB = [
 ];
 
 export default defineConfig({
+  resolve: {
+    conditions: ['@localsink/source'],
+  },
+  ssr: {
+    resolve: {
+      conditions: ['@localsink/source'],
+    },
+  },
   test: {
     globals: true,
     pool: 'threads',
