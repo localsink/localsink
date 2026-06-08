@@ -4,6 +4,7 @@ import {
   count,
   desc,
   eq,
+  gt,
   gte,
   isNotNull,
   lt,
@@ -45,6 +46,12 @@ export function makeDatabase(db: DrizzleClient) {
     if (filter.cursor !== undefined && filter.offset !== undefined) {
       throw new InvalidQueryError('Cannot use both cursor and offset.');
     }
+    if (filter.after_id !== undefined && filter.cursor !== undefined) {
+      throw new InvalidQueryError('Cannot use both after_id and cursor.');
+    }
+    if (filter.after_id !== undefined && filter.offset !== undefined) {
+      throw new InvalidQueryError('Cannot use both after_id and offset.');
+    }
 
     const cursor =
       filter.cursor !== undefined ? decodeCursor(filter.cursor) : undefined;
@@ -69,6 +76,9 @@ export function makeDatabase(db: DrizzleClient) {
       filter.q !== undefined
         ? sql`${logsTable.id} IN (SELECT rowid FROM logs_fts WHERE logs_fts MATCH ${filter.q})`
         : undefined,
+      filter.after_id !== undefined
+        ? gt(logsTable.id, filter.after_id)
+        : undefined,
       cursor !== undefined
         ? or(
             lt(logsTable.timestamp, cursor.timestamp),
@@ -80,11 +90,16 @@ export function makeDatabase(db: DrizzleClient) {
         : undefined,
     ].filter((c): c is NonNullable<typeof c> => c !== undefined);
 
+    const ordering =
+      filter.after_id !== undefined
+        ? [asc(logsTable.id)]
+        : [desc(logsTable.timestamp), desc(logsTable.id)];
+
     let query = db
       .select()
       .from(logsTable)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(logsTable.timestamp), desc(logsTable.id))
+      .orderBy(...ordering)
       .limit(filter.limit + 1)
       .$dynamic();
 
@@ -107,9 +122,12 @@ export function makeDatabase(db: DrizzleClient) {
     const hasNextPage = rows.length > filter.limit;
     const data = hasNextPage ? rows.slice(0, filter.limit) : rows;
     const last = data.at(-1);
+    // after_id mode: client derives the next watermark from data.at(-1).id
     const next_cursor =
-      hasNextPage && last !== undefined ? encodeCursor(last) : null;
-    return { data, next_cursor };
+      filter.after_id === undefined && hasNextPage && last !== undefined
+        ? encodeCursor(last)
+        : null;
+    return { data, next_cursor, has_more: hasNextPage };
   }
 
   async function getMeta(): Promise<LogMeta> {
