@@ -303,12 +303,13 @@ describe('makeDatabase', () => {
           const { data: all } = await db.findLogs({ limit: 50 });
           const seed = all.find((r) => r.message === 'seed');
           if (!seed) throw new Error('expected seed row');
-          const { data, next_cursor } = await db.findLogs({
+          const { data, next_cursor, has_more } = await db.findLogs({
             limit: 3,
             after_id: seed.id,
           });
           expect(data).toHaveLength(3);
           expect(next_cursor).toBeNull();
+          expect(has_more).toBe(true);
           const ids = data.map((r) => r.id);
           expect(ids).toEqual(ids.toSorted((a, b) => a - b));
         });

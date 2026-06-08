@@ -108,7 +108,7 @@ export const logsQuerySchema = z
       .optional(),
     after_id: z
       .preprocess(
-        (val) => (val === null || val === '' ? undefined : val),
+        (val) => (val === '' ? undefined : val),
         z.coerce.number().int().min(0),
       )
       .meta({
@@ -165,6 +165,7 @@ export type LogRow = z.infer<typeof logRowSchema>;
 export const logPageSchema = z.object({
   data: z.array(logRowSchema),
   next_cursor: z.string().nullable(),
+  has_more: z.boolean(),
 });
 
 export type LogPage = z.infer<typeof logPageSchema>;

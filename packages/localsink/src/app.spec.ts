@@ -24,7 +24,11 @@ describe('GET /api/logs', () => {
     const { app } = await createTestApp();
     const res = await app.request('/api/logs');
     expect(res.status).toBe(200);
-    await expect(res.json()).resolves.toEqual({ data: [], next_cursor: null });
+    await expect(res.json()).resolves.toEqual({
+      data: [],
+      next_cursor: null,
+      has_more: false,
+    });
   });
 
   it('returns 200 with envelope when rows exist, ordered timestamp DESC id DESC', async () => {
@@ -119,8 +123,7 @@ describe('GET /api/logs', () => {
     });
 
     it('returns 400 when after_id is empty (does not silently switch to forward-polling mode)', async () => {
-      const { app, db } = await createTestApp();
-      await db.createLog({ ...minimalPayload, message: 'a' });
+      const { app } = await createTestApp();
       const res = await app.request('/api/logs?after_id=');
       expect(res.status).toBe(400);
     });

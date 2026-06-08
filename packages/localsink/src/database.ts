@@ -127,7 +127,7 @@ export function makeDatabase(db: DrizzleClient) {
       filter.after_id === undefined && hasNextPage && last !== undefined
         ? encodeCursor(last)
         : null;
-    return { data, next_cursor };
+    return { data, next_cursor, has_more: hasNextPage };
   }
 
   async function getMeta(): Promise<LogMeta> {

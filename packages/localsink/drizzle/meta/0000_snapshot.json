@@ -118,6 +118,30 @@
             "logger"
           ],
           "isUnique": false
+        },
+        "idx_logs_service_name_id": {
+          "name": "idx_logs_service_name_id",
+          "columns": [
+            "service_name",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "idx_logs_level_id": {
+          "name": "idx_logs_level_id",
+          "columns": [
+            "level",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "idx_logs_logger_id": {
+          "name": "idx_logs_logger_id",
+          "columns": [
+            "logger",
+            "id"
+          ],
+          "isUnique": false
         }
       },
       "foreignKeys": {},

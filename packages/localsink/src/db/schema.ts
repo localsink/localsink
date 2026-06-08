@@ -25,5 +25,8 @@ export const logsTable = sqliteTable(
     index('idx_logs_level').on(t.level, t.timestamp, t.id),
     index('idx_logs_trace_id').on(t.trace_id),
     index('idx_logs_logger').on(t.logger),
+    index('idx_logs_service_name_id').on(t.service_name, t.id),
+    index('idx_logs_level_id').on(t.level, t.id),
+    index('idx_logs_logger_id').on(t.logger, t.id),
   ],
 );
