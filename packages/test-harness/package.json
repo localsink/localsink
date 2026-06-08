@@ -1,24 +1,34 @@
 {
   "name": "@localsink/test-harness",
   "version": "0.0.0",
-  "private": true,
-  "description": "Private in-process server + DB harness for transport integration tests.",
+  "description": "In-process server + DB harness for transport integration tests.",
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/localsink/localsink"
+    "url": "git+https://github.com/localsink/localsink.git"
   },
+  "files": [
+    "dist"
+  ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "@localsink/source": "./src/index.ts",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./package.json": "./package.json"
     }
   },
   "scripts": {
-    "build": "tsgo -b .",
+    "build": "tsdown",
+    "typecheck": "tsgo -b .",
     "lint": "oxlint .",
     "test": "vitest run"
   },
@@ -27,5 +37,8 @@
     "@libsql/client": "catalog:",
     "drizzle-orm": "catalog:",
     "localsink": "workspace:*"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

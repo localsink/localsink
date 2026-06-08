@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsgo -b .",
+    "typecheck": "tsgo -b .",
     "lint": "oxlint .",
     "test": "vitest run"
   }

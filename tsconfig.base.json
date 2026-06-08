@@ -4,5 +4,8 @@
     "@tsconfig/strictest/tsconfig.json",
     "@tsconfig/node-ts/tsconfig.json"
   ],
-  "compilerOptions": { "types": ["node"] }
+  "compilerOptions": {
+    "types": ["node"],
+    "customConditions": ["@localsink/source"]
+  }
 }

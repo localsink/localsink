@@ -4,16 +4,20 @@
   "license": "BUSL-1.1",
   "type": "module",
   "scripts": {
-    "build:all": "pnpm --recursive build",
-    "test:all": "pnpm --recursive test",
-    "integration:all": "pnpm --recursive integration",
-    "lint": "oxlint oxfmt.config.ts oxlint.config.ts lint-staged.config.ts vitest.config.ts vitest.shared.ts",
-    "lint:all": "pnpm --recursive --include-workspace-root lint",
+    "typecheck:all": "pnpm --recursive --no-bail typecheck",
+    "build:all": "pnpm --recursive --no-bail build",
+    "test:all": "pnpm --recursive --no-bail test",
+    "integration:all": "pnpm --recursive --no-bail integration",
+    "lint": "oxlint oxfmt.config.ts oxlint.config.ts lint-staged.config.ts vitest.config.ts vitest.shared.ts tsdown.base.ts",
+    "lint:all": "pnpm --recursive --no-bail --include-workspace-root lint",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
     "prepare": "husky"
   },
   "devDependencies": {
+    "@arethetypeswrong/core": "catalog:",
+    "@rolldown/plugin-babel": "catalog:",
+    "@tailwindcss/vite": "catalog:",
     "@tsconfig/node-ts": "catalog:",
     "@tsconfig/node24": "catalog:",
     "@tsconfig/strictest": "catalog:",
@@ -22,7 +26,9 @@
     "@typescript/native-preview": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/browser-playwright": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
     "drizzle-kit": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
     "husky": "catalog:",
     "lint-staged": "catalog:",
     "msw": "catalog:",
@@ -30,6 +36,9 @@
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "playwright": "catalog:",
+    "publint": "catalog:",
+    "tailwindcss": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:",
@@ -37,7 +46,7 @@
   },
   "engines": {
     "node": "24.16.0",
-    "pnpm": "11.5.0"
+    "pnpm": "11.5.2"
   },
-  "packageManager": "pnpm@11.5.0+sha512.dbfcc4f81cf48597afd4bc391ffdf12c11f1a9fb83a395bfa6b0a2d9cc2fd8ffebafdb1ccbd529632153f793904c2615b7f09fe1a345473fd1c35845172a8eb1"
+  "packageManager": "pnpm@11.5.2+sha512.71c631e382066efc25625d5cf029075de07b61b37f6e27350fbd84b1bda5864c8c1967adc280776b45c30a715c0359a3be08fef42d5bb09e2b99029979692916"
 }

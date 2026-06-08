@@ -5,9 +5,11 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "outDir": "dist"
+    "emitDeclarationOnly": true,
+    "outDir": "out-tsc/lib",
+    "tsBuildInfoFile": "out-tsc/tsconfig.lib.tsbuildinfo"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["vitest.config.ts", "src/**/*.spec.ts"],
+  "exclude": ["vitest.config.ts", "tsdown.config.ts", "src/**/*.spec.ts"],
   "references": []
 }
