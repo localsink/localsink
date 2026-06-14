@@ -147,6 +147,46 @@ describe('@localsink/pino → server → DB', () => {
     }
   });
 
+  it('preserves mixed-type attributes through FTS end-to-end', async () => {
+    const { url, db } = await startTestServer();
+
+    const transport = buildTransport({ serviceName: 'test-service', url });
+    const logger = pino(transport);
+
+    // Mixed JSON shapes pinned to a single log so we can assert every shape
+    // round-trips through pino's serializer → server → trigger → FTS.
+    logger.info(
+      {
+        active: true,
+        retryable: false,
+        count: 42,
+        user: { name: 'aliceUnique' },
+        tags: ['priorityUnique', 'urgentUnique'],
+      },
+      'mixed types',
+    );
+
+    await endTransport(transport);
+
+    await vi.waitFor(async () => {
+      const rows = await db.findLogs({ limit: 500 }).then((p) => p.data);
+      expect(rows).toHaveLength(1);
+    });
+
+    for (const q of [
+      'active',
+      'true',
+      'false',
+      '42',
+      'aliceUnique',
+      'priorityUnique',
+      'urgentUnique',
+    ]) {
+      const { data } = await db.findLogs({ limit: 50, q });
+      expect(data, `expected hit for q=${q}`).toHaveLength(1);
+    }
+  });
+
   it('persists multiple logs from one transport', async () => {
     const { url, db } = await startTestServer();
 

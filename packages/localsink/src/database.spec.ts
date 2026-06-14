@@ -636,6 +636,20 @@ describe('makeDatabase', () => {
       expect(data).toHaveLength(1);
     });
 
+    it('matches boolean attribute keys and values', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        attributes: { active: true, retryable: false },
+      });
+      const activeKey = await db.findLogs({ limit: 50, q: 'active' });
+      expect(activeKey.data).toHaveLength(1);
+      const activeVal = await db.findLogs({ limit: 50, q: 'true' });
+      expect(activeVal.data).toHaveLength(1);
+      const retryableVal = await db.findLogs({ limit: 50, q: 'false' });
+      expect(retryableVal.data).toHaveLength(1);
+    });
+
     it('does not index numeric array indices as tokens', async () => {
       const db = await createDb();
       await db.createLog({
