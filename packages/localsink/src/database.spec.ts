@@ -636,6 +636,16 @@ describe('makeDatabase', () => {
       expect(data).toHaveLength(1);
     });
 
+    it('does not index numeric array indices as tokens', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        attributes: { tags: ['error', 'auth'] },
+      });
+      const { data } = await db.findLogs({ limit: 50, q: '0' });
+      expect(data).toHaveLength(0);
+    });
+
     it('treats null error and attributes as empty (no false positives, no crash)', async () => {
       const db = await createDb();
       await db.createLog({ ...minimalLog, message: 'plain' });

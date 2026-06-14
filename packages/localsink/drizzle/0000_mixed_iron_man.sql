@@ -31,18 +31,22 @@ CREATE TRIGGER logs_ai AFTER INSERT ON logs BEGIN
   VALUES (
     new.id,
     new.message,
-    COALESCE((
-      SELECT GROUP_CONCAT(value, ' ')
-      FROM json_tree(new.error)
-      WHERE type IN ('text', 'integer', 'real')
-    ), ''),
-    COALESCE((
-      SELECT GROUP_CONCAT(
-        CASE WHEN key IS NOT NULL THEN key || ' ' ELSE '' END || value,
-        ' '
-      )
-      FROM json_tree(new.attributes)
-      WHERE type IN ('text', 'integer', 'real')
-    ), '')
+    CASE WHEN json_valid(new.error) THEN
+      COALESCE((
+        SELECT GROUP_CONCAT(value, ' ')
+        FROM json_tree(new.error)
+        WHERE type IN ('text', 'integer', 'real')
+      ), '')
+    ELSE '' END,
+    CASE WHEN json_valid(new.attributes) THEN
+      COALESCE((
+        SELECT GROUP_CONCAT(
+          CASE WHEN typeof(key) = 'text' THEN key || ' ' ELSE '' END || value,
+          ' '
+        )
+        FROM json_tree(new.attributes)
+        WHERE type IN ('text', 'integer', 'real')
+      ), '')
+    ELSE '' END
   );
 END;
