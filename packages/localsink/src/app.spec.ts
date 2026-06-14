@@ -193,6 +193,48 @@ describe('GET /api/logs', () => {
       });
     });
 
+    it('finds matches in error fields via q', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog({
+        ...minimalPayload,
+        message: 'request finished',
+        error: { message: 'connection timeout', type: 'TimeoutError' },
+      });
+      await db.createLog({ ...minimalPayload, message: 'request finished' });
+      const res = await app.request('/api/logs?q=TimeoutError');
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toMatchObject({
+        data: [
+          expect.objectContaining({
+            error: expect.objectContaining({ type: 'TimeoutError' }),
+          }),
+        ],
+      });
+    });
+
+    it('finds matches in nested attributes via q', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog({
+        ...minimalPayload,
+        message: 'processed order',
+        attributes: { user: { name: 'alice', region: 'us-east' } },
+      });
+      await db.createLog({
+        ...minimalPayload,
+        message: 'processed order',
+        attributes: { user: { name: 'bob' } },
+      });
+      const res = await app.request('/api/logs?q=alice');
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toMatchObject({
+        data: [
+          expect.objectContaining({
+            attributes: { user: { name: 'alice', region: 'us-east' } },
+          }),
+        ],
+      });
+    });
+
     it('ANDs q with other filters', async () => {
       const { app, db } = await createTestApp();
       await db.createLog({

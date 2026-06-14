@@ -78,7 +78,7 @@ export const logsQuerySchema = z
       .min(1)
       .meta({
         description:
-          'FTS5 free-text query on message. Supports prefix queries like "err*", phrases like "\\"failed connection\\"", and boolean operators like "AND/OR/NOT". Malformed queries return 400.',
+          'FTS5 free-text query across message, error, and attributes (recursive over nested JSON; attribute keys are searchable too). Supports prefix queries like "err*", phrases like "\\"failed connection\\"", boolean operators "AND/OR/NOT", and column scoping like "error_text:timeout", "attributes_text:user_id", or "message:login". Malformed queries return 400.',
       })
       .optional(),
     limit: z.coerce

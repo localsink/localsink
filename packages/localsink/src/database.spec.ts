@@ -554,6 +554,123 @@ describe('makeDatabase', () => {
         db.findLogs({ limit: 50, q: 'foo"bar' }),
       ).rejects.toBeInstanceOf(InvalidQueryError);
     });
+
+    it('matches a token in error.message', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        error: { message: 'connection timeout' },
+      });
+      await db.createLog({ ...minimalLog, message: 'unrelated' });
+      const { data } = await db.findLogs({ limit: 50, q: 'timeout' });
+      expect(data).toHaveLength(1);
+      expect(data[0]?.error?.message).toBe('connection timeout');
+    });
+
+    it('matches a token in error.stack', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        error: {
+          message: 'boom',
+          stack:
+            'Error: boom\n    at handlePayment (/app/payments.ts:42:7)\n    at processOrder (/app/orders.ts:13:3)',
+        },
+      });
+      const { data } = await db.findLogs({ limit: 50, q: 'handlePayment' });
+      expect(data).toHaveLength(1);
+    });
+
+    it('matches a token in an arbitrary error key (looseObject)', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        error: { message: 'failed', cause: 'upstreamBigqueryQuota' },
+      });
+      const { data } = await db.findLogs({
+        limit: 50,
+        q: 'upstreamBigqueryQuota',
+      });
+      expect(data).toHaveLength(1);
+    });
+
+    it('matches a top-level attribute value', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        attributes: { user_id: 'alice' },
+      });
+      await db.createLog({ ...minimalLog, attributes: { user_id: 'bob' } });
+      const { data } = await db.findLogs({ limit: 50, q: 'alice' });
+      expect(data).toHaveLength(1);
+      expect(data[0]?.attributes).toEqual({ user_id: 'alice' });
+    });
+
+    it('matches a nested attribute value (recursive json_tree)', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        attributes: { user: { name: 'alice', role: 'admin' } },
+      });
+      const { data } = await db.findLogs({ limit: 50, q: 'alice' });
+      expect(data).toHaveLength(1);
+    });
+
+    it('matches an attribute key', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        attributes: { order_id: 'ord-123' },
+      });
+      const { data } = await db.findLogs({ limit: 50, q: 'order_id' });
+      expect(data).toHaveLength(1);
+    });
+
+    it('matches a numeric attribute value', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        attributes: { user_id: 42 },
+      });
+      const { data } = await db.findLogs({ limit: 50, q: '42' });
+      expect(data).toHaveLength(1);
+    });
+
+    it('treats null error and attributes as empty (no false positives, no crash)', async () => {
+      const db = await createDb();
+      await db.createLog({ ...minimalLog, message: 'plain' });
+      // null is a valid input — the trigger must not blow up and must not match anything.
+      const empty = await db.findLogs({ limit: 50, q: 'nonexistent' });
+      expect(empty.data).toEqual([]);
+      const hit = await db.findLogs({ limit: 50, q: 'plain' });
+      expect(hit.data).toHaveLength(1);
+    });
+
+    it('supports column-scoped queries', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        message: 'timeout while saving',
+      });
+      await db.createLog({
+        ...minimalLog,
+        message: 'saved ok',
+        error: { message: 'timeout while flushing' },
+      });
+      const errorScoped = await db.findLogs({
+        limit: 50,
+        q: 'error_text:timeout',
+      });
+      expect(errorScoped.data).toHaveLength(1);
+      expect(errorScoped.data[0]?.message).toBe('saved ok');
+
+      const messageScoped = await db.findLogs({
+        limit: 50,
+        q: 'message:timeout',
+      });
+      expect(messageScoped.data).toHaveLength(1);
+      expect(messageScoped.data[0]?.message).toBe('timeout while saving');
+    });
   });
 
   describe('FTS5 INSERT trigger sync', () => {
@@ -562,6 +679,25 @@ describe('makeDatabase', () => {
       await db.createLog({ ...minimalLog, message: 'uniquemarker' });
       const { data } = await db.findLogs({ limit: 50, q: 'uniquemarker' });
       expect(data).toHaveLength(1);
+    });
+
+    it('indexes message, error, and attributes from a single insert', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        message: 'msgUniqueToken',
+        error: { message: 'errUniqueToken' },
+        attributes: { attr_unique_token: 'valUniqueToken' },
+      });
+      for (const q of [
+        'msgUniqueToken',
+        'errUniqueToken',
+        'attr_unique_token',
+        'valUniqueToken',
+      ]) {
+        const { data } = await db.findLogs({ limit: 50, q });
+        expect(data, `expected hit for q=${q}`).toHaveLength(1);
+      }
     });
   });
 });

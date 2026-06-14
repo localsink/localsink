@@ -114,6 +114,39 @@ describe('@localsink/pino → server → DB', () => {
     });
   });
 
+  it('makes error and attribute fields full-text searchable end-to-end', async () => {
+    const { url, db } = await startTestServer();
+
+    const transport = buildTransport({ serviceName: 'test-service', url });
+    const logger = pino(transport);
+
+    logger.error(
+      {
+        err: { message: 'distinctiveErrorToken' },
+        userId: 7,
+        region: 'us-east',
+      },
+      'something failed',
+    );
+
+    await endTransport(transport);
+
+    // pino's err serializer reshapes the payload at the SDK boundary, so we
+    // wait for ingest, then exercise q against the columns the trigger filled.
+    await vi.waitFor(async () => {
+      const rows = await db.findLogs({ limit: 500 }).then((p) => p.data);
+      expect(rows).toHaveLength(1);
+    });
+
+    // FTS5's default tokenizer splits on hyphens, so a stored "us-east" is
+    // indexed as two tokens ("us", "east") — query either standalone, or use
+    // a quoted phrase "us-east" for an exact match.
+    for (const q of ['distinctiveErrorToken', 'region', 'east', '7']) {
+      const { data } = await db.findLogs({ limit: 50, q });
+      expect(data, `expected hit for q=${q}`).toHaveLength(1);
+    }
+  });
+
   it('persists multiple logs from one transport', async () => {
     const { url, db } = await startTestServer();
 
