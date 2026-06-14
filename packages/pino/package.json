@@ -1,11 +1,20 @@
 {
   "name": "@localsink/pino",
   "version": "0.0.0",
-  "description": "Pino transport for localsink (reserved).",
+  "description": "Pino transport for localsink.",
+  "keywords": [
+    "localsink",
+    "log-transport",
+    "logging",
+    "observability",
+    "pino",
+    "pino-transport"
+  ],
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/localsink/localsink.git"
+    "url": "git+https://github.com/localsink/localsink.git",
+    "directory": "packages/pino"
   },
   "files": [
     "dist"

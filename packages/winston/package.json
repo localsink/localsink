@@ -1,11 +1,20 @@
 {
   "name": "@localsink/winston",
   "version": "0.0.0",
-  "description": "Winston transport for localsink (reserved).",
+  "description": "Winston transport for localsink.",
+  "keywords": [
+    "localsink",
+    "log-transport",
+    "logging",
+    "observability",
+    "winston",
+    "winston-transport"
+  ],
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/localsink/localsink.git"
+    "url": "git+https://github.com/localsink/localsink.git",
+    "directory": "packages/winston"
   },
   "files": [
     "dist"

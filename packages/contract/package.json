@@ -2,10 +2,18 @@
   "name": "@localsink/contract",
   "version": "0.0.0",
   "description": "Shared wire-contract schemas and types for the localsink API.",
+  "keywords": [
+    "localsink",
+    "logging",
+    "schema",
+    "types",
+    "zod"
+  ],
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/localsink/localsink.git"
+    "url": "git+https://github.com/localsink/localsink.git",
+    "directory": "packages/contract"
   },
   "files": [
     "dist"
