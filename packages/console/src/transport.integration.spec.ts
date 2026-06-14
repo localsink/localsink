@@ -62,6 +62,74 @@ describe('@localsink/console → server → DB', () => {
     });
   });
 
+  it('makes error fields full-text searchable end-to-end', async () => {
+    const { url, db } = await startTestServer();
+
+    const uninstall = localsink({ serviceName: 'test-service', url });
+    onTestFinished(uninstall);
+
+    // A real Error with a distinctive token in its message — the console
+    // adapter normalizes the Error into the `error` column, which the trigger
+    // then feeds into FTS via json_tree.
+    console.error(new Error('uniqueKaboomToken'));
+
+    await vi.waitFor(async () => {
+      const rows = await db.findLogs({ limit: 500 }).then((p) => p.data);
+      expect(rows).toHaveLength(1);
+    });
+
+    // The token appears in both message (util.format(Error)) and error.message,
+    // but FTS5's `MATCH` is column-agnostic so a single hit is what we want.
+    const { data } = await db.findLogs({ limit: 50, q: 'uniqueKaboomToken' });
+    expect(data).toHaveLength(1);
+
+    // Column-scoped search proves the error column was indexed independently.
+    const errOnly = await db.findLogs({
+      limit: 50,
+      q: 'error_text:uniqueKaboomToken',
+    });
+    expect(errOnly.data).toHaveLength(1);
+  });
+
+  it('preserves mixed-type Error properties through FTS end-to-end', async () => {
+    const { url, db } = await startTestServer();
+
+    const uninstall = localsink({ serviceName: 'test-service', url });
+    onTestFinished(uninstall);
+
+    // The console mapper spreads enumerable own properties of an Error into
+    // the `error` column — so custom keys with mixed JSON types (boolean,
+    // nested object, numeric, array) flow into FTS via the trigger's
+    // recursive json_tree walk.
+    const err = new Error('outer');
+    Object.assign(err, {
+      active: true,
+      retryable: false,
+      count: 42,
+      user: { name: 'aliceUnique' },
+      tags: ['priorityUnique', 'urgentUnique'],
+    });
+    console.error(err);
+
+    await vi.waitFor(async () => {
+      const rows = await db.findLogs({ limit: 500 }).then((p) => p.data);
+      expect(rows).toHaveLength(1);
+    });
+
+    for (const q of [
+      'active',
+      'true',
+      'false',
+      '42',
+      'aliceUnique',
+      'priorityUnique',
+      'urgentUnique',
+    ]) {
+      const { data } = await db.findLogs({ limit: 50, q });
+      expect(data, `expected hit for q=${q}`).toHaveLength(1);
+    }
+  });
+
   it('persists multiple console calls', async () => {
     const { url, db } = await startTestServer();
 

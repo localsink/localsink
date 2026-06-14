@@ -156,6 +156,49 @@ describe('MCP server', () => {
       });
     });
 
+    it('finds matches in error fields via q', async () => {
+      const { client, db } = await connectedClient();
+      await db.createLog({
+        ...minimalLog,
+        error: { message: 'kaboom', type: 'TimeoutError' },
+      });
+      await db.createLog(minimalLog);
+      const result = await client.callTool({
+        name: 'search_logs',
+        arguments: { q: 'TimeoutError' },
+      });
+      expect(parseJsonResult(result.content)).toMatchObject({
+        data: [
+          expect.objectContaining({
+            error: expect.objectContaining({ type: 'TimeoutError' }),
+          }),
+        ],
+      });
+    });
+
+    it('finds matches in nested attributes via q', async () => {
+      const { client, db } = await connectedClient();
+      await db.createLog({
+        ...minimalLog,
+        attributes: { user: { id: 'alice' } },
+      });
+      await db.createLog({
+        ...minimalLog,
+        attributes: { user: { id: 'bob' } },
+      });
+      const result = await client.callTool({
+        name: 'search_logs',
+        arguments: { q: 'alice' },
+      });
+      expect(parseJsonResult(result.content)).toMatchObject({
+        data: [
+          expect.objectContaining({
+            attributes: { user: { id: 'alice' } },
+          }),
+        ],
+      });
+    });
+
     it('advances pages via cursor', async () => {
       const { client, db } = await connectedClient();
       for (let i = 0; i < 4; i++) await db.createLog(minimalLog);

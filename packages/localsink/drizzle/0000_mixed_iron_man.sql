@@ -21,10 +21,36 @@ CREATE INDEX `idx_logs_level_id` ON `logs` (`level`,`id`);--> statement-breakpoi
 CREATE INDEX `idx_logs_logger_id` ON `logs` (`logger`,`id`);--> statement-breakpoint
 CREATE VIRTUAL TABLE logs_fts USING fts5(
   message,
-  content='logs',
-  content_rowid='id'
+  error_text,
+  attributes_text,
+  content=''
 );
 --> statement-breakpoint
 CREATE TRIGGER logs_ai AFTER INSERT ON logs BEGIN
-  INSERT INTO logs_fts(rowid, message) VALUES (new.id, new.message);
+  INSERT INTO logs_fts(rowid, message, error_text, attributes_text)
+  VALUES (
+    new.id,
+    new.message,
+    CASE WHEN json_valid(new.error) THEN
+      COALESCE((
+        SELECT GROUP_CONCAT(
+          CASE WHEN type = 'true' THEN 'true' WHEN type = 'false' THEN 'false' ELSE value END,
+          ' '
+        )
+        FROM json_tree(new.error)
+        WHERE type IN ('text', 'integer', 'real', 'true', 'false')
+      ), '')
+    ELSE '' END,
+    CASE WHEN json_valid(new.attributes) THEN
+      COALESCE((
+        SELECT GROUP_CONCAT(
+          CASE WHEN typeof(key) = 'text' THEN key || ' ' ELSE '' END ||
+          CASE WHEN type = 'true' THEN 'true' WHEN type = 'false' THEN 'false' ELSE value END,
+          ' '
+        )
+        FROM json_tree(new.attributes)
+        WHERE type IN ('text', 'integer', 'real', 'true', 'false')
+      ), '')
+    ELSE '' END
+  );
 END;
