@@ -2,10 +2,17 @@
   "name": "@localsink/sdk",
   "version": "0.0.0",
   "description": "SDK for sending logs to localsink programmatically.",
+  "keywords": [
+    "localsink",
+    "logging",
+    "observability",
+    "sdk"
+  ],
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/localsink/localsink.git"
+    "url": "git+https://github.com/localsink/localsink.git",
+    "directory": "packages/sdk"
   },
   "files": [
     "dist"

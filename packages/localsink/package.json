@@ -1,11 +1,24 @@
 {
   "name": "localsink",
   "version": "0.0.0",
-  "description": "Local-first log sink with a searchable UI and API (reserved).",
+  "description": "Local-first log sink with a searchable UI and API.",
+  "keywords": [
+    "developer-tools",
+    "fts5",
+    "local-first",
+    "log-aggregator",
+    "log-sink",
+    "logging",
+    "logs",
+    "mcp",
+    "observability",
+    "sqlite"
+  ],
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/localsink/localsink.git"
+    "url": "git+https://github.com/localsink/localsink.git",
+    "directory": "packages/localsink"
   },
   "files": [
     "dist"

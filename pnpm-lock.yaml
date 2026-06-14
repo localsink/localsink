@@ -335,6 +335,9 @@ importers:
       localsink:
         specifier: workspace:*
         version: link:../localsink
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.8(@types/node@24.13.2)(@vitest/browser-playwright@4.1.8)(msw@2.14.6(@types/node@24.13.2)(typescript@6.0.3))(vite@8.0.16(@types/node@24.13.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.3)(yaml@2.9.0))
 
   packages/web:
     dependencies:

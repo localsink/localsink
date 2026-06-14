@@ -1,11 +1,19 @@
 {
   "name": "@localsink/console",
   "version": "0.0.0",
-  "description": "Console transport for forwarding console.* output to localsink (reserved).",
+  "description": "Console transport for forwarding console.* output to localsink.",
+  "keywords": [
+    "console",
+    "console-transport",
+    "localsink",
+    "log-transport",
+    "logging"
+  ],
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/localsink/localsink.git"
+    "url": "git+https://github.com/localsink/localsink.git",
+    "directory": "packages/console"
   },
   "files": [
     "dist"

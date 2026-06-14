@@ -2,10 +2,19 @@
   "name": "@localsink/test-harness",
   "version": "0.0.0",
   "description": "In-process server + DB harness for transport integration tests.",
+  "keywords": [
+    "integration-tests",
+    "localsink",
+    "log-transport",
+    "logging",
+    "testing",
+    "vitest"
+  ],
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/localsink/localsink.git"
+    "url": "git+https://github.com/localsink/localsink.git",
+    "directory": "packages/test-harness"
   },
   "files": [
     "dist"
@@ -36,7 +45,8 @@
     "@hono/node-server": "catalog:",
     "@libsql/client": "catalog:",
     "drizzle-orm": "catalog:",
-    "localsink": "workspace:*"
+    "localsink": "workspace:*",
+    "vitest": "catalog:"
   },
   "engines": {
     "node": ">=24"

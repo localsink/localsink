@@ -2,10 +2,18 @@
   "name": "@localsink/web",
   "version": "0.0.0",
   "description": "Web UI for localsink.",
+  "keywords": [
+    "localsink",
+    "log-viewer",
+    "logging",
+    "react",
+    "vite"
+  ],
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/localsink/localsink"
+    "url": "git+https://github.com/localsink/localsink.git",
+    "directory": "packages/web"
   },
   "type": "module",
   "scripts": {

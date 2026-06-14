@@ -2,10 +2,17 @@
   "name": "@localsink/http",
   "version": "0.0.0",
   "description": "HTTP client for sending logs to localsink.",
+  "keywords": [
+    "http-client",
+    "localsink",
+    "log-transport",
+    "logging"
+  ],
   "license": "BUSL-1.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/localsink/localsink.git"
+    "url": "git+https://github.com/localsink/localsink.git",
+    "directory": "packages/http"
   },
   "files": [
     "dist"
