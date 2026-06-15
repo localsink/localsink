@@ -22,11 +22,11 @@ In practice, many teams end up building internal tools to collect, inspect, and 
 | [`@localsink/winston`](packages/winston)           | [Winston](https://github.com/winstonjs/winston) transport |
 | [`@localsink/test-harness`](packages/test-harness) | Vitest harness for custom transports                      |
 
-## License & roadmap
+## License
 
-`localsink` is **source-available** software — not open core. There are no artificial feature limitations and no enterprise-only forks; the full source code is available, and every user gets the full product. The licensing strategy is tuned so it's always free for personal, hobby, and open source use, while staying sustainable as a commercial product:
+`localsink` is **source-available** software — not open core. There are no artificial feature limitations and no enterprise-only forks; the full source code is available, and every user gets the full product.
 
-- **v0** (current): free for both non-commercial and commercial use under [BUSL-1.1](LICENSE). Automatically converts to **AGPLv3** on **2028-01-01**, so the v0 codebase eventually lands under an OSI-approved open source license.
-- **v1+** (future): **PolyForm Noncommercial**. Commercial use will require a commercial license — funding continued development and giving teams a clear, standard agreement without AGPLv3 obligations. Personal, hobby, and open source use remain free.
+Licensed under [PolyForm Noncommercial 1.0.0](LICENSE.md):
 
-> The v0 code (and any version released before the v1.0 milestone) will remain under the BUSL-1.1 terms — eventually becoming AGPLv3 — regardless of the license used for v1+.
+- **Free forever** for personal, hobbyist, student, academic, and open source use.
+- **Commercial use requires a commercial license.** If you're using `localsink` for internal tooling at a company, in a paid product, or on a consulting deliverable, contact [licensing@localsink.io](mailto:licensing@localsink.io) to purchase a commercial license.
