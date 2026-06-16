@@ -69,9 +69,6 @@ catalogs:
     drizzle-orm:
       specifier: ^0.45.2
       version: 0.45.2
-    drizzle-zod:
-      specifier: ^0.8.3
-      version: 0.8.3
     eslint-plugin-react-hooks:
       specifier: 7.1.1
       version: 7.1.1
@@ -283,9 +280,6 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.2(@libsql/client@0.17.3)
-      drizzle-zod:
-        specifier: 'catalog:'
-        version: 0.8.3(drizzle-orm@0.45.2(@libsql/client@0.17.3))(zod@4.4.3)
       hono:
         specifier: 'catalog:'
         version: 4.12.25
@@ -1952,12 +1946,6 @@ packages:
         optional: true
       sqlite3:
         optional: true
-
-  drizzle-zod@0.8.3:
-    resolution: {integrity: sha512-66yVOuvGhKJnTdiqj1/Xaaz9/qzOdRJADpDa68enqS6g3t0kpNkwNYjUuaeXgZfO/UWuIM9HIhSlJ6C5ZraMww==}
-    peerDependencies:
-      drizzle-orm: '>=0.36.0'
-      zod: ^3.25.0 || ^4.0.0
 
   dts-resolver@3.0.0:
     resolution: {integrity: sha512-1T1f+z+4tl9XD+m+0HBgWoL/nm0bOIffyWaUuUSBlFg/86IWvfx+wjNaO/ybU0AJzG9/Mi5hBUgGV6zCmWEN7Q==}
@@ -4475,11 +4463,6 @@ snapshots:
   drizzle-orm@0.45.2(@libsql/client@0.17.3):
     optionalDependencies:
       '@libsql/client': 0.17.3
-
-  drizzle-zod@0.8.3(drizzle-orm@0.45.2(@libsql/client@0.17.3))(zod@4.4.3):
-    dependencies:
-      drizzle-orm: 0.45.2(@libsql/client@0.17.3)
-      zod: 4.4.3
 
   dts-resolver@3.0.0: {}
 
