@@ -58,7 +58,6 @@
     "@localsink/contract": "workspace:*",
     "@modelcontextprotocol/sdk": "catalog:",
     "drizzle-orm": "catalog:",
-    "drizzle-zod": "catalog:",
     "hono": "catalog:",
     "zod": "catalog:"
   },
