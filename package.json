@@ -12,6 +12,7 @@
     "lint:all": "pnpm --recursive --no-bail --include-workspace-root lint",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
+    "clean": "node scripts/src/clean.ts",
     "prepare": "husky"
   },
   "devDependencies": {
