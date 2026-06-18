@@ -7,6 +7,8 @@ allowBuilds:
   msw: false
   playwright: false
 
+bail: false
+
 blockExoticSubdeps: true
 
 catalog:
@@ -25,7 +27,7 @@ catalog:
   '@types/node': 24.13.2
   '@types/react': 19.2.17
   '@types/react-dom': 19.2.3
-  '@typescript/native-preview': beta
+  '@typescript/native-preview': 7.0.0-dev.20260617.2
   '@vitejs/plugin-react': 6.0.2
   '@vitest/browser-playwright': 4.1.9
   babel-plugin-react-compiler: 1.0.0

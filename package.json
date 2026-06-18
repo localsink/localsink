@@ -4,12 +4,12 @@
   "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
   "scripts": {
-    "typecheck:all": "pnpm --recursive --no-bail typecheck",
-    "build:all": "pnpm --recursive --no-bail build",
-    "test:all": "pnpm --recursive --no-bail test",
-    "integration:all": "pnpm --recursive --no-bail integration",
+    "typecheck:all": "pnpm --recursive typecheck",
+    "build:all": "pnpm --recursive build",
+    "test:all": "pnpm --recursive test",
+    "integration:all": "pnpm --recursive integration",
     "lint": "oxlint oxfmt.config.ts oxlint.config.ts lint-staged.config.ts vitest.config.ts vitest.shared.ts tsdown.base.ts",
-    "lint:all": "pnpm --recursive --no-bail --include-workspace-root lint",
+    "lint:all": "pnpm --recursive --include-workspace-root lint",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
     "clean": "node scripts/src/clean.ts",
@@ -45,8 +45,8 @@
     "vitest-browser-react": "catalog:"
   },
   "engines": {
-    "node": "24.16.0",
-    "pnpm": "11.7.0"
+    "node": "24.17.0",
+    "pnpm": "11.8.0"
   },
-  "packageManager": "pnpm@11.7.0+sha512.19cc852c120c7125760f2443ee6be0ca5b40f9f50598de1a09a1f177503e010e57c23c77646e01e761de59bf874fb22a3398c33ab9691fc13eb946b6f0f4d620"
+  "packageManager": "pnpm@11.8.0+sha512.c1f5e7c4cb241c8f174b743851d82f42b802324afc8b0f116b96adb15aa06664948dde36960a3ba1079ba5b4b29dd0140135b94b5b5f5263592249d68e555f26"
 }
