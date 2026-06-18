@@ -16,8 +16,6 @@ updates:
     multi-ecosystem-group: dependencies
     cooldown:
       default-days: 1
-    commit-message:
-      prefix: chore
 
   - package-ecosystem: npm
     directory: /
@@ -25,8 +23,6 @@ updates:
     multi-ecosystem-group: dependencies
     cooldown:
       default-days: 1
-    commit-message:
-      prefix: chore
     ignore:
       - dependency-name: '@types/node'
         versions: ['>=25.0.0']
