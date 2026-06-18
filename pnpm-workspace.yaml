@@ -31,7 +31,6 @@ catalog:
   babel-plugin-react-compiler: 1.0.0
   drizzle-kit: 0.31.10
   drizzle-orm: ^0.45.2
-  eslint-plugin-react-hooks: 7.1.1
   hono: ^4.12.25
   husky: 9.1.7
   lint-staged: 17.0.7
