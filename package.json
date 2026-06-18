@@ -28,7 +28,6 @@
     "@vitest/browser-playwright": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "drizzle-kit": "catalog:",
-    "eslint-plugin-react-hooks": "catalog:",
     "husky": "catalog:",
     "lint-staged": "catalog:",
     "msw": "catalog:",
