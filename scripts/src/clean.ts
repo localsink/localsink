@@ -8,8 +8,8 @@ const patterns = [
   '**/*.tsbuildinfo',
   '**/.vitest-cache',
   '**/vite.config.*.timestamp-*',
-  'playwright-report',
-  'test-results',
+  '**/playwright-report',
+  '**/test-results',
 ];
 
 for (const pattern of patterns) {
