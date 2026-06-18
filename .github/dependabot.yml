@@ -1,0 +1,25 @@
+version: 2
+
+multi-ecosystem-groups:
+  all:
+    schedule:
+      interval: cron
+      cronjob: '0 12 * * *'
+      timezone: America/Detroit
+    commit-message:
+      prefix: chore
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    patterns: ['*']
+    multi-ecosystem-group: all
+    cooldown:
+      default-days: 1
+
+  - package-ecosystem: npm
+    directory: /
+    patterns: ['*']
+    multi-ecosystem-group: all
+    cooldown:
+      default-days: 1
