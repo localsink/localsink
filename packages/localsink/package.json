@@ -44,8 +44,8 @@
     "typecheck": "tsgo -b .",
     "lint": "oxlint .",
     "test": "vitest run",
-    "dev": "node --watch --watch-path=src src/server.ts",
-    "start": "node src/server.ts",
+    "dev": "node --conditions=@localsink/source --watch --watch-path=src src/server.ts",
+    "start": "node --conditions=@localsink/source src/server.ts",
     "drizzle-kit:push": "drizzle-kit push",
     "drizzle-kit:generate": "drizzle-kit generate",
     "drizzle-kit:migrate": "drizzle-kit migrate"
