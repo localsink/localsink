@@ -102,18 +102,48 @@ describe('makeDatabase', () => {
       const db = await createDb();
       await db.createLog({ ...minimalLog, service_name: 'auth' });
       await db.createLog({ ...minimalLog, service_name: 'payments' });
-      const { data } = await db.findLogs({ limit: 50, service_name: 'auth' });
+      const { data } = await db.findLogs({
+        limit: 50,
+        service_name: ['auth'],
+      });
       expect(data).toHaveLength(1);
       expect(data[0]?.service_name).toBe('auth');
+    });
+
+    it('filters by multiple service_name values', async () => {
+      const db = await createDb();
+      await db.createLog({ ...minimalLog, service_name: 'auth' });
+      await db.createLog({ ...minimalLog, service_name: 'payments' });
+      await db.createLog({ ...minimalLog, service_name: 'web' });
+      const { data } = await db.findLogs({
+        limit: 50,
+        service_name: ['auth', 'web'],
+      });
+      expect(data.map((r) => r.service_name).toSorted()).toEqual([
+        'auth',
+        'web',
+      ]);
     });
 
     it('filters by level', async () => {
       const db = await createDb();
       await db.createLog({ ...minimalLog, level: 'error' });
       await db.createLog({ ...minimalLog, level: 'info' });
-      const { data } = await db.findLogs({ limit: 50, level: 'error' });
+      const { data } = await db.findLogs({ limit: 50, level: ['error'] });
       expect(data).toHaveLength(1);
       expect(data[0]?.level).toBe('error');
+    });
+
+    it('filters by multiple level values', async () => {
+      const db = await createDb();
+      await db.createLog({ ...minimalLog, level: 'error' });
+      await db.createLog({ ...minimalLog, level: 'warn' });
+      await db.createLog({ ...minimalLog, level: 'info' });
+      const { data } = await db.findLogs({
+        limit: 50,
+        level: ['error', 'warn'],
+      });
+      expect(data.map((r) => r.level).toSorted()).toEqual(['error', 'warn']);
     });
 
     it('filters by trace_id', async () => {
@@ -174,8 +204,8 @@ describe('makeDatabase', () => {
       });
       const { data } = await db.findLogs({
         limit: 50,
-        service_name: 'auth',
-        level: 'error',
+        service_name: ['auth'],
+        level: ['error'],
       });
       expect(data).toHaveLength(1);
       expect(data[0]?.service_name).toBe('auth');
@@ -337,7 +367,7 @@ describe('makeDatabase', () => {
           const { data } = await db.findLogs({
             limit: 50,
             after_id: seed.id,
-            service_name: 'auth',
+            service_name: ['auth'],
           });
           expect(data).toHaveLength(1);
           expect(data[0]?.message).toBe('auth-new');
@@ -503,7 +533,7 @@ describe('makeDatabase', () => {
       const { data } = await db.findLogs({
         limit: 50,
         q: 'failed',
-        service_name: 'auth',
+        service_name: ['auth'],
       });
       expect(data).toHaveLength(1);
       expect(data[0]?.service_name).toBe('auth');
@@ -547,12 +577,28 @@ describe('makeDatabase', () => {
       expect(data).toHaveLength(2);
     });
 
-    it('throws InvalidQueryError when FTS5 query has invalid syntax', async () => {
+    it('treats free text with punctuation as a literal phrase', async () => {
+      const db = await createDb();
+      await db.createLog({
+        ...minimalLog,
+        attributes: { request_id: 'key-2024-q1' },
+      });
+      await db.createLog({
+        ...minimalLog,
+        attributes: { request_id: 'other' },
+      });
+      // Raw `key-2024-q1` is invalid FTS5 syntax; the fallback phrase matches
+      // the indexed tokens key/2024/q1.
+      const { data } = await db.findLogs({ limit: 50, q: 'key-2024-q1' });
+      expect(data).toHaveLength(1);
+      expect(data[0]?.attributes).toEqual({ request_id: 'key-2024-q1' });
+    });
+
+    it('does not throw on quote characters in q (literal fallback)', async () => {
       const db = await createDb();
       await db.createLog({ ...minimalLog, message: 'anything' });
-      await expect(
-        db.findLogs({ limit: 50, q: 'foo"bar' }),
-      ).rejects.toBeInstanceOf(InvalidQueryError);
+      const { data } = await db.findLogs({ limit: 50, q: 'foo"bar' });
+      expect(data).toEqual([]);
     });
 
     it('matches a token in error.message', async () => {

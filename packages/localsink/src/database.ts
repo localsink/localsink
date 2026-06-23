@@ -6,6 +6,7 @@ import {
   eq,
   gt,
   gte,
+  inArray,
   isNotNull,
   lt,
   max,
@@ -41,6 +42,12 @@ function decodeCursor(cursor: string): { timestamp: number; id: number } {
   return { timestamp: Number(tsStr), id: Number(idStr) };
 }
 
+// FTS5 phrase literal (internal quotes doubled). Punctuation inside a phrase is
+// tokenized rather than parsed, so free text doesn't trip the MATCH grammar.
+function toFtsPhrase(q: string): string {
+  return `"${q.replaceAll('"', '""')}"`;
+}
+
 export function makeDatabase(db: DrizzleClient) {
   async function findLogs(filter: LogFilter): Promise<LogPage> {
     if (filter.cursor !== undefined && filter.offset !== undefined) {
@@ -56,68 +63,83 @@ export function makeDatabase(db: DrizzleClient) {
     const cursor =
       filter.cursor !== undefined ? decodeCursor(filter.cursor) : undefined;
 
-    const conditions = [
-      filter.service_name !== undefined
-        ? eq(logsTable.service_name, filter.service_name)
-        : undefined,
-      filter.level !== undefined
-        ? eq(logsTable.level, filter.level)
-        : undefined,
-      filter.logger !== undefined
-        ? eq(logsTable.logger, filter.logger)
-        : undefined,
-      filter.trace_id !== undefined
-        ? eq(logsTable.trace_id, filter.trace_id)
-        : undefined,
-      filter.from !== undefined
-        ? gte(logsTable.timestamp, filter.from)
-        : undefined,
-      filter.to !== undefined ? lt(logsTable.timestamp, filter.to) : undefined,
-      filter.q !== undefined
-        ? sql`${logsTable.id} IN (SELECT rowid FROM logs_fts WHERE logs_fts MATCH ${filter.q})`
-        : undefined,
-      filter.after_id !== undefined
-        ? gt(logsTable.id, filter.after_id)
-        : undefined,
-      cursor !== undefined
-        ? or(
-            lt(logsTable.timestamp, cursor.timestamp),
-            and(
-              eq(logsTable.timestamp, cursor.timestamp),
-              lt(logsTable.id, cursor.id),
-            ),
-          )
-        : undefined,
-    ].filter((c): c is NonNullable<typeof c> => c !== undefined);
-
     const ordering =
       filter.after_id !== undefined
         ? [asc(logsTable.id)]
         : [desc(logsTable.timestamp), desc(logsTable.id)];
 
-    let query = db
-      .select()
-      .from(logsTable)
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(...ordering)
-      .limit(filter.limit + 1)
-      .$dynamic();
+    // Factored so `q` can be retried with a fallback MATCH form (undefined = none).
+    const runWith = async (
+      matchExpr: string | undefined,
+    ): Promise<LogRow[]> => {
+      const conditions = [
+        filter.service_name !== undefined
+          ? inArray(logsTable.service_name, filter.service_name)
+          : undefined,
+        filter.level !== undefined
+          ? inArray(logsTable.level, filter.level)
+          : undefined,
+        filter.logger !== undefined
+          ? eq(logsTable.logger, filter.logger)
+          : undefined,
+        filter.trace_id !== undefined
+          ? eq(logsTable.trace_id, filter.trace_id)
+          : undefined,
+        filter.from !== undefined
+          ? gte(logsTable.timestamp, filter.from)
+          : undefined,
+        filter.to !== undefined
+          ? lt(logsTable.timestamp, filter.to)
+          : undefined,
+        matchExpr !== undefined
+          ? sql`${logsTable.id} IN (SELECT rowid FROM logs_fts WHERE logs_fts MATCH ${matchExpr})`
+          : undefined,
+        filter.after_id !== undefined
+          ? gt(logsTable.id, filter.after_id)
+          : undefined,
+        cursor !== undefined
+          ? or(
+              lt(logsTable.timestamp, cursor.timestamp),
+              and(
+                eq(logsTable.timestamp, cursor.timestamp),
+                lt(logsTable.id, cursor.id),
+              ),
+            )
+          : undefined,
+      ].filter((c): c is NonNullable<typeof c> => c !== undefined);
 
-    if (filter.offset !== undefined) {
-      query = query.offset(filter.offset);
-    }
+      let query = db
+        .select()
+        .from(logsTable)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(...ordering)
+        .limit(filter.limit + 1)
+        .$dynamic();
+
+      if (filter.offset !== undefined) {
+        query = query.offset(filter.offset);
+      }
+
+      return await query;
+    };
 
     let rows: LogRow[];
-    try {
-      rows = await query;
-    } catch (err) {
-      // `q` is the only user-controlled SQL here; failures are FTS syntax.
-      if (filter.q !== undefined) {
-        throw new InvalidQueryError(
-          `Invalid FTS5 query: ${err instanceof Error ? err.message : String(err)}`,
-        );
+    if (filter.q === undefined) {
+      rows = await runWith(undefined);
+    } else {
+      try {
+        // Raw first so power syntax (err*, AND/OR/NOT, "phrases", col:term) works.
+        rows = await runWith(filter.q);
+      } catch {
+        // Punctuation-bearing free text isn't valid FTS5; retry as a phrase.
+        try {
+          rows = await runWith(toFtsPhrase(filter.q));
+        } catch (retryErr) {
+          throw new InvalidQueryError(
+            `Invalid FTS5 query: ${retryErr instanceof Error ? retryErr.message : String(retryErr)}`,
+          );
+        }
       }
-      throw err;
     }
     const hasNextPage = rows.length > filter.limit;
     const data = hasNextPage ? rows.slice(0, filter.limit) : rows;

@@ -231,14 +231,24 @@ describe('MCP server', () => {
       expect(result.isError).toBe(true);
     });
 
-    it('returns isError when q has invalid FTS5 syntax', async () => {
+    it('retries invalid FTS5 as a literal phrase instead of erroring', async () => {
       const { client, db } = await connectedClient();
-      await db.createLog(minimalLog);
+      await db.createLog({
+        ...minimalLog,
+        attributes: { request_id: 'key-2024-q1' },
+      });
       const result = await client.callTool({
         name: 'search_logs',
-        arguments: { q: 'foo"bar' },
+        arguments: { q: 'key-2024-q1' },
       });
-      expect(result.isError).toBe(true);
+      expect(result.isError).toBeFalsy();
+      expect(parseJsonResult(result.content)).toMatchObject({
+        data: [
+          expect.objectContaining({
+            attributes: { request_id: 'key-2024-q1' },
+          }),
+        ],
+      });
     });
   });
 
