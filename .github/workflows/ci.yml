@@ -21,9 +21,9 @@ jobs:
         with:
           node-version-file: 'package.json'
       - uses: ./.github/actions/install-dependencies
-      - run: pnpm run typecheck:all
-      - run: pnpm run build:all
-      - run: pnpm run lint:all
-      - run: pnpm run test:all
-      - run: pnpm run integration:all
-      - run: pnpm run format:check
+      - run: node --run typecheck:all
+      - run: node --run build:all
+      - run: node --run lint:all
+      - run: node --run test:all
+      - run: node --run integration:all
+      - run: node --run format:check
