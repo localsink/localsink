@@ -1,5 +1,7 @@
 import { drizzle } from 'drizzle-orm/libsql';
 
+import { logPageSchema } from '@localsink/contract';
+
 import { createApp } from './app.ts';
 import { makeDatabase } from './database.ts';
 import { applySchema } from './migrate.ts';
@@ -56,6 +58,36 @@ describe('GET /api/logs', () => {
       await expect(res.json()).resolves.toMatchObject({
         data: [expect.objectContaining({ service_name: 'auth' })],
       });
+    });
+
+    it('filters by multiple service_name values (repeated param)', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog({ ...minimalPayload, service_name: 'auth' });
+      await db.createLog({ ...minimalPayload, service_name: 'payments' });
+      await db.createLog({ ...minimalPayload, service_name: 'web' });
+      const res = await app.request(
+        '/api/logs?service_name=auth&service_name=web',
+      );
+      expect(res.status).toBe(200);
+      const page = logPageSchema.parse(await res.json());
+      expect(page.data.map((r) => r.service_name).toSorted()).toEqual([
+        'auth',
+        'web',
+      ]);
+    });
+
+    it('filters by multiple service_name values (comma-separated)', async () => {
+      const { app, db } = await createTestApp();
+      await db.createLog({ ...minimalPayload, service_name: 'auth' });
+      await db.createLog({ ...minimalPayload, service_name: 'payments' });
+      await db.createLog({ ...minimalPayload, service_name: 'web' });
+      const res = await app.request('/api/logs?service_name=auth,%20web');
+      expect(res.status).toBe(200);
+      const page = logPageSchema.parse(await res.json());
+      expect(page.data.map((r) => r.service_name).toSorted()).toEqual([
+        'auth',
+        'web',
+      ]);
     });
 
     it('filters by level', async () => {
@@ -271,16 +303,18 @@ describe('GET /api/logs', () => {
       expect(res.status).toBe(400);
     });
 
-    it('returns 400 (not 500) when q has invalid FTS5 syntax', async () => {
+    it('retries invalid FTS5 as a literal phrase (200, not 400/500)', async () => {
       const { app, db } = await createTestApp();
-      await db.createLog(minimalPayload);
-      const res = await app.request(
-        `/api/logs?q=${encodeURIComponent('foo"bar')}`,
-      );
-      expect(res.status).toBe(400);
-      await expect(res.json()).resolves.toMatchObject({
-        error: expect.stringContaining('FTS5'),
+      await db.createLog({
+        ...minimalPayload,
+        attributes: { request_id: 'key-2024-q1' },
       });
+      const res = await app.request(
+        `/api/logs?q=${encodeURIComponent('key-2024-q1')}`,
+      );
+      expect(res.status).toBe(200);
+      const page = logPageSchema.parse(await res.json());
+      expect(page.data).toHaveLength(1);
     });
   });
 

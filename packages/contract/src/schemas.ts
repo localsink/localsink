@@ -28,20 +28,25 @@ const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 500;
 const CURSOR_REGEX = /^(\d+):(\d+)$/;
 
+const multiValueFilter = (description: string) =>
+  z
+    .preprocess((val: unknown) => {
+      if (val === undefined) return undefined;
+      return (Array.isArray(val) ? val : [val])
+        .flatMap((v: unknown) => (typeof v === 'string' ? v.split(',') : [v]))
+        .map((v: unknown) => (typeof v === 'string' ? v.trim() : v))
+        .filter((v: unknown) => v !== '');
+    }, z.array(z.string().min(1)).min(1).optional())
+    .meta({ description });
+
 export const logsQuerySchema = z
   .object({
-    service_name: z
-      .string()
-      .min(1)
-      .meta({ description: 'Filter logs by service name.' })
-      .optional(),
-    level: z
-      .string()
-      .min(1)
-      .meta({
-        description: 'Filter logs by level (e.g., info, error, debug).',
-      })
-      .optional(),
+    service_name: multiValueFilter(
+      'Filter logs by one or more service names (repeat the param, pass an array, or comma-separate). Matches any listed service.',
+    ),
+    level: multiValueFilter(
+      'Filter logs by one or more levels (e.g., info, error, debug). Repeat the param, pass an array, or comma-separate. Matches any listed level.',
+    ),
     logger: z
       .string()
       .min(1)
@@ -78,7 +83,7 @@ export const logsQuerySchema = z
       .min(1)
       .meta({
         description:
-          'FTS5 free-text query across message, error, and attributes (recursive over nested JSON; attribute keys are searchable too). Supports prefix queries like "err*", phrases like "\\"failed connection\\"", boolean operators "AND/OR/NOT", and column scoping like "error_text:timeout", "attributes_text:user_id", or "message:login". Malformed queries return 400.',
+          'FTS5 free-text query across message, error, and attributes (recursive over nested JSON; attribute keys are searchable too). Supports prefix queries like "err*", phrases like "\\"failed connection\\"", boolean operators "AND/OR/NOT", and column scoping like "error_text:timeout", "attributes_text:user_id", or "message:login". Input that is not valid FTS5 (e.g. free text containing punctuation like "key-2024-q1") is automatically retried as a literal phrase, so plain-text searches still match.',
       })
       .optional(),
     limit: z.coerce
