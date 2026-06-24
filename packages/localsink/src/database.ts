@@ -130,14 +130,14 @@ export function makeDatabase(db: DrizzleClient) {
       try {
         // Raw first so power syntax (err*, AND/OR/NOT, "phrases", col:term) works.
         rows = await runWith(filter.q);
-      } catch {
+      } catch (rawErr) {
         // Punctuation-bearing free text isn't valid FTS5; retry as a phrase.
+        // If the phrase retry also fails it's a real DB error (lock/timeout),
+        // not bad syntax — propagate the original so it surfaces as 500, not 400.
         try {
           rows = await runWith(toFtsPhrase(filter.q));
-        } catch (retryErr) {
-          throw new InvalidQueryError(
-            `Invalid FTS5 query: ${retryErr instanceof Error ? retryErr.message : String(retryErr)}`,
-          );
+        } catch {
+          throw rawErr;
         }
       }
     }
