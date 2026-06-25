@@ -2,12 +2,23 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
+  --font-mono: 'Geist Mono Variable', monospace;
+
+  /* localsink severity + accent color utilities (text-info, bg-warn, …) */
+  --color-info: var(--ls-info);
+  --color-warn: var(--ls-warn);
+  --color-error: var(--ls-error);
+  --color-debug: var(--ls-debug);
+  --color-trace: var(--ls-trace);
+  --color-accent-ls: var(--ls-accent);
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,73 +59,121 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ============================================================================
+   localsink design tokens (from docs/design_handoff_localsink/globals.tokens.css)
+   :root holds the LIGHT palette + the shadcn semantic bridges + the (theme-
+   independent) service colors. `.dark` overrides only the raw --ls-* tokens;
+   because next-themes toggles `.dark` on <html> — the same element as :root —
+   the var() bridges below re-resolve to the dark values automatically.
+   ========================================================================== */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* surfaces */
+  --ls-bg: oklch(0.994 0.002 256);
+  --ls-bg-2: oklch(0.972 0.004 256);
+  --ls-bg-3: oklch(0.93 0.006 256);
+  --ls-bg-hover: oklch(0.96 0.005 256);
+
+  /* text */
+  --ls-fg: oklch(0.27 0.012 256);
+  --ls-fg-dim: oklch(0.46 0.012 256);
+  --ls-fg-faint: oklch(0.63 0.01 256);
+
+  /* lines */
+  --ls-border: oklch(0.88 0.007 256);
+  --ls-border-soft: oklch(0.93 0.005 256);
+
+  /* severity (foreground) */
+  --ls-info: oklch(0.52 0.16 252);
+  --ls-warn: oklch(0.56 0.13 62);
+  --ls-error: oklch(0.55 0.21 25);
+  --ls-debug: oklch(0.55 0.025 256);
+  --ls-trace: oklch(0.5 0.12 300);
+
+  /* severity (badge / row-tint backgrounds) */
+  --ls-info-bg: oklch(0.52 0.16 252 / 0.1);
+  --ls-warn-bg: oklch(0.56 0.13 62 / 0.13);
+  --ls-error-bg: oklch(0.55 0.21 25 / 0.1);
+  --ls-debug-bg: oklch(0.55 0.025 256 / 0.1);
+  --ls-trace-bg: oklch(0.5 0.12 300 / 0.1);
+
+  /* connection status (semantic) + brand accent (same in both themes) */
+  --ls-ok: oklch(0.55 0.15 152);
+  --ls-accent: oklch(0.74 0.14 152);
+
+  /* service identity colors (stable per service, shared across themes) */
+  --ls-svc-api: oklch(0.7 0.13 250);
+  --ls-svc-auth: oklch(0.7 0.13 305);
+  --ls-svc-payments: oklch(0.74 0.14 152);
+  --ls-svc-web: oklch(0.8 0.13 82);
+  --ls-svc-worker: oklch(0.74 0.12 200);
+
+  /* shadcn semantic vars → localsink palette */
+  --background: var(--ls-bg);
+  --foreground: var(--ls-fg);
+  --card: var(--ls-bg-2);
+  --card-foreground: var(--ls-fg);
+  --popover: var(--ls-bg-2);
+  --popover-foreground: var(--ls-fg);
+  --primary: var(--ls-accent);
+  --primary-foreground: var(--ls-bg);
+  --secondary: var(--ls-bg-3);
+  --secondary-foreground: var(--ls-fg);
+  --muted: var(--ls-bg-3);
+  --muted-foreground: var(--ls-fg-dim);
+  --accent: var(--ls-bg-3);
+  --accent-foreground: var(--ls-fg);
+  --destructive: var(--ls-error);
+  --border: var(--ls-border);
+  --input: var(--ls-border);
+  --ring: var(--ls-accent);
+  --chart-1: var(--ls-info);
+  --chart-2: var(--ls-ok);
+  --chart-3: var(--ls-warn);
+  --chart-4: var(--ls-error);
+  --chart-5: var(--ls-trace);
+  --radius: 0.4375rem;
+  --sidebar: var(--ls-bg-2);
+  --sidebar-foreground: var(--ls-fg);
+  --sidebar-primary: var(--ls-accent);
+  --sidebar-primary-foreground: var(--ls-bg);
+  --sidebar-accent: var(--ls-bg-3);
+  --sidebar-accent-foreground: var(--ls-fg);
+  --sidebar-border: var(--ls-border-soft);
+  --sidebar-ring: var(--ls-accent);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* surfaces */
+  --ls-bg: oklch(0.165 0.006 256);
+  --ls-bg-2: oklch(0.198 0.007 256);
+  --ls-bg-3: oklch(0.245 0.008 256);
+  --ls-bg-hover: oklch(0.22 0.008 256);
+
+  /* text */
+  --ls-fg: oklch(0.93 0.005 256);
+  --ls-fg-dim: oklch(0.72 0.006 256);
+  --ls-fg-faint: oklch(0.55 0.008 256);
+
+  /* lines */
+  --ls-border: oklch(0.32 0.009 256);
+  --ls-border-soft: oklch(0.26 0.008 256);
+
+  /* severity (foreground) */
+  --ls-info: oklch(0.74 0.13 232);
+  --ls-warn: oklch(0.82 0.13 82);
+  --ls-error: oklch(0.7 0.18 22);
+  --ls-debug: oklch(0.64 0.03 256);
+  --ls-trace: oklch(0.68 0.08 300);
+
+  /* severity (badge / row-tint backgrounds) */
+  --ls-info-bg: oklch(0.74 0.13 232 / 0.14);
+  --ls-warn-bg: oklch(0.82 0.13 82 / 0.14);
+  --ls-error-bg: oklch(0.7 0.18 22 / 0.16);
+  --ls-debug-bg: oklch(0.64 0.03 256 / 0.14);
+  --ls-trace-bg: oklch(0.68 0.08 300 / 0.14);
+
+  /* connection status (accent unchanged from :root) */
+  --ls-ok: oklch(0.76 0.14 152);
 }
 
 @layer base {
