@@ -12,9 +12,9 @@ bail: false
 blockExoticSubdeps: true
 
 catalog:
-  '@arethetypeswrong/core': 0.18.3
+  '@arethetypeswrong/core': 0.18.4
   '@hono/mcp': ^0.3.0
-  '@hono/node-server': ^2.0.5
+  '@hono/node-server': ^2.0.6
   '@hono/zod-validator': ^0.8.0
   '@libsql/client': ^0.17.4
   '@modelcontextprotocol/sdk': ^1.29.0
@@ -27,29 +27,29 @@ catalog:
   '@types/node': 24.13.2
   '@types/react': 19.2.17
   '@types/react-dom': 19.2.3
-  '@typescript/native-preview': 7.0.0-dev.20260621.1
-  '@vitejs/plugin-react': 6.0.2
+  '@typescript/native-preview': 7.0.0-dev.20260624.1
+  '@vitejs/plugin-react': 6.0.3
   '@vitest/browser-playwright': 4.1.9
   babel-plugin-react-compiler: 1.0.0
   drizzle-kit: 0.31.10
   drizzle-orm: ^0.45.2
-  hono: ^4.12.26
+  hono: ^4.12.27
   husky: 9.1.7
   lint-staged: 17.0.8
   msw: 2.14.6
-  oxfmt: 0.55.0
-  oxlint: 1.70.0
+  oxfmt: 0.56.0
+  oxlint: 1.71.0
   oxlint-tsgolint: 0.23.0
   pino: ^10.3.1
   pino-abstract-transport: ^3.0.0
-  playwright: 1.61.0
+  playwright: 1.61.1
   publint: 0.3.21
   react: ^19.2.7
   react-dom: ^19.2.7
   tailwindcss: 4.3.1
   tsdown: 0.22.3
   typescript: 6.0.3
-  vite: 8.0.16
+  vite: 8.1.0
   vitest: 4.1.9
   vitest-browser-react: 2.2.0
   winston: ^3.19.0
