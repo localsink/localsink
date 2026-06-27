@@ -1,5 +1,11 @@
 version: 2
 
+registries:
+  npm:
+    type: npm-registry
+    url: https://registry.npmjs.org
+    token: ${{secrets.DEPENDABOT_NPM_PLACEHOLDER}} # required field
+
 multi-ecosystem-groups:
   dependencies:
     schedule:
@@ -21,6 +27,8 @@ updates:
     directory: /
     patterns: ['*']
     multi-ecosystem-group: dependencies
+    registries:
+      - npm
     cooldown:
       default-days: 1
     ignore:
