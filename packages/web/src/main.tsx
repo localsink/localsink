@@ -1,11 +1,15 @@
+import { ThemeProvider } from '@/components/theme-provider.tsx';
 import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
 
 import './index.css';
+import { createRoot } from 'react-dom/client';
+
 import App from './App.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ThemeProvider defaultTheme="dark">
+      <App />
+    </ThemeProvider>
   </StrictMode>,
 );
