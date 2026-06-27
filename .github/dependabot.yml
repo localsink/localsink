@@ -4,6 +4,7 @@ registries:
   npm:
     type: npm-registry
     url: https://registry.npmjs.org
+    token: unused # required field
 
 multi-ecosystem-groups:
   dependencies:
