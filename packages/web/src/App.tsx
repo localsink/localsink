@@ -1,4 +1,5 @@
 import { AppSidebar } from '@/components/app-sidebar.tsx';
+import { EditionBadge } from '@/components/edition-badge.tsx';
 import { LogList } from '@/components/log-list.tsx';
 import { ModeToggle } from '@/components/mode-toggle.tsx';
 import { Topbar } from '@/components/topbar.tsx';
@@ -138,7 +139,8 @@ export default function App() {
             selectedLevels={selectedLevels}
             levelStyleFor={levelStyleFor}
           />
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-3">
+            <EditionBadge />
             <ModeToggle />
           </div>
         </header>
