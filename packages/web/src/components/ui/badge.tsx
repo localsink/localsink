@@ -36,6 +36,9 @@ const badgeVariants = cva(
         error: `${levelChip} bg-[var(--ls-error-bg)] text-error`,
         debug: `${levelChip} bg-[var(--ls-debug-bg)] text-debug`,
         trace: `${levelChip} bg-[var(--ls-trace-bg)] text-trace`,
+        // Dynamic severity chip — shape only; color supplied via inline style
+        // from buildLevelStyleMap (levels are discovered, not fixed).
+        level: levelChip,
         // Attribute chip — grey: bg-3 surface, faint text.
         chip: `${attrChip} bg-[var(--ls-bg-3)] text-[var(--ls-fg-faint)]`,
         // +N overflow counter — accent green (color-mixed off --ls-accent).

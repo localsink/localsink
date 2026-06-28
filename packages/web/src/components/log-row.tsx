@@ -2,24 +2,10 @@ import { Badge } from '@/components/ui/badge.tsx';
 
 import type { LogRow as LogRowData } from '@localsink/contract';
 
+import type { LevelStyle } from '../lib/levels.ts';
+
 // refined.css .r-row column track: disc | time | badge | service | message.
 const COLS = 'grid-cols-[22px_104px_74px_132px_minmax(0,1fr)]';
-
-// Map a free-form server level onto a Badge severity variant; unknown levels
-// fall back to the neutral debug chip. A switch narrows each case to its
-// literal so no type assertion is needed.
-type LevelVariant = 'info' | 'warn' | 'error' | 'debug' | 'trace';
-function levelVariant(level: string): LevelVariant {
-  switch (level) {
-    case 'info':
-    case 'warn':
-    case 'error':
-    case 'trace':
-      return level;
-    default:
-      return 'debug';
-  }
-}
 
 const pad = (value: number, width = 2): string =>
   String(value).padStart(width, '0');
@@ -36,11 +22,18 @@ function formatTime(epochMs: number): string {
 type LogRowProps = {
   log: LogRowData;
   serviceColor: string;
+  levelStyle: LevelStyle;
   open: boolean;
   onToggle: () => void;
 };
 
-export function LogRow({ log, serviceColor, open, onToggle }: LogRowProps) {
+export function LogRow({
+  log,
+  serviceColor,
+  levelStyle,
+  open,
+  onToggle,
+}: LogRowProps) {
   return (
     <div
       className={`group grid ${COLS} min-h-[33px] cursor-pointer items-center gap-[14px] rounded-[7px] px-3 py-[6px] font-mono text-[13px] hover:bg-[var(--ls-bg-hover)] data-[open=true]:bg-[var(--ls-bg-2)]`}
@@ -53,7 +46,11 @@ export function LogRow({ log, serviceColor, open, onToggle }: LogRowProps) {
       <span className="text-[var(--ls-fg-faint)]">
         {formatTime(log.timestamp)}
       </span>
-      <Badge variant={levelVariant(log.level)} className="justify-self-start">
+      <Badge
+        variant="level"
+        className="justify-self-start"
+        style={{ background: levelStyle.background, color: levelStyle.color }}
+      >
         {log.level}
       </Badge>
       <span className="flex min-w-0 items-center gap-2 overflow-hidden text-[var(--ls-fg-dim)]">

@@ -241,6 +241,42 @@ const seeds: Seed[] = [
       currency: 'usd',
     },
   },
+  // Non-canonical levels — exercise dynamic level coloring:
+  // `fatal` snaps to the error severity; `audit` is unrecognized and gets a
+  // palette slot. Both render with their raw label.
+  {
+    service_name: 'payments',
+    level: 'fatal',
+    message: 'database connection pool exhausted; shutting down',
+    logger: 'pino',
+    trace_id: '4f9a2b7c0e1d3a55',
+    span_id: null,
+    error: {
+      type: 'PoolExhaustedError',
+      message: 'timed out acquiring a connection from the pool',
+      stack: [
+        'PoolExhaustedError: timed out acquiring a connection from the pool',
+        '    at Pool.acquire (/srv/payments/db/pool.js:74:13)',
+        '    at async charge (/srv/payments/charge.js:31:5)',
+      ].join('\n'),
+    },
+    attributes: { pool_size: 20, waiting: 47, timeout_ms: 5000 },
+  },
+  {
+    service_name: 'auth',
+    level: 'audit',
+    message: 'role granted: admin to usr_9',
+    logger: null,
+    trace_id: null,
+    span_id: null,
+    error: null,
+    attributes: {
+      actor: 'usr_1',
+      target: 'usr_9',
+      role: 'admin',
+      via: 'console',
+    },
+  },
 ];
 
 export const sampleLogs: LogRow[] = seeds.map((seed, index) => ({
