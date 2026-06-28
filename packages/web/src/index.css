@@ -118,8 +118,9 @@
   --ls-ok: oklch(0.55 0.15 152);
   --ls-accent: oklch(0.74 0.14 152);
 
-  /* service identity palette — assigned by hashing the service name, so any
-     real service name gets a stable color. Theme-shared (same in light/dark). */
+  /* service identity palette — assigned to services in first-seen order
+     (buildServiceColorMap), so any real service name gets a stable color.
+     Theme-shared (same in light/dark). */
   --ls-svc-1: oklch(0.7 0.13 250);
   --ls-svc-2: oklch(0.7 0.13 305);
   --ls-svc-3: oklch(0.74 0.14 152);

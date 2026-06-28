@@ -13,10 +13,11 @@ import { cn } from '../lib/utils.ts';
 
 const FAINT = 'var(--ls-fg-faint)';
 
-// Connection status dot — accent fill with the radiating ls-pulse ring.
+// Connection status dot — uses the semantic --ls-ok green (independent of the
+// brand accent) with the radiating ls-pulse ring.
 function PulseDot() {
   return (
-    <span className="size-[9px] shrink-0 animate-ls-pulse rounded-full bg-[var(--ls-accent)] [--ls-status:var(--ls-accent)]" />
+    <span className="size-[9px] shrink-0 animate-ls-pulse rounded-full bg-[var(--ls-ok)] [--ls-status:var(--ls-ok)]" />
   );
 }
 
@@ -184,7 +185,7 @@ export function AppSidebar({
 
       <SidebarFooter className="flex-row items-center gap-[9px] border-t border-[var(--ls-border-soft)] px-[18px] py-[13px] font-mono text-[12px] text-[var(--ls-fg-dim)]">
         <span>live tail</span>
-        <span className="ml-auto flex items-center gap-[7px] text-[var(--ls-accent)]">
+        <span className="ml-auto flex items-center gap-[7px] text-[var(--ls-ok)]">
           <PulseDot />
           tailing
         </span>
