@@ -1,7 +1,9 @@
+import { AttrStrip } from '@/components/attr-strip.tsx';
 import { Badge } from '@/components/ui/badge.tsx';
 
 import type { LogRow as LogRowData } from '@localsink/contract';
 
+import { attrPairs } from '../lib/attributes.ts';
 import type { LevelStyle } from '../lib/levels.ts';
 
 // refined.css .r-row column track: disc | time | badge | service | message.
@@ -60,11 +62,7 @@ export function LogRow({
         />
         <span className="min-w-0 truncate">{log.service_name}</span>
       </span>
-      <span className="relative flex min-w-0 items-center overflow-hidden">
-        <span className="min-w-0 flex-[0_1_auto] truncate text-[var(--ls-fg)]">
-          {log.message}
-        </span>
-      </span>
+      <AttrStrip message={log.message} pairs={attrPairs(log)} />
     </div>
   );
 }
