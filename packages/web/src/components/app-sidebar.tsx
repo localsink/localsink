@@ -1,3 +1,4 @@
+import type { ConnectionState } from '@/components/connection-banner.tsx';
 import {
   Sidebar,
   SidebarContent,
@@ -5,6 +6,7 @@ import {
   SidebarHeader,
 } from '@/components/ui/sidebar.tsx';
 import { CheckIcon } from 'lucide-react';
+import type { CSSProperties } from 'react';
 
 import type { LogMeta } from '@localsink/contract';
 
@@ -13,11 +15,41 @@ import { cn } from '../lib/utils.ts';
 
 const FAINT = 'var(--ls-fg-faint)';
 
-// Connection status dot — uses the semantic --ls-ok green (independent of the
-// brand accent) with the radiating ls-pulse ring.
-function PulseDot() {
+// CSSProperties widened for the --ls-status custom property the pulse reads.
+type StyleVars = CSSProperties & Record<`--${string}`, string>;
+
+// Pulse cadence (refined.css .ls-dot): connected slow, reconnecting fast,
+// offline static.
+type Pulse = 'slow' | 'fast' | 'none';
+const PULSE_CLASS: Record<Pulse, string> = {
+  slow: 'animate-ls-pulse',
+  fast: 'animate-ls-pulse-fast',
+  none: '',
+};
+
+// Connection status → dot color (semantic, independent of the brand accent),
+// footer label, and pulse cadence.
+const CONN_STATUS: Record<
+  ConnectionState,
+  { color: string; label: string; pulse: Pulse }
+> = {
+  connected: { color: 'var(--ls-ok)', label: 'tailing', pulse: 'slow' },
+  reconnecting: {
+    color: 'var(--ls-warn)',
+    label: 'reconnecting…',
+    pulse: 'fast',
+  },
+  offline: { color: 'var(--ls-error)', label: 'offline', pulse: 'none' },
+};
+
+// Status dot with the radiating ls-pulse ring (refined.css .ls-dot).
+function StatusDot({ color, pulse }: { color: string; pulse: Pulse }) {
+  const style: StyleVars = { background: color, '--ls-status': color };
   return (
-    <span className="size-[9px] shrink-0 animate-ls-pulse rounded-full bg-[var(--ls-ok)] [--ls-status:var(--ls-ok)]" />
+    <span
+      className={cn('size-[9px] shrink-0 rounded-full', PULSE_CLASS[pulse])}
+      style={style}
+    />
   );
 }
 
@@ -106,6 +138,7 @@ type AppSidebarProps = {
   onToggleLevel: (level: string) => void;
   onClearServices: () => void;
   onClearLevels: () => void;
+  conn: ConnectionState;
 };
 
 export function AppSidebar({
@@ -118,7 +151,9 @@ export function AppSidebar({
   onToggleLevel,
   onClearServices,
   onClearLevels,
+  conn,
 }: AppSidebarProps) {
+  const status = CONN_STATUS[conn];
   const services = meta?.services ?? [];
   // Severity facets ordered most-severe first; unrecognized levels (rank -1)
   // fall to the bottom.
@@ -129,7 +164,7 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader className="flex-row items-center gap-[9px] px-4 pt-[17px] pb-[15px]">
-        <PulseDot />
+        <StatusDot color={status.color} pulse={status.pulse} />
         <span className="font-mono text-[16px] font-semibold">localsink</span>
       </SidebarHeader>
 
@@ -185,9 +220,12 @@ export function AppSidebar({
 
       <SidebarFooter className="flex-row items-center gap-[9px] border-t border-[var(--ls-border-soft)] px-[18px] py-[13px] font-mono text-[12px] text-[var(--ls-fg-dim)]">
         <span>live tail</span>
-        <span className="ml-auto flex items-center gap-[7px] text-[var(--ls-ok)]">
-          <PulseDot />
-          tailing
+        <span
+          className="ml-auto flex items-center gap-[7px]"
+          style={{ color: status.color }}
+        >
+          <StatusDot color={status.color} pulse={status.pulse} />
+          {status.label}
         </span>
       </SidebarFooter>
     </Sidebar>

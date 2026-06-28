@@ -19,8 +19,10 @@
   --color-trace: var(--ls-trace);
   --color-accent-ls: var(--ls-accent);
 
-  /* connection status dot — radiating box-shadow ring (refined.css .ls-dot) */
+  /* connection status dot — radiating box-shadow ring (refined.css .ls-dot).
+     Fast variant is the reconnecting cadence. */
   --animate-ls-pulse: ls-pulse 2s ease-out infinite;
+  --animate-ls-pulse-fast: ls-pulse 1s ease-out infinite;
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);

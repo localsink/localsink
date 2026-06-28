@@ -1,4 +1,6 @@
 import { AppSidebar } from '@/components/app-sidebar.tsx';
+import { ConnectionBanner } from '@/components/connection-banner.tsx';
+import type { ConnectionState } from '@/components/connection-banner.tsx';
 import { EditionBadge } from '@/components/edition-badge.tsx';
 import { LogList } from '@/components/log-list.tsx';
 import { ModeToggle } from '@/components/mode-toggle.tsx';
@@ -43,6 +45,8 @@ export default function App() {
   );
   const [selectedLevels, setSelectedLevels] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
+  // Static until live-tail polling sets it from real connectivity.
+  const [conn] = useState<ConnectionState>('connected');
 
   // Shape-of-DB metadata (facet values) is fetched once.
   useEffect(() => {
@@ -129,6 +133,7 @@ export default function App() {
         onToggleLevel={toggleLevel}
         onClearServices={clearServices}
         onClearLevels={clearLevels}
+        conn={conn}
       />
       <SidebarInset className="flex min-h-0 min-w-0 flex-col overflow-hidden">
         <header className="flex h-[52px] flex-none items-center gap-3 border-b border-[var(--ls-border-soft)] px-5">
@@ -144,6 +149,7 @@ export default function App() {
             <ModeToggle />
           </div>
         </header>
+        <ConnectionBanner conn={conn} />
         <LogList
           logs={logs}
           colorFor={colorFor}
