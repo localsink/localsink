@@ -1,6 +1,7 @@
 import { AppSidebar } from '@/components/app-sidebar.tsx';
 import { LogList } from '@/components/log-list.tsx';
 import { ModeToggle } from '@/components/mode-toggle.tsx';
+import { Topbar } from '@/components/topbar.tsx';
 import { Input } from '@/components/ui/input.tsx';
 import {
   SidebarInset,
@@ -131,6 +132,12 @@ export default function App() {
       <SidebarInset className="flex min-h-0 min-w-0 flex-col overflow-hidden">
         <header className="flex h-[52px] flex-none items-center gap-3 border-b border-[var(--ls-border-soft)] px-5">
           <SidebarTrigger />
+          <Topbar
+            meta={meta}
+            selectedServices={selectedServices}
+            selectedLevels={selectedLevels}
+            levelStyleFor={levelStyleFor}
+          />
           <div className="ml-auto">
             <ModeToggle />
           </div>
