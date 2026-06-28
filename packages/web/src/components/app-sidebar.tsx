@@ -13,6 +13,13 @@ import { cn } from '../lib/utils.ts';
 
 const FAINT = 'var(--ls-fg-faint)';
 
+// Connection status dot — accent fill with the radiating ls-pulse ring.
+function PulseDot() {
+  return (
+    <span className="size-[9px] shrink-0 animate-ls-pulse rounded-full bg-[var(--ls-accent)] [--ls-status:var(--ls-accent)]" />
+  );
+}
+
 // Visual facet checkbox (refined.css .r-check) — not an interactive control;
 // the whole facet row handles the click. A spacer keeps the "all" row aligned.
 function FacetCheck({ active, spacer }: { active: boolean; spacer?: boolean }) {
@@ -78,30 +85,13 @@ function FacetRow({
   );
 }
 
-function GroupHeader({
-  label,
-  showClear,
-  onClear,
-}: {
-  label: string;
-  showClear: boolean;
-  onClear: () => void;
-}) {
+// Group label only — clearing a group is the "all" row's job, so there is no
+// separate clear button.
+function GroupLabel({ label }: { label: string }) {
   return (
-    <div className="flex items-baseline justify-between">
-      <span className="px-[6px] pt-[14px] pb-[8px] font-mono text-[10.5px] tracking-[0.14em] text-[var(--ls-fg-faint)] uppercase">
-        {label}
-      </span>
-      {showClear ? (
-        <button
-          type="button"
-          className="cursor-pointer px-[6px] pt-[14px] pb-[8px] font-mono text-[10px] lowercase text-[var(--ls-fg-faint)] hover:text-[var(--ls-accent)]"
-          onClick={onClear}
-        >
-          clear
-        </button>
-      ) : null}
-    </div>
+    <span className="block px-[6px] pt-[14px] pb-[8px] font-mono text-[10.5px] tracking-[0.14em] text-[var(--ls-fg-faint)] uppercase">
+      {label}
+    </span>
   );
 }
 
@@ -138,17 +128,13 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader className="flex-row items-center gap-[9px] px-4 pt-[17px] pb-[15px]">
-        <span className="size-[9px] shrink-0 animate-pulse rounded-full bg-[var(--ls-accent)]" />
+        <PulseDot />
         <span className="font-mono text-[16px] font-semibold">localsink</span>
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-0.5">
         <div>
-          <GroupHeader
-            label="Service"
-            showClear={selectedServices.size > 0}
-            onClear={onClearServices}
-          />
+          <GroupLabel label="Service" />
           <FacetRow
             active={selectedServices.size === 0}
             dotColor={FAINT}
@@ -170,11 +156,7 @@ export function AppSidebar({
         </div>
 
         <div>
-          <GroupHeader
-            label="Severity"
-            showClear={selectedLevels.size > 0}
-            onClear={onClearLevels}
-          />
+          <GroupLabel label="Severity" />
           <FacetRow
             active={selectedLevels.size === 0}
             dotColor={FAINT}
@@ -203,7 +185,7 @@ export function AppSidebar({
       <SidebarFooter className="flex-row items-center gap-[9px] border-t border-[var(--ls-border-soft)] px-[18px] py-[13px] font-mono text-[12px] text-[var(--ls-fg-dim)]">
         <span>live tail</span>
         <span className="ml-auto flex items-center gap-[7px] text-[var(--ls-accent)]">
-          <span className="size-[9px] shrink-0 animate-pulse rounded-full bg-[var(--ls-accent)]" />
+          <PulseDot />
           tailing
         </span>
       </SidebarFooter>
