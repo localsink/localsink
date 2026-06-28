@@ -100,12 +100,14 @@
   --ls-ok: oklch(0.55 0.15 152);
   --ls-accent: oklch(0.74 0.14 152);
 
-  /* service identity colors (stable per service, shared across themes) */
-  --ls-svc-api: oklch(0.7 0.13 250);
-  --ls-svc-auth: oklch(0.7 0.13 305);
-  --ls-svc-payments: oklch(0.74 0.14 152);
-  --ls-svc-web: oklch(0.8 0.13 82);
-  --ls-svc-worker: oklch(0.74 0.12 200);
+  /* service identity palette — assigned by hashing the service name, so any
+     real service name gets a stable color. Theme-shared (same in light/dark). */
+  --ls-svc-1: oklch(0.7 0.13 250);
+  --ls-svc-2: oklch(0.7 0.13 305);
+  --ls-svc-3: oklch(0.74 0.14 152);
+  --ls-svc-4: oklch(0.8 0.13 82);
+  --ls-svc-5: oklch(0.74 0.12 200);
+  --ls-svc-6: oklch(0.72 0.13 30);
 
   /* shadcn semantic vars → localsink palette */
   --background: var(--ls-bg);
