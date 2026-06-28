@@ -20,6 +20,7 @@ export default mergeConfig(
       name: 'web-unit',
       include: SPEC_GLOB,
       exclude: INTEGRATION_GLOB,
+      setupFiles: ['./src/test-setup.ts'],
       browser: {
         enabled: true,
         provider: playwright(),

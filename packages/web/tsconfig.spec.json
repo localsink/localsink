@@ -8,6 +8,7 @@
     "outDir": "out-tsc/spec",
     "tsBuildInfoFile": "out-tsc/tsconfig.spec.tsbuildinfo",
     "types": ["vitest/globals", "vite/client"],
+    "customConditions": ["@localsink/source"],
     "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src/**/*.spec.ts", "src/**/*.spec.tsx"],
