@@ -10,11 +10,7 @@ export class LocalsinkTransport extends Transport {
   private readonly pending = new Set<Promise<void>>();
 
   constructor(opts: unknown) {
-    super(
-      typeof opts === 'object' && opts !== null
-        ? (opts as ConstructorParameters<typeof Transport>[0])
-        : undefined,
-    );
+    super(typeof opts === 'object' && opts !== null ? opts : undefined);
     this.client = createClient(TransportOptionsSchema.parse(opts));
   }
 
