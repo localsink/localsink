@@ -46,6 +46,7 @@
     "test": "vitest run",
     "dev": "node --conditions=@localsink/source --watch --watch-path=src src/server.ts",
     "start": "node --conditions=@localsink/source src/server.ts",
+    "seed": "node --conditions=@localsink/source src/seed.ts",
     "drizzle-kit:push": "drizzle-kit push",
     "drizzle-kit:generate": "drizzle-kit generate",
     "drizzle-kit:migrate": "drizzle-kit migrate"

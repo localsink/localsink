@@ -10,6 +10,11 @@
     "tsBuildInfoFile": "out-tsc/tsconfig.lib.tsbuildinfo"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["vitest.config.ts", "tsdown.config.ts", "src/**/*.spec.ts"],
+  "exclude": [
+    "vitest.config.ts",
+    "tsdown.config.ts",
+    "src/**/*.spec.ts",
+    "src/fixtures/**"
+  ],
   "references": []
 }

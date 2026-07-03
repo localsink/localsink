@@ -2,7 +2,9 @@ import type { LogRow } from '@localsink/contract';
 
 // Deterministic sample logs typed against the real wire contract (LogRow):
 // epoch-ms timestamps, object attributes, and object errors with a joined
-// stack string. Drives the UI until the real /api/logs wiring lands.
+// stack string. Shared dev/test fixture: feeds the web MSW pseudo-backend and
+// the server seed script. Workspace-only — exported via the
+// `@localsink/source` condition and excluded from the published package.
 
 const BASE_TS = Date.UTC(2026, 5, 27, 16, 20, 27, 407);
 const STEP_MS = 47_000;

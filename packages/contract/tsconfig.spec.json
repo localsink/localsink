@@ -8,6 +8,6 @@
     "rewriteRelativeImportExtensions": false,
     "allowImportingTsExtensions": true
   },
-  "include": ["src/**/*.spec.ts"],
+  "include": ["src/**/*.spec.ts", "src/fixtures/**/*.ts"],
   "references": [{ "path": "./tsconfig.lib.json" }]
 }

@@ -1,8 +1,7 @@
 import { http, HttpResponse } from 'msw';
 
 import type { LogMeta, LogPage, LogRow } from '@localsink/contract';
-
-import { sampleLogs } from '../lib/sample-data.ts';
+import { sampleLogs } from '@localsink/contract/fixtures';
 
 const DEFAULT_LIMIT = 50;
 

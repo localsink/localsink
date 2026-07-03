@@ -1,7 +1,8 @@
 import { expect, test } from 'vitest';
 
+import { sampleLogs } from '@localsink/contract/fixtures';
+
 import { fetchLogs, fetchMeta } from './api.ts';
-import { sampleLogs } from './sample-data.ts';
 
 // These drive the real api client against the MSW pseudo-backend (handlers.ts),
 // so they cover filter/search/pagination/meta end-to-end. Expectations are
