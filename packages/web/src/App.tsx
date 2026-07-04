@@ -199,6 +199,10 @@ export default function App() {
           onToggle={toggle}
           pinned={tail.pinned}
           onPinnedChange={tail.setPinned}
+          pendingCount={tail.pendingCount}
+          onJumpToLive={() => {
+            tail.setPinned(true);
+          }}
         />
         <div className="flex-none border-t border-[var(--ls-border-soft)] px-5 pt-3 pb-4">
           <Input
