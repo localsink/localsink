@@ -11,9 +11,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar.tsx';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-
-import type { LogMeta, LogRow } from '@localsink/contract';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useCallback, useMemo, useState } from 'react';
 
 import { fetchLogs, fetchMeta } from './lib/api.ts';
 import type { LogQuery } from './lib/api.ts';
@@ -27,6 +26,12 @@ const FALLBACK_LEVEL_STYLE: LevelStyle = {
   rank: -1,
 };
 
+// Short-poll cadence; the ConnectionBanner copy ("retrying every 5s")
+// describes this interval.
+const POLL_MS = 5000;
+// Consecutive failures before the banner escalates reconnecting → offline.
+const OFFLINE_AFTER = 3;
+
 function toggleInSet(prev: Set<string>, key: string): Set<string> {
   const next = new Set(prev);
   if (next.has(key)) next.delete(key);
@@ -34,51 +39,73 @@ function toggleInSet(prev: Set<string>, key: string): Set<string> {
   return next;
 }
 
-// Shell: fetch from the MSW backend and render the faceted sidebar + grid.
+// Shell: query the backend and render the faceted sidebar + grid.
 // Facet selection and search drive the query (OR within a group, AND across).
 export default function App() {
-  const [logs, setLogs] = useState<LogRow[]>([]);
-  const [meta, setMeta] = useState<LogMeta | null>(null);
   const [openIds, setOpenIds] = useState<Set<number>>(new Set());
   const [selectedServices, setSelectedServices] = useState<Set<string>>(
     new Set(),
   );
   const [selectedLevels, setSelectedLevels] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
-  // Static until live-tail polling sets it from real connectivity.
-  const [conn] = useState<ConnectionState>('connected');
 
-  // Shape-of-DB metadata (facet values) is fetched once.
-  useEffect(() => {
-    let active = true;
-    async function loadMeta() {
-      const result = await fetchMeta();
-      if (active) setMeta(result);
-    }
-    void loadMeta();
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  // Logs re-fetch whenever the filters change; a flag drops stale responses.
-  useEffect(() => {
-    let active = true;
-    async function loadLogs() {
-      const params: LogQuery = {};
-      if (selectedServices.size > 0)
-        params.service_name = [...selectedServices];
-      if (selectedLevels.size > 0) params.level = [...selectedLevels];
-      const trimmed = query.trim();
-      if (trimmed !== '') params.q = trimmed;
-      const page = await fetchLogs(params);
-      if (active) setLogs(page.data);
-    }
-    void loadLogs();
-    return () => {
-      active = false;
-    };
+  const filters = useMemo(() => {
+    const params: LogQuery = {};
+    if (selectedServices.size > 0) params.service_name = [...selectedServices];
+    if (selectedLevels.size > 0) params.level = [...selectedLevels];
+    const trimmed = query.trim();
+    if (trimmed !== '') params.q = trimmed;
+    return params;
   }, [selectedServices, selectedLevels, query]);
+
+  // Consecutive failed log polls. Counted in the queryFn because TanStack's
+  // failureCount resets at the start of every refetch (it only counts
+  // retries within one fetch cycle), so it can't see failures *across* polls.
+  const [failures, setFailures] = useState(0);
+
+  // Both queries short-poll. retry: false — the 5s interval is already the
+  // retry loop; internal retries would just delay the error surfacing.
+  const metaQuery = useQuery({
+    queryKey: ['meta'],
+    queryFn: fetchMeta,
+    retry: false,
+    refetchInterval: POLL_MS,
+  });
+  // Logs re-fetch whenever the filters change (they're part of the query
+  // key); the previous page stays visible while the new one loads, and the
+  // last received page stays visible while the backend is unreachable.
+  const logsQuery = useQuery({
+    queryKey: ['logs', filters],
+    queryFn: async () => {
+      try {
+        const page = await fetchLogs(filters);
+        setFailures(0);
+        return page;
+      } catch (error) {
+        setFailures((count) => count + 1);
+        throw error;
+      }
+    },
+    placeholderData: keepPreviousData,
+    retry: false,
+    refetchInterval: POLL_MS,
+  });
+
+  const meta = metaQuery.data ?? null;
+  const logs = logsQuery.data?.data ?? [];
+
+  // Connectivity derived from the logs poll — no separate health ping.
+  const conn: ConnectionState =
+    failures === 0
+      ? 'connected'
+      : failures < OFFLINE_AFTER
+        ? 'reconnecting'
+        : 'offline';
+
+  const retry = () => {
+    void logsQuery.refetch();
+    void metaQuery.refetch();
+  };
 
   const colorMap = useMemo(
     () => buildServiceColorMap(meta?.services ?? []),
@@ -149,7 +176,7 @@ export default function App() {
             <ModeToggle />
           </div>
         </header>
-        <ConnectionBanner conn={conn} />
+        <ConnectionBanner conn={conn} onRetry={retry} />
         <LogList
           logs={logs}
           colorFor={colorFor}

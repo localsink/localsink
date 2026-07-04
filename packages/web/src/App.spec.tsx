@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { expect, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 
@@ -6,9 +7,11 @@ import { ThemeProvider } from './components/theme-provider.tsx';
 
 test('renders logs fetched from the backend', async () => {
   const { getByText } = await render(
-    <ThemeProvider defaultTheme="dark">
-      <App />
-    </ThemeProvider>,
+    <QueryClientProvider client={new QueryClient()}>
+      <ThemeProvider defaultTheme="dark">
+        <App />
+      </ThemeProvider>
+    </QueryClientProvider>,
   );
 
   // Always-present main-column chrome → App mounted.
