@@ -175,6 +175,8 @@ export default function App() {
         onClearServices={clearServices}
         onClearLevels={clearLevels}
         conn={conn}
+        paused={tail.paused}
+        onToggleTail={tail.toggleTail}
       />
       <SidebarInset className="flex min-h-0 min-w-0 flex-col overflow-hidden">
         <header className="flex h-[52px] flex-none items-center gap-3 border-b border-[var(--ls-border-soft)] px-5">

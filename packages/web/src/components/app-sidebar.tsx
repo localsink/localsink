@@ -139,6 +139,8 @@ type AppSidebarProps = {
   onClearServices: () => void;
   onClearLevels: () => void;
   conn: ConnectionState;
+  paused: boolean;
+  onToggleTail: () => void;
 };
 
 export function AppSidebar({
@@ -152,8 +154,12 @@ export function AppSidebar({
   onClearServices,
   onClearLevels,
   conn,
+  paused,
+  onToggleTail,
 }: AppSidebarProps) {
   const status = CONN_STATUS[conn];
+  const connected = conn === 'connected';
+  const live = connected && !paused;
   const services = meta?.services ?? [];
   // Severity facets ordered most-severe first; unrecognized levels (rank -1)
   // fall to the bottom.
@@ -218,14 +224,33 @@ export function AppSidebar({
         </div>
       </SidebarContent>
 
-      <SidebarFooter className="flex-row items-center gap-[9px] border-t border-[var(--ls-border-soft)] px-[18px] py-[13px] font-mono text-[12px] text-[var(--ls-fg-dim)]">
-        <span>live tail</span>
+      <SidebarFooter
+        className={cn(
+          'flex-row items-center gap-[9px] border-t border-[var(--ls-border-soft)] px-[18px] py-[13px] font-mono text-[12px] text-[var(--ls-fg-dim)]',
+          connected && 'cursor-pointer hover:bg-[var(--ls-bg-hover)]',
+        )}
+        title={connected ? 'Toggle live tail' : undefined}
+        onClick={() => {
+          if (connected) onToggleTail();
+        }}
+      >
+        {/* "{n} logs" here belongs to the counts feature (Beyond MVP, off
+            by default) — until then the label is static and faint. */}
+        <span className="text-[var(--ls-fg-faint)]">live tail</span>
         <span
           className="ml-auto flex items-center gap-[7px]"
-          style={{ color: status.color }}
+          style={{ color: connected && paused ? FAINT : status.color }}
         >
-          <StatusDot color={status.color} pulse={status.pulse} />
-          {status.label}
+          {conn === 'offline' ? null : (
+            // Paused mutes the whole tail state: faint static dot, no pulse
+            // (the pulse reads as "live"). The header dot keeps showing raw
+            // connectivity.
+            <StatusDot
+              color={connected && paused ? FAINT : status.color}
+              pulse={connected && paused ? 'none' : status.pulse}
+            />
+          )}
+          {live ? 'tailing' : connected ? '▸ paused' : status.label}
         </span>
       </SidebarFooter>
     </Sidebar>

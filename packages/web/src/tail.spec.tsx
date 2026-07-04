@@ -144,3 +144,44 @@ test('scrolling up holds arrivals behind a "N new" pill; the pill flushes them',
     )
     .toBeLessThanOrEqual(4);
 });
+
+test('the footer toggle pauses polling entirely and resumes with a catch-up', async () => {
+  // One brand-new row per poll — nextId doubles as a poll counter, so a
+  // frozen nextId proves the poll schedule actually stopped.
+  let nextId = Math.max(...sampleLogs.map((log) => log.id)) + 1;
+  const template = sampleLogs.at(-1);
+  if (template === undefined) throw new Error('fixtures are empty');
+  worker.use(
+    http.get('/api/logs', ({ request }) => {
+      const afterId = new URL(request.url).searchParams.get('after_id');
+      if (afterId === null) return undefined;
+      const row: LogRow = {
+        ...template,
+        id: nextId,
+        timestamp: template.timestamp + nextId * 1000,
+        message: `tail row ${nextId}`,
+      };
+      nextId += 1;
+      const body: LogPage = { data: [row], next_cursor: null, has_more: false };
+      return HttpResponse.json(body);
+    }),
+  );
+
+  const screen = await renderApp();
+  await expect.element(screen.getByText('tailing')).toBeInTheDocument();
+
+  await screen.getByText('tailing').click();
+  await expect.element(screen.getByText('▸ paused')).toBeInTheDocument();
+
+  // Two poll intervals with no after_id request: the schedule is stopped.
+  const before = nextId;
+  await new Promise((resolve) => setTimeout(resolve, 2500));
+  expect(nextId).toBe(before);
+
+  // Resume: immediate refetch drains what "arrived" while paused.
+  await screen.getByText('▸ paused').click();
+  await expect.element(screen.getByText('tailing')).toBeInTheDocument();
+  await expect
+    .element(screen.getByText(`tail row ${String(before)}`), { timeout: 5000 })
+    .toBeInTheDocument();
+});

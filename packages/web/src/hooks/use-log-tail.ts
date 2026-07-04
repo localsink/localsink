@@ -48,6 +48,12 @@ export function useLogTail(filters: LogQuery) {
   const [pinned, setPinnedState] = useState(true);
   const pinnedRef = useRef(true);
 
+  // The explicit tail toggle (sidebar footer). Unlike the scroll-up
+  // auto-pause — which keeps polling and buffers arrivals — pausing stops
+  // the poll schedule entirely ("tail off: don't poll"). While paused,
+  // connectivity is frozen at its last known value.
+  const [paused, setPaused] = useState(false);
+
   const stateRef = useRef<TailState>({
     filtersKey: '',
     rows: [],
@@ -132,8 +138,16 @@ export function useLogTail(filters: LogQuery) {
     },
     // The poll interval is already the retry loop.
     retry: false,
-    refetchInterval: POLL_MS,
+    refetchInterval: paused ? false : POLL_MS,
   });
+
+  // Resuming refetches immediately — the watermark hasn't moved, so one
+  // poll (with its has_more catch-up loop) drains everything that arrived
+  // while paused. Pausing just stops the schedule.
+  const toggleTail = () => {
+    if (paused) void query.refetch();
+    setPaused(!paused);
+  };
 
   return {
     logs: rows,
@@ -142,5 +156,7 @@ export function useLogTail(filters: LogQuery) {
     refetch: query.refetch,
     pinned,
     setPinned,
+    paused,
+    toggleTail,
   };
 }
