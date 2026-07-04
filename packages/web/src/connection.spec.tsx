@@ -1,23 +1,27 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
 import { http, HttpResponse } from 'msw';
 import { expect, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 
-import App from './App.tsx';
 import { ThemeProvider } from './components/theme-provider.tsx';
 import { worker } from './mocks/browser.ts';
+import { createAppRouter } from './router.ts';
 
-// Connectivity is derived from the logs poll (failureCount), so these specs
-// drive it by making the MSW logs handler fail like a downed backend.
+// Connectivity is derived from the logs poll (consecutive failures), so these
+// specs drive it by making the MSW logs handler fail like a downed backend.
 // test-setup.ts resets the override between tests.
 
 const logsFailure = http.get('/api/logs', () => HttpResponse.error());
 
 async function renderApp() {
+  const router = createAppRouter(
+    createMemoryHistory({ initialEntries: ['/'] }),
+  );
   return await render(
     <QueryClientProvider client={new QueryClient()}>
       <ThemeProvider defaultTheme="dark">
-        <App />
+        <RouterProvider router={router} />
       </ThemeProvider>
     </QueryClientProvider>,
   );

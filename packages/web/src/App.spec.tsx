@@ -1,15 +1,19 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
 import { expect, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 
-import App from './App.tsx';
 import { ThemeProvider } from './components/theme-provider.tsx';
+import { createAppRouter } from './router.ts';
 
 test('renders logs fetched from the backend', async () => {
+  const router = createAppRouter(
+    createMemoryHistory({ initialEntries: ['/'] }),
+  );
   const { getByText } = await render(
     <QueryClientProvider client={new QueryClient()}>
       <ThemeProvider defaultTheme="dark">
-        <App />
+        <RouterProvider router={router} />
       </ThemeProvider>
     </QueryClientProvider>,
   );

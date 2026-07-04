@@ -30,6 +30,7 @@
     "@fontsource-variable/geist-mono": "catalog:",
     "@localsink/contract": "workspace:*",
     "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "lucide-react": "catalog:",

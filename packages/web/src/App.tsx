@@ -12,6 +12,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar.tsx';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { getRouteApi } from '@tanstack/react-router';
 import { useCallback, useMemo, useState } from 'react';
 
 import { fetchLogs, fetchMeta } from './lib/api.ts';
@@ -39,15 +40,31 @@ function toggleInSet(prev: Set<string>, key: string): Set<string> {
   return next;
 }
 
+// Comma-joined URL form of a facet set; undefined drops the param entirely.
+function joinSet(set: Set<string>): string | undefined {
+  return set.size > 0 ? [...set].join(',') : undefined;
+}
+
+const routeApi = getRouteApi('/');
+
 // Shell: query the backend and render the faceted sidebar + grid.
 // Facet selection and search drive the query (OR within a group, AND across).
 export default function App() {
   const [openIds, setOpenIds] = useState<Set<number>>(new Set());
-  const [selectedServices, setSelectedServices] = useState<Set<string>>(
-    new Set(),
+
+  // Filters are URL state (see router.ts): read from the search params,
+  // written back via navigate. Sets are the working shape in components.
+  const search = routeApi.useSearch();
+  const navigate = routeApi.useNavigate();
+  const selectedServices = useMemo(
+    () => new Set(search.service?.split(',') ?? []),
+    [search.service],
   );
-  const [selectedLevels, setSelectedLevels] = useState<Set<string>>(new Set());
-  const [query, setQuery] = useState('');
+  const selectedLevels = useMemo(
+    () => new Set(search.level?.split(',') ?? []),
+    [search.level],
+  );
+  const query = search.q ?? '';
 
   const filters = useMemo(() => {
     const params: LogQuery = {};
@@ -135,18 +152,36 @@ export default function App() {
     });
   }, []);
 
-  const toggleService = useCallback((service: string): void => {
-    setSelectedServices((prev) => toggleInSet(prev, service));
-  }, []);
-  const toggleLevel = useCallback((level: string): void => {
-    setSelectedLevels((prev) => toggleInSet(prev, level));
-  }, []);
+  // Facet changes push history entries (back/forward steps through views).
+  const toggleService = useCallback(
+    (service: string): void => {
+      const next = joinSet(toggleInSet(selectedServices, service));
+      void navigate({
+        to: '.',
+        search: (prev) => ({ ...prev, service: next }),
+      });
+    },
+    [navigate, selectedServices],
+  );
+  const toggleLevel = useCallback(
+    (level: string): void => {
+      const next = joinSet(toggleInSet(selectedLevels, level));
+      void navigate({ to: '.', search: (prev) => ({ ...prev, level: next }) });
+    },
+    [navigate, selectedLevels],
+  );
   const clearServices = useCallback(() => {
-    setSelectedServices(new Set());
-  }, []);
+    void navigate({
+      to: '.',
+      search: (prev) => ({ ...prev, service: undefined }),
+    });
+  }, [navigate]);
   const clearLevels = useCallback(() => {
-    setSelectedLevels(new Set());
-  }, []);
+    void navigate({
+      to: '.',
+      search: (prev) => ({ ...prev, level: undefined }),
+    });
+  }, [navigate]);
 
   return (
     <SidebarProvider className="h-svh overflow-hidden">
@@ -188,7 +223,16 @@ export default function App() {
           <Input
             value={query}
             onChange={(event) => {
-              setQuery(event.target.value);
+              // replace, not push — typing shouldn't spam the history stack.
+              const value = event.target.value;
+              void navigate({
+                to: '.',
+                search: (prev) => ({
+                  ...prev,
+                  q: value === '' ? undefined : value,
+                }),
+                replace: true,
+              });
             }}
             placeholder="Search logs…"
           />
