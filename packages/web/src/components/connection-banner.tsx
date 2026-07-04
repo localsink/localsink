@@ -22,7 +22,7 @@ const STATE = {
     color: 'var(--ls-error)',
     background: 'var(--ls-error-bg)',
     message: "Can't reach the localsink backend.",
-    meta: 'showing last received logs · retrying every 5s',
+    meta: 'showing last received logs · retrying every second',
     pulseClass: '',
   },
 };

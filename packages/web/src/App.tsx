@@ -11,11 +11,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar.tsx';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
 import { useCallback, useMemo, useState } from 'react';
 
-import { fetchLogs, fetchMeta } from './lib/api.ts';
+import { useLogTail } from './hooks/use-log-tail.ts';
+import { fetchMeta } from './lib/api.ts';
 import type { LogQuery } from './lib/api.ts';
 import { buildLevelStyleMap } from './lib/levels.ts';
 import type { LevelStyle } from './lib/levels.ts';
@@ -27,9 +28,9 @@ const FALLBACK_LEVEL_STYLE: LevelStyle = {
   rank: -1,
 };
 
-// Short-poll cadence; the ConnectionBanner copy ("retrying every 5s")
-// describes this interval.
-const POLL_MS = 5000;
+// Meta (facet counts) refreshes slower than the 1s log tail — new services
+// and levels appearing within a few seconds is plenty.
+const META_POLL_MS = 5000;
 // Consecutive failures before the banner escalates reconnecting → offline.
 const OFFLINE_AFTER = 3;
 
@@ -75,41 +76,19 @@ export default function App() {
     return params;
   }, [selectedServices, selectedLevels, query]);
 
-  // Consecutive failed log polls. Counted in the queryFn because TanStack's
-  // failureCount resets at the start of every refetch (it only counts
-  // retries within one fetch cycle), so it can't see failures *across* polls.
-  const [failures, setFailures] = useState(0);
-
-  // Both queries short-poll. retry: false — the 5s interval is already the
-  // retry loop; internal retries would just delay the error surfacing.
   const metaQuery = useQuery({
     queryKey: ['meta'],
     queryFn: fetchMeta,
     retry: false,
-    refetchInterval: POLL_MS,
+    refetchInterval: META_POLL_MS,
   });
-  // Logs re-fetch whenever the filters change (they're part of the query
-  // key); the previous page stays visible while the new one loads, and the
-  // last received page stays visible while the backend is unreachable.
-  const logsQuery = useQuery({
-    queryKey: ['logs', filters],
-    queryFn: async () => {
-      try {
-        const page = await fetchLogs(filters);
-        setFailures(0);
-        return page;
-      } catch (error) {
-        setFailures((count) => count + 1);
-        throw error;
-      }
-    },
-    placeholderData: keepPreviousData,
-    retry: false,
-    refetchInterval: POLL_MS,
-  });
+  const tail = useLogTail(filters);
+  const { failures } = tail;
 
   const meta = metaQuery.data ?? null;
-  const logs = logsQuery.data?.data ?? [];
+  // The tail buffer is oldest→newest; the list still renders newest at the
+  // top for now (the ordering flip is the next step).
+  const logs = useMemo(() => tail.logs.toReversed(), [tail.logs]);
 
   // Connectivity derived from the logs poll — no separate health ping.
   const conn: ConnectionState =
@@ -120,7 +99,7 @@ export default function App() {
         : 'offline';
 
   const retry = () => {
-    void logsQuery.refetch();
+    void tail.refetch();
     void metaQuery.refetch();
   };
 

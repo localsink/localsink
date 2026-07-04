@@ -70,6 +70,20 @@ test('q narrows results to matching rows', async () => {
   );
 });
 
+test('after_id returns only newer rows, ordered id ASC', async () => {
+  const ids = sampleLogs.map((log) => log.id).toSorted((a, b) => a - b);
+  const watermark = ids.at(-3);
+  if (watermark === undefined) throw new Error('need at least 3 fixtures');
+
+  const page = await fetchLogs({ after_id: watermark, limit: 100 });
+
+  expect(page.data.map((row) => row.id)).toEqual(
+    ids.filter((id) => id > watermark),
+  );
+  expect(page.next_cursor).toBeNull();
+  expect(page.has_more).toBe(false);
+});
+
 test('limit pages with a cursor that yields a disjoint next page', async () => {
   const page1 = await fetchLogs({ limit: 10 });
   expect(page1.data.length).toBe(10);

@@ -7,6 +7,7 @@ export type LogQuery = {
   q?: string;
   limit?: number;
   cursor?: string;
+  after_id?: number;
 };
 
 function buildQuery(query: LogQuery): string {
@@ -20,6 +21,9 @@ function buildQuery(query: LogQuery): string {
   if (query.q) params.set('q', query.q);
   if (query.limit !== undefined) params.set('limit', String(query.limit));
   if (query.cursor) params.set('cursor', query.cursor);
+  if (query.after_id !== undefined) {
+    params.set('after_id', String(query.after_id));
+  }
   return params.toString();
 }
 

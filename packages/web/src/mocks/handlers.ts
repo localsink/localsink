@@ -55,6 +55,21 @@ export const handlers = [
     const params = new URL(request.url).searchParams;
     const limit = Number(params.get('limit') ?? DEFAULT_LIMIT);
 
+    // after_id mode (live tail): id ASC above the watermark, next_cursor
+    // stays null — the client derives its next watermark from data.at(-1).id.
+    const afterId = params.get('after_id');
+    if (afterId !== null) {
+      const matching = applyFilters(params)
+        .filter((log) => log.id > Number(afterId))
+        .toSorted((a, b) => a.id - b.id);
+      const page: LogPage = {
+        data: matching.slice(0, limit),
+        next_cursor: null,
+        has_more: matching.length > limit,
+      };
+      return HttpResponse.json(page);
+    }
+
     // Newest first (timestamp DESC, id DESC), matching the real default order.
     const filtered = applyFilters(params).toSorted(
       (a, b) => b.timestamp - a.timestamp || b.id - a.id,
