@@ -17,6 +17,10 @@ type StyleVars = CSSProperties & Record<`--${string}`, string>;
 // deliberate one-notch scroll up.
 const AT_BOTTOM_EPSILON_PX = 4;
 
+// How close to the top edge starts a history load. Generous on purpose:
+// firing a page early makes reaching the top feel seamless.
+const NEAR_TOP_PX = 60;
+
 type LogListProps = {
   // Oldest→newest; renders terminal-style with the newest row at the bottom.
   logs: LogRowData[];
@@ -29,6 +33,8 @@ type LogListProps = {
   // Arrivals held back while unpinned; > 0 shows the "↓ N new" jump pill.
   pendingCount: number;
   onJumpToLive: () => void;
+  // Fired when the viewport nears the top — loads the next history page.
+  onLoadOlder: () => void;
 };
 
 export function LogList({
@@ -41,12 +47,22 @@ export function LogList({
   onPinnedChange,
   pendingCount,
   onJumpToLive,
+  onLoadOlder,
 }: LogListProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
+
+  // Scroll position anchor from the previous layout pass: detects history
+  // prepends (first id got smaller) so the viewport can be compensated.
+  const anchorRef = useRef<{ firstId: number | null; scrollHeight: number }>({
+    firstId: null,
+    scrollHeight: 0,
+  });
 
   // Scrolling away from the bottom releases the pin ("don't yank them
   // down"); scrolling back to the bottom re-acquires it. Programmatic
   // re-pins land exactly at the bottom, so this is a no-op for them.
+  // Nearing the top asks for older history (self-guarded upstream, so the
+  // repeated firing while the user hovers near the top is cheap).
   useEffect(() => {
     const viewport = viewportRef.current;
     if (viewport === null) return undefined;
@@ -55,21 +71,37 @@ export function LogList({
         viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight <=
           AT_BOTTOM_EPSILON_PX,
       );
+      if (viewport.scrollTop <= NEAR_TOP_PX) onLoadOlder();
     };
     viewport.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       viewport.removeEventListener('scroll', handleScroll);
     };
-  }, [onPinnedChange]);
+  }, [onPinnedChange, onLoadOlder]);
 
-  // While pinned, stay glued to the bottom as rows append. Layout effect:
-  // runs after the DOM update but before paint, so there's no flicker of
-  // the pre-scroll position.
+  // While pinned, stay glued to the bottom as rows append; when history
+  // pages prepend above an unpinned viewport, add their height back to
+  // scrollTop so the reading position doesn't jump (native scroll anchoring
+  // is disabled on the viewport — this is the only compensator). Layout
+  // effect: runs after the DOM update but before paint, so neither scroll
+  // adjustment flickers. Caveat: the anchor's scrollHeight goes stale if a
+  // row is expanded between runs — acceptable drift, it only skews the next
+  // prepend compensation.
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
-    if (pinned && viewport !== null && logs.length > 0) {
-      viewport.scrollTop = viewport.scrollHeight;
+    if (viewport === null) return;
+    const firstId = logs.at(0)?.id ?? null;
+    const anchor = anchorRef.current;
+    if (pinned) {
+      if (logs.length > 0) viewport.scrollTop = viewport.scrollHeight;
+    } else if (
+      firstId !== null &&
+      anchor.firstId !== null &&
+      firstId < anchor.firstId
+    ) {
+      viewport.scrollTop += viewport.scrollHeight - anchor.scrollHeight;
     }
+    anchorRef.current = { firstId, scrollHeight: viewport.scrollHeight };
   }, [pinned, logs]);
 
   return (

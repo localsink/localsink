@@ -145,6 +145,86 @@ test('scrolling up holds arrivals behind a "N new" pill; the pill flushes them',
     .toBeLessThanOrEqual(4);
 });
 
+test('scrolling to the top loads older history pages without jumping', async () => {
+  // Window short enough that a 10-row page overflows the list (so there is
+  // a top to scroll to), pages small enough that 21 fixtures span three.
+  await page.viewport(1024, 360);
+
+  // Same cursor semantics as the real handler; tail polls report nothing
+  // new. The default 50-row page would swallow all fixtures whole.
+  const PAGE = 10;
+  const sorted = sampleLogs.toSorted(
+    (a, b) => b.timestamp - a.timestamp || b.id - a.id,
+  );
+  worker.use(
+    http.get('/api/logs', ({ request }) => {
+      const params = new URL(request.url).searchParams;
+      if (params.get('after_id') !== null) {
+        const body: LogPage = { data: [], next_cursor: null, has_more: false };
+        return HttpResponse.json(body);
+      }
+      let start = 0;
+      const cursor = params.get('cursor');
+      if (cursor !== null) {
+        const ts = Number(cursor.split(':')[0]);
+        const id = Number(cursor.split(':')[1]);
+        const index = sorted.findIndex(
+          (log) => log.timestamp < ts || (log.timestamp === ts && log.id < id),
+        );
+        start = index < 0 ? sorted.length : index;
+      }
+      const paged = sorted.slice(start, start + PAGE + 1);
+      const hasMore = paged.length > PAGE;
+      const data = paged.slice(0, PAGE);
+      const lastRow = data.at(-1);
+      const body: LogPage = {
+        data,
+        next_cursor:
+          hasMore && lastRow ? `${lastRow.timestamp}:${lastRow.id}` : null,
+        has_more: hasMore,
+      };
+      return HttpResponse.json(body);
+    }),
+  );
+
+  const newest = sorted.at(0);
+  const oldest = sorted.at(-1);
+  const firstOnPageTwo = sorted.at(PAGE);
+  if (!newest || !oldest || !firstOnPageTwo) throw new Error('need fixtures');
+
+  const screen = await renderApp();
+  await expect.element(screen.getByText(newest.message)).toBeInTheDocument();
+  // Older pages aren't loaded yet.
+  await expect
+    .element(screen.getByText(firstOnPageTwo.message))
+    .not.toBeInTheDocument();
+
+  const viewport = screen.container.querySelector(
+    '[data-slot="scroll-area-viewport"]',
+  );
+  if (viewport === null) throw new Error('scroll viewport not found');
+
+  // Hit the top: the next history page prepends…
+  viewport.scrollTop = 0;
+  await expect
+    .element(screen.getByText(firstOnPageTwo.message), { timeout: 5000 })
+    .toBeInTheDocument();
+  // …and scroll compensation pushed the viewport off 0 by the prepended
+  // height, so the reading position held.
+  await expect.poll(() => viewport.scrollTop).toBeGreaterThan(0);
+
+  // Keep hitting the top until the beginning of history is in.
+  await expect
+    .poll(
+      () => {
+        viewport.scrollTop = 0;
+        return screen.getByText(oldest.message).query() !== null;
+      },
+      { timeout: 5000 },
+    )
+    .toBe(true);
+});
+
 test('the footer toggle pauses polling entirely and resumes with a catch-up', async () => {
   // One brand-new row per poll — nextId doubles as a poll counter, so a
   // frozen nextId proves the poll schedule actually stopped.

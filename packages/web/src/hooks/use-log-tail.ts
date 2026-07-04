@@ -29,6 +29,10 @@ type TailState = {
   rows: LogRow[];
   pending: LogRow[];
   watermark: number | null;
+  // Keyset cursor pointing below the oldest buffered row — the seed page's
+  // next_cursor, then each history page's. null = the beginning is loaded.
+  olderCursor: string | null;
+  loadingOlder: boolean;
 };
 
 export function useLogTail(filters: LogQuery) {
@@ -59,6 +63,8 @@ export function useLogTail(filters: LogQuery) {
     rows: [],
     pending: [],
     watermark: null,
+    olderCursor: null,
+    loadingOlder: false,
   });
 
   // Re-pinning (scroll-to-bottom or the pill) flushes pending arrivals into
@@ -88,6 +94,8 @@ export function useLogTail(filters: LogQuery) {
           rows: [],
           pending: [],
           watermark: null,
+          olderCursor: null,
+          loadingOlder: false,
         };
         pinnedRef.current = true;
         setPinnedState(true);
@@ -101,6 +109,7 @@ export function useLogTail(filters: LogQuery) {
           const page = await fetchLogs(filters);
           state.rows = page.data.toReversed();
           state.watermark = state.rows.at(-1)?.id ?? 0;
+          state.olderCursor = page.next_cursor;
           setRows(state.rows);
         } else {
           // Tail: drain everything above the watermark. has_more means the
@@ -149,6 +158,30 @@ export function useLogTail(filters: LogQuery) {
     setPaused(!paused);
   };
 
+  // History: prepend the page below the oldest buffered row (the existing
+  // keyset cursor API). Fired from the list when the viewport nears the
+  // top; self-guards against re-entry and against the beginning of history.
+  // Terminal-scrollback semantics bound the DOM: once the buffer holds
+  // MAX_ROWS, history stops loading (may overshoot by one page) — beyond
+  // the scrollback you filter or search, not scroll. Trimming the far end
+  // instead would evict the live edge and leave a gap on the way back down.
+  const loadOlder = async () => {
+    const state = stateRef.current;
+    if (state.loadingOlder || state.olderCursor === null) return;
+    if (state.rows.length >= MAX_ROWS) return;
+    state.loadingOlder = true;
+    try {
+      const page = await fetchLogs({ ...filters, cursor: state.olderCursor });
+      state.rows = [...page.data.toReversed(), ...state.rows];
+      state.olderCursor = page.next_cursor;
+      setRows(state.rows);
+    } catch {
+      // Keep the cursor; the next near-top scroll retries.
+    } finally {
+      state.loadingOlder = false;
+    }
+  };
+
   return {
     logs: rows,
     pendingCount,
@@ -158,5 +191,6 @@ export function useLogTail(filters: LogQuery) {
     setPinned,
     paused,
     toggleTail,
+    loadOlder,
   };
 }

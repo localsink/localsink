@@ -205,6 +205,9 @@ export default function App() {
           onJumpToLive={() => {
             tail.setPinned(true);
           }}
+          onLoadOlder={() => {
+            void tail.loadOlder();
+          }}
         />
         <div className="flex-none border-t border-[var(--ls-border-soft)] px-5 pt-3 pb-4">
           <Input
