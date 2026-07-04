@@ -30,6 +30,11 @@ export function useLogTail(filters: LogQuery) {
   // failures *across* polls.
   const [failures, setFailures] = useState(0);
 
+  // Whether the list should stay glued to the live edge. Owned here rather
+  // than by the list because the tail itself will react to it (arrivals get
+  // held back while unpinned — the "↓ N new" behavior).
+  const [pinned, setPinned] = useState(true);
+
   // The buffer lives in a ref, not query data: successive polls *accumulate*
   // into it, while TanStack only ever sees the latest snapshot returned from
   // the queryFn.
@@ -42,10 +47,12 @@ export function useLogTail(filters: LogQuery) {
   const query = useQuery({
     queryKey: ['logs', filters],
     queryFn: async () => {
-      // New filters mean a new tail: reset and re-seed.
+      // New filters mean a new tail: reset, re-seed, and jump back to the
+      // live edge — the old scroll position belongs to the old result set.
       const filtersKey = JSON.stringify(filters);
       if (stateRef.current.filtersKey !== filtersKey) {
         stateRef.current = { filtersKey, rows: [], watermark: null };
+        setPinned(true);
       }
       const state = stateRef.current;
       try {
@@ -91,5 +98,7 @@ export function useLogTail(filters: LogQuery) {
     logs: query.data ?? [],
     failures,
     refetch: query.refetch,
+    pinned,
+    setPinned,
   };
 }

@@ -86,9 +86,9 @@ export default function App() {
   const { failures } = tail;
 
   const meta = metaQuery.data ?? null;
-  // The tail buffer is oldest→newest; the list still renders newest at the
-  // top for now (the ordering flip is the next step).
-  const logs = useMemo(() => tail.logs.toReversed(), [tail.logs]);
+  // Oldest→newest, straight from the tail buffer — the list renders
+  // terminal-style with the newest row at the bottom.
+  const logs = tail.logs;
 
   // Connectivity derived from the logs poll — no separate health ping.
   const conn: ConnectionState =
@@ -197,6 +197,8 @@ export default function App() {
           levelStyleFor={levelStyleFor}
           openIds={openIds}
           onToggle={toggle}
+          pinned={tail.pinned}
+          onPinnedChange={tail.setPinned}
         />
         <div className="flex-none border-t border-[var(--ls-border-soft)] px-5 pt-3 pb-4">
           <Input

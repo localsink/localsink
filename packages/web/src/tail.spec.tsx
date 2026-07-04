@@ -62,4 +62,26 @@ test('a row arriving after the initial page appends into the list', async () => 
   await expect
     .element(screen.getByText('freshly emitted tail row'), { timeout: 5000 })
     .toBeInTheDocument();
+
+  // Terminal ordering: the arrival renders *below* the previous newest row.
+  const previousNewest = screen
+    .getByText('role granted: admin to usr_9')
+    .element()
+    .getBoundingClientRect();
+  const arrival = screen
+    .getByText('freshly emitted tail row')
+    .element()
+    .getBoundingClientRect();
+  expect(arrival.top).toBeGreaterThan(previousNewest.top);
+
+  // Pinned by default: the viewport tracks the bottom as rows append.
+  await expect
+    .poll(() => {
+      const viewport = screen.container.querySelector(
+        '[data-slot="scroll-area-viewport"]',
+      );
+      if (viewport === null) return Number.NaN;
+      return viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+    })
+    .toBeLessThanOrEqual(4);
 });

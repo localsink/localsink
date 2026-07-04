@@ -1,7 +1,7 @@
 import { DetailBody } from '@/components/detail-body.tsx';
 import { LogRow } from '@/components/log-row.tsx';
 import { ScrollArea } from '@/components/ui/scroll-area.tsx';
-import { Fragment } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
 
 import type { LogRow as LogRowData } from '@localsink/contract';
@@ -12,12 +12,20 @@ import type { LevelStyle } from '../lib/levels.ts';
 // reads (refined.css .r-detail).
 type StyleVars = CSSProperties & Record<`--${string}`, string>;
 
+// How close to the bottom edge still counts as "at the bottom". A couple of
+// px absorbs fractional scroll positions; anything larger would swallow a
+// deliberate one-notch scroll up.
+const AT_BOTTOM_EPSILON_PX = 4;
+
 type LogListProps = {
+  // Oldest→newest; renders terminal-style with the newest row at the bottom.
   logs: LogRowData[];
   colorFor: (service: string) => string;
   levelStyleFor: (level: string) => LevelStyle;
   openIds: Set<number>;
   onToggle: (id: number) => void;
+  pinned: boolean;
+  onPinnedChange: (pinned: boolean) => void;
 };
 
 export function LogList({
@@ -26,9 +34,41 @@ export function LogList({
   levelStyleFor,
   openIds,
   onToggle,
+  pinned,
+  onPinnedChange,
 }: LogListProps) {
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+
+  // Scrolling away from the bottom releases the pin ("don't yank them
+  // down"); scrolling back to the bottom re-acquires it. Programmatic
+  // re-pins land exactly at the bottom, so this is a no-op for them.
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (viewport === null) return undefined;
+    const handleScroll = () => {
+      onPinnedChange(
+        viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight <=
+          AT_BOTTOM_EPSILON_PX,
+      );
+    };
+    viewport.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      viewport.removeEventListener('scroll', handleScroll);
+    };
+  }, [onPinnedChange]);
+
+  // While pinned, stay glued to the bottom as rows append. Layout effect:
+  // runs after the DOM update but before paint, so there's no flicker of
+  // the pre-scroll position.
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    if (pinned && viewport !== null && logs.length > 0) {
+      viewport.scrollTop = viewport.scrollHeight;
+    }
+  }, [pinned, logs]);
+
   return (
-    <ScrollArea className="min-h-0 flex-1">
+    <ScrollArea className="min-h-0 flex-1" viewportRef={viewportRef}>
       <div className="px-2 py-1">
         {logs.length === 0 ? (
           <div className="p-6 font-mono text-[var(--ls-fg-faint)]">
