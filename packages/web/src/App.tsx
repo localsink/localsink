@@ -202,11 +202,13 @@ export default function App() {
           pinned={tail.pinned}
           onPinnedChange={tail.setPinned}
           pendingCount={tail.pendingCount}
-          onJumpToLive={() => {
-            tail.setPinned(true);
-          }}
+          detached={tail.detached}
+          onJumpToLive={tail.jumpToLive}
           onLoadOlder={() => {
             void tail.loadOlder();
+          }}
+          onLoadNewer={() => {
+            void tail.loadNewer();
           }}
         />
         <div className="flex-none border-t border-[var(--ls-border-soft)] px-5 pt-3 pb-4">

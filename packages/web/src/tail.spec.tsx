@@ -225,6 +225,108 @@ test('scrolling to the top loads older history pages without jumping', async () 
     .toBe(true);
 });
 
+// ~21 sequential page loads against an ever-larger list — genuinely slow.
+test(
+  'deep history slides the window; "↓ live" re-seeds at the live edge',
+  {
+    timeout: 45000,
+  },
+  async () => {
+    await page.viewport(1024, 360);
+
+    const template = sampleLogs.at(-1);
+    if (template === undefined) throw new Error('fixtures are empty');
+    // 1,200 synthetic rows — walking history past MAX_ROWS (1,000) must
+    // evict the live edge instead of growing the DOM forever.
+    const TOTAL = 1200;
+    const all: LogRow[] = Array.from({ length: TOTAL }, (_, index) => ({
+      ...template,
+      id: index + 1,
+      timestamp: 1_750_000_000_000 + (index + 1) * 1000,
+      message: `window row ${String(index + 1)}`,
+    }));
+    const sorted = all.toSorted(
+      (a, b) => b.timestamp - a.timestamp || b.id - a.id,
+    );
+    worker.use(
+      http.get('/api/logs', ({ request }) => {
+        const params = new URL(request.url).searchParams;
+        const limit = Number(params.get('limit') ?? 50);
+        const afterId = params.get('after_id');
+        if (afterId !== null) {
+          const matching = all.filter((row) => row.id > Number(afterId));
+          const body: LogPage = {
+            data: matching.slice(0, limit),
+            next_cursor: null,
+            has_more: matching.length > limit,
+          };
+          return HttpResponse.json(body);
+        }
+        let start = 0;
+        const cursor = params.get('cursor');
+        if (cursor !== null) {
+          const ts = Number(cursor.split(':')[0]);
+          const id = Number(cursor.split(':')[1]);
+          const index = sorted.findIndex(
+            (log) =>
+              log.timestamp < ts || (log.timestamp === ts && log.id < id),
+          );
+          start = index < 0 ? sorted.length : index;
+        }
+        const paged = sorted.slice(start, start + limit + 1);
+        const hasMore = paged.length > limit;
+        const data = paged.slice(0, limit);
+        const lastRow = data.at(-1);
+        const body: LogPage = {
+          data,
+          next_cursor:
+            hasMore && lastRow ? `${lastRow.timestamp}:${lastRow.id}` : null,
+          has_more: hasMore,
+        };
+        return HttpResponse.json(body);
+      }),
+    );
+
+    const screen = await renderApp();
+    await expect
+      .element(screen.getByText('window row 1200'))
+      .toBeInTheDocument();
+
+    const viewport = screen.container.querySelector(
+      '[data-slot="scroll-area-viewport"]',
+    );
+    if (viewport === null) throw new Error('scroll viewport not found');
+
+    // Walk into history until the window slides past the cap and detaches —
+    // the pill flips to its detached "↓ live" form.
+    await expect
+      .poll(
+        () => {
+          viewport.scrollTop = 0;
+          return screen.getByText('↓ live').query() !== null;
+        },
+        { timeout: 40000 },
+      )
+      .toBe(true);
+    // The live edge really left the DOM.
+    await expect
+      .element(screen.getByText('window row 1200'))
+      .not.toBeInTheDocument();
+
+    // Jump back: re-seeds at the live edge, pinned to the bottom.
+    await screen.getByText('↓ live').click();
+    await expect
+      .element(screen.getByText('window row 1200'), { timeout: 5000 })
+      .toBeInTheDocument();
+    await expect
+      .poll(
+        () =>
+          viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight,
+      )
+      .toBeLessThanOrEqual(4);
+  },
+);
+
 test('the footer toggle pauses polling entirely and resumes with a catch-up', async () => {
   // One brand-new row per poll — nextId doubles as a poll counter, so a
   // frozen nextId proves the poll schedule actually stopped.

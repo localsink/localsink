@@ -15,13 +15,18 @@ import type { LogQuery } from '../lib/api.ts';
 // the "↓ N new" pill and flushed when the user re-pins. A failed poll
 // leaves the watermark untouched, so the next success naturally backfills
 // whatever accumulated during the outage.
+//
+// History is a *sliding window* over the stream: scrolling near the top
+// prepends the previous keyset page (cursor API), and once the buffer
+// exceeds MAX_ROWS the live edge is evicted from the bottom — the tail is
+// then "detached". Scrolling back down refills forward (after_id pages,
+// trimming the top) until it catches the live edge and re-attaches; the
+// pill turns into a plain "↓ live" jump that re-seeds instead.
 const POLL_MS = 1000;
 
-// Bounded scrollback: drop-oldest beyond this cap. A few thousand plain grid
-// rows render fine; the cap exists so an overnight tail doesn't grow the DOM
-// forever. Rows only get trimmed while pinned — the pending buffer absorbs
-// arrivals while the user is scrolled up, so their reading position never
-// shifts.
+// Bounded DOM: the window never holds more than MAX_ROWS (give or take one
+// in-flight page). Which end gets trimmed depends on the direction the
+// window is moving.
 const MAX_ROWS = 1000;
 
 type TailState = {
@@ -32,14 +37,31 @@ type TailState = {
   // Keyset cursor pointing below the oldest buffered row — the seed page's
   // next_cursor, then each history page's. null = the beginning is loaded.
   olderCursor: string | null;
+  // Live edge evicted by deep history browsing; loadNewer refills forward.
+  detached: boolean;
   loadingOlder: boolean;
+  loadingNewer: boolean;
 };
+
+function freshState(filtersKey: string): TailState {
+  return {
+    filtersKey,
+    rows: [],
+    pending: [],
+    watermark: null,
+    olderCursor: null,
+    detached: false,
+    loadingOlder: false,
+    loadingNewer: false,
+  };
+}
 
 export function useLogTail(filters: LogQuery) {
   // Rows flow through React state (not the query result) because repinning
   // must flush the pending buffer synchronously, outside any fetch.
   const [rows, setRows] = useState<LogRow[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
+  const [detached, setDetachedState] = useState(false);
 
   // Consecutive failed polls, counted in the queryFn because TanStack's
   // failureCount resets at the start of every refetch — it can't see
@@ -58,14 +80,18 @@ export function useLogTail(filters: LogQuery) {
   // connectivity is frozen at its last known value.
   const [paused, setPaused] = useState(false);
 
-  const stateRef = useRef<TailState>({
-    filtersKey: '',
-    rows: [],
-    pending: [],
-    watermark: null,
-    olderCursor: null,
-    loadingOlder: false,
-  });
+  const stateRef = useRef<TailState>(freshState(''));
+
+  // Resets swap in a whole new state object; anything still in flight holds
+  // the orphaned one. Every async path re-checks identity after awaiting
+  // and bails if it lost — that's the entire concurrency story here.
+  const resetState = (filtersKey: string) => {
+    stateRef.current = freshState(filtersKey);
+    pinnedRef.current = true;
+    setPinnedState(true);
+    setPendingCount(0);
+    setDetachedState(false);
+  };
 
   // Re-pinning (scroll-to-bottom or the pill) flushes pending arrivals into
   // the visible rows in the same tick.
@@ -89,17 +115,7 @@ export function useLogTail(filters: LogQuery) {
       // The old rows stay rendered until the seed below replaces them.
       const filtersKey = JSON.stringify(filters);
       if (stateRef.current.filtersKey !== filtersKey) {
-        stateRef.current = {
-          filtersKey,
-          rows: [],
-          pending: [],
-          watermark: null,
-          olderCursor: null,
-          loadingOlder: false,
-        };
-        pinnedRef.current = true;
-        setPinnedState(true);
-        setPendingCount(0);
+        resetState(filtersKey);
       }
       const state = stateRef.current;
       try {
@@ -107,6 +123,7 @@ export function useLogTail(filters: LogQuery) {
           // Seed: the latest page arrives newest-first; store oldest→newest.
           // An empty database seeds watermark 0 so every future row matches.
           const page = await fetchLogs(filters);
+          if (stateRef.current !== state) return null;
           state.rows = page.data.toReversed();
           state.watermark = state.rows.at(-1)?.id ?? 0;
           state.olderCursor = page.next_cursor;
@@ -121,9 +138,14 @@ export function useLogTail(filters: LogQuery) {
               ...filters,
               after_id: state.watermark,
             });
+            if (stateRef.current !== state) return null;
             const last = page.data.at(-1);
             if (last !== undefined) {
-              if (pinnedRef.current) {
+              if (state.detached) {
+                // The window is deep in history: the poll only proves
+                // liveness and advances the watermark. The rows below get
+                // refilled by loadNewer or a jump-to-live reseed.
+              } else if (pinnedRef.current) {
                 state.rows = [...state.rows, ...page.data].slice(-MAX_ROWS);
                 setRows(state.rows);
               } else {
@@ -158,23 +180,29 @@ export function useLogTail(filters: LogQuery) {
     setPaused(!paused);
   };
 
-  // History: prepend the page below the oldest buffered row (the existing
-  // keyset cursor API). Fired from the list when the viewport nears the
-  // top; self-guards against re-entry and against the beginning of history.
-  // Terminal-scrollback semantics bound the DOM: once the buffer holds
-  // MAX_ROWS, history stops loading (may overshoot by one page) — beyond
-  // the scrollback you filter or search, not scroll. Trimming the far end
-  // instead would evict the live edge and leave a gap on the way back down.
+  // History: prepend the page below the oldest buffered row. Fired from the
+  // list when the viewport nears the top; self-guards against re-entry and
+  // against the beginning of history. Exceeding MAX_ROWS slides the window:
+  // the bottom (live edge) is evicted and the tail detaches.
   const loadOlder = async () => {
     const state = stateRef.current;
     if (state.loadingOlder || state.olderCursor === null) return;
-    if (state.rows.length >= MAX_ROWS) return;
     state.loadingOlder = true;
     try {
       const page = await fetchLogs({ ...filters, cursor: state.olderCursor });
-      state.rows = [...page.data.toReversed(), ...state.rows];
+      if (stateRef.current !== state) return;
+      if (page.data.length > 0) {
+        state.rows = [...page.data.toReversed(), ...state.rows];
+        if (state.rows.length > MAX_ROWS) {
+          state.rows = state.rows.slice(0, MAX_ROWS);
+          state.pending = [];
+          state.detached = true;
+          setPendingCount(0);
+          setDetachedState(true);
+        }
+        setRows(state.rows);
+      }
       state.olderCursor = page.next_cursor;
-      setRows(state.rows);
     } catch {
       // Keep the cursor; the next near-top scroll retries.
     } finally {
@@ -182,9 +210,68 @@ export function useLogTail(filters: LogQuery) {
     }
   };
 
+  // Forward refill while detached: fetch the after_id page above the
+  // window's bottom edge, trimming the top to stay bounded. When a page
+  // comes back non-truncated the window has caught the live edge — the
+  // tail re-attaches and normal appends resume.
+  const loadNewer = async () => {
+    const state = stateRef.current;
+    if (state.loadingNewer || !state.detached) return;
+    const bottom = state.rows.at(-1);
+    if (bottom === undefined) return;
+    state.loadingNewer = true;
+    try {
+      const page = await fetchLogs({ ...filters, after_id: bottom.id });
+      if (stateRef.current !== state) return;
+      const lastId = state.rows.at(-1)?.id ?? -1;
+      const fresh = page.data.filter((row) => row.id > lastId);
+      if (fresh.length > 0) {
+        state.rows = [...state.rows, ...fresh];
+        if (state.rows.length > MAX_ROWS) {
+          state.rows = state.rows.slice(-MAX_ROWS);
+          // The old top rows are gone; re-point the history cursor just
+          // below the new top so the next loadOlder stays gapless.
+          const top = state.rows.at(0);
+          if (top !== undefined) {
+            state.olderCursor = `${String(top.timestamp)}:${String(top.id)}`;
+          }
+        }
+        setRows(state.rows);
+      }
+      if (!page.has_more) {
+        state.detached = false;
+        setDetachedState(false);
+        const last = state.rows.at(-1);
+        if (
+          last !== undefined &&
+          (state.watermark === null || last.id > state.watermark)
+        ) {
+          state.watermark = last.id;
+        }
+      }
+    } catch {
+      // The next near-bottom scroll retries.
+    } finally {
+      state.loadingNewer = false;
+    }
+  };
+
+  // The pill. Attached: flush pending and glue to the bottom. Detached:
+  // flushing would splice rows onto a gap, so re-seed at the live edge
+  // instead — same path as a filter change.
+  const jumpToLive = () => {
+    if (stateRef.current.detached) {
+      resetState(stateRef.current.filtersKey);
+      void query.refetch();
+    } else {
+      setPinned(true);
+    }
+  };
+
   return {
     logs: rows,
     pendingCount,
+    detached,
     failures,
     refetch: query.refetch,
     pinned,
@@ -192,5 +279,7 @@ export function useLogTail(filters: LogQuery) {
     paused,
     toggleTail,
     loadOlder,
+    loadNewer,
+    jumpToLive,
   };
 }
