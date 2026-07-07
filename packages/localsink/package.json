@@ -46,6 +46,8 @@
     "test": "vitest run",
     "dev": "node --conditions=@localsink/source --watch --watch-path=src src/server.ts",
     "start": "node --conditions=@localsink/source src/server.ts",
+    "seed": "node --conditions=@localsink/source src/seed.ts",
+    "emit": "node --conditions=@localsink/source src/emit.ts",
     "drizzle-kit:push": "drizzle-kit push",
     "drizzle-kit:generate": "drizzle-kit generate",
     "drizzle-kit:migrate": "drizzle-kit migrate"
@@ -60,6 +62,9 @@
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
     "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@localsink/sdk": "workspace:*"
   },
   "engines": {
     "node": ">=24"

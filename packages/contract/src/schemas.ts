@@ -28,6 +28,22 @@ const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 500;
 const CURSOR_REGEX = /^(\d+):(\d+)$/;
 
+// Keyset cursor codec. The encoding is a wire-format detail owned by the
+// contract: everything that mints or parses a cursor (server pagination, the
+// web tail's window slide, the MSW pseudo-backend) goes through these two
+// functions instead of assuming "<timestamp>:<id>".
+export function encodeCursor(row: { timestamp: number; id: number }): string {
+  return `${String(row.timestamp)}:${String(row.id)}`;
+}
+
+export function decodeCursor(cursor: string): {
+  timestamp: number;
+  id: number;
+} {
+  const [tsStr = '', idStr = ''] = cursor.split(':');
+  return { timestamp: Number(tsStr), id: Number(idStr) };
+}
+
 const multiValueFilter = (description: string) =>
   z
     .preprocess((val: unknown) => {

@@ -26,7 +26,10 @@
       "@localsink/source": "./src/index.ts",
       "default": "./dist/index.mjs"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./fixtures": {
+      "@localsink/source": "./src/fixtures/index.ts"
+    }
   },
   "publishConfig": {
     "exports": {

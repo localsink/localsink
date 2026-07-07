@@ -1,4 +1,6 @@
 export {
+  decodeCursor,
+  encodeCursor,
   ingestPayloadSchema,
   type IngestPayload,
   logsQuerySchema,

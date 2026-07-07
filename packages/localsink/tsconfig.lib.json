@@ -11,5 +11,8 @@
   },
   "include": ["src/**/*.ts"],
   "exclude": ["vitest.config.ts", "tsdown.config.ts", "src/**/*.spec.ts"],
-  "references": [{ "path": "../contract/tsconfig.lib.json" }]
+  "references": [
+    { "path": "../contract/tsconfig.lib.json" },
+    { "path": "../sdk/tsconfig.lib.json" }
+  ]
 }
