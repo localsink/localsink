@@ -17,7 +17,11 @@ import {
 import { drizzle } from 'drizzle-orm/libsql';
 
 import type { LogFilter, LogMeta, LogPage, LogRow } from '@localsink/contract';
-import { logsQuerySchema } from '@localsink/contract';
+import {
+  decodeCursor,
+  encodeCursor,
+  logsQuerySchema,
+} from '@localsink/contract';
 
 import { logsTable } from './db/schema.ts';
 
@@ -31,15 +35,6 @@ export class InvalidQueryError extends Error {
     super(message);
     this.name = 'InvalidQueryError';
   }
-}
-
-function encodeCursor(row: { timestamp: number; id: number }): string {
-  return `${String(row.timestamp)}:${String(row.id)}`;
-}
-
-function decodeCursor(cursor: string): { timestamp: number; id: number } {
-  const [tsStr = '', idStr = ''] = cursor.split(':');
-  return { timestamp: Number(tsStr), id: Number(idStr) };
 }
 
 // FTS5 phrase literal (internal quotes doubled). Punctuation inside a phrase is
