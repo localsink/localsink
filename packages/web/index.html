@@ -4,6 +4,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>localsink</title>
+    <!-- Resolve the stored theme before first paint so a light/system-light
+         user never sees the hardcoded `dark` above flash. Mirrors
+         theme-provider.tsx (storageKey + defaultTheme="dark"); it re-applies
+         the same class on mount, so this only removes the flash. -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('vite-ui-theme');
+          var theme =
+            stored === 'light' || stored === 'dark' || stored === 'system'
+              ? stored
+              : 'dark';
+          var resolved =
+            theme === 'system'
+              ? window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+              : theme;
+          var root = document.documentElement;
+          root.classList.remove('light', 'dark');
+          root.classList.add(resolved);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root" class="h-svh w-full overflow-hidden"></div>
