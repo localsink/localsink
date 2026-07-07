@@ -19,12 +19,20 @@ export default defineConfig({
       presets: [reactCompilerPreset()],
     }),
   ],
-  server: {
-    proxy: {
-      '/api': API_TARGET,
-      '/mcp': API_TARGET,
-    },
-  },
+  // vitest.config.ts merges this whole config so tests share the exact build
+  // pipeline. The proxy stays out of test runs: MSW serves /api in-page there,
+  // and proxying its bypassed teardown polls at a dead :3000 just logs
+  // connection errors.
+  ...(process.env['VITEST']
+    ? {}
+    : {
+        server: {
+          proxy: {
+            '/api': API_TARGET,
+            '/mcp': API_TARGET,
+          },
+        },
+      }),
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, 'src'),
