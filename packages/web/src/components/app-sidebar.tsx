@@ -11,7 +11,7 @@ import type { CSSProperties } from 'react';
 import type { LogMeta } from '@localsink/contract';
 
 import type { LevelStyle } from '../lib/levels.ts';
-import { cn } from '../lib/utils.ts';
+import { activateOnKey, cn } from '../lib/utils.ts';
 
 const FAINT = 'var(--ls-fg-faint)';
 
@@ -92,6 +92,9 @@ function FacetRow({
 }) {
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={active}
       className={cn(
         'relative mb-[2px] flex cursor-pointer items-center gap-[9px] overflow-hidden rounded-[8px] px-[10px] py-[7px] text-[13px]',
         active
@@ -99,6 +102,7 @@ function FacetRow({
           : 'text-[var(--ls-fg-dim)] hover:text-[var(--ls-fg)]',
       )}
       onClick={onClick}
+      onKeyDown={activateOnKey(onClick)}
     >
       {active ? (
         <span className="absolute top-[6px] bottom-[6px] left-0 w-[2px] rounded-[2px] bg-[var(--ls-accent)]" />
@@ -229,10 +233,16 @@ export function AppSidebar({
           'flex-row items-center gap-[9px] border-t border-[var(--ls-border-soft)] px-[18px] py-[13px] font-mono text-[12px] text-[var(--ls-fg-dim)]',
           connected && 'cursor-pointer hover:bg-[var(--ls-bg-hover)]',
         )}
+        // Only a control while connected; otherwise it's inert text, so it
+        // stays out of the tab order and off the a11y tree as a button.
+        role={connected ? 'button' : undefined}
+        tabIndex={connected ? 0 : undefined}
+        aria-pressed={connected ? !paused : undefined}
         title={connected ? 'Toggle live tail' : undefined}
         onClick={() => {
           if (connected) onToggleTail();
         }}
+        onKeyDown={connected ? activateOnKey(onToggleTail) : undefined}
       >
         {/* "{n} logs" here belongs to the counts feature (Beyond MVP, off
             by default) — until then the label is static and faint. */}

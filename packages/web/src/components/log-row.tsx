@@ -5,6 +5,7 @@ import type { LogRow as LogRowData } from '@localsink/contract';
 
 import { attrPairs } from '../lib/attributes.ts';
 import type { LevelStyle } from '../lib/levels.ts';
+import { activateOnKey } from '../lib/utils.ts';
 
 // refined.css .r-row column track: disc | time | badge | service | message.
 const COLS = 'grid-cols-[22px_104px_74px_132px_minmax(0,1fr)]';
@@ -38,9 +39,13 @@ export function LogRow({
 }: LogRowProps) {
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-expanded={open}
       className={`group grid ${COLS} min-h-[33px] cursor-pointer items-center gap-[14px] rounded-[7px] px-3 py-[6px] font-mono text-[13px] hover:bg-[var(--ls-bg-hover)] data-[open=true]:bg-[var(--ls-bg-2)]`}
       data-open={open}
       onClick={onToggle}
+      onKeyDown={activateOnKey(onToggle)}
     >
       <span className="text-center text-[var(--ls-fg-faint)] transition-transform group-data-[open=true]:rotate-90">
         ▸
