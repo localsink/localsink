@@ -4,7 +4,10 @@ import { render } from 'vitest-browser-react';
 import { AttrStrip } from './attr-strip.tsx';
 
 test('renders the message and caps overflow with a +N counter', async () => {
-  const pairs = ['a=1', 'b=2', 'c=3', 'd=4', 'e=5'];
+  const pairs = ['a', 'b', 'c', 'd', 'e'].map((key, index) => ({
+    key,
+    value: String(index + 1),
+  }));
   const { getByText } = await render(
     <AttrStrip message="request handled" pairs={pairs} />,
   );

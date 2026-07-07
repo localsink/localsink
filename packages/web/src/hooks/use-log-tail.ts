@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import type { LogRow } from '@localsink/contract';
+import { encodeCursor } from '@localsink/contract';
 
 import { fetchLogs } from '../lib/api.ts';
 import type { LogQuery } from '../lib/api.ts';
@@ -95,7 +96,7 @@ export function useLogTail(filters: LogQuery) {
 
   // Re-pinning (scroll-to-bottom or the pill) flushes pending arrivals into
   // the visible rows in the same tick.
-  const setPinned = useCallback((next: boolean) => {
+  const setPinned = (next: boolean): void => {
     pinnedRef.current = next;
     setPinnedState(next);
     const state = stateRef.current;
@@ -105,11 +106,11 @@ export function useLogTail(filters: LogQuery) {
       setRows(state.rows);
       setPendingCount(0);
     }
-  }, []);
+  };
 
   const query = useQuery({
     queryKey: ['logs', filters],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       // New filters mean a new tail: reset, re-seed, and jump back to the
       // live edge — the old scroll position belongs to the old result set.
       // The old rows stay rendered until the seed below replaces them.
@@ -122,7 +123,7 @@ export function useLogTail(filters: LogQuery) {
         if (state.watermark === null) {
           // Seed: the latest page arrives newest-first; store oldest→newest.
           // An empty database seeds watermark 0 so every future row matches.
-          const page = await fetchLogs(filters);
+          const page = await fetchLogs(filters, signal);
           if (stateRef.current !== state) return null;
           state.rows = page.data.toReversed();
           state.watermark = state.rows.at(-1)?.id ?? 0;
@@ -134,10 +135,10 @@ export function useLogTail(filters: LogQuery) {
           // of waiting a tick, so the tail catches up after a gap.
           let hasMore = true;
           while (hasMore) {
-            const page = await fetchLogs({
-              ...filters,
-              after_id: state.watermark,
-            });
+            const page = await fetchLogs(
+              { ...filters, after_id: state.watermark },
+              signal,
+            );
             if (stateRef.current !== state) return null;
             const last = page.data.at(-1);
             if (last !== undefined) {
@@ -163,7 +164,9 @@ export function useLogTail(filters: LogQuery) {
         // The buffers above are the real output; the query result is unused.
         return null;
       } catch (error) {
-        setFailures((count) => count + 1);
+        // An abort is supersession (filter change, unmount), not an outage —
+        // it must not nudge the banner toward "reconnecting".
+        if (!signal.aborted) setFailures((count) => count + 1);
         throw error;
       }
     },
@@ -233,7 +236,7 @@ export function useLogTail(filters: LogQuery) {
           // below the new top so the next loadOlder stays gapless.
           const top = state.rows.at(0);
           if (top !== undefined) {
-            state.olderCursor = `${String(top.timestamp)}:${String(top.id)}`;
+            state.olderCursor = encodeCursor(top);
           }
         }
         setRows(state.rows);

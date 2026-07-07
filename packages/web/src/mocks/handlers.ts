@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 
 import type { LogMeta, LogPage, LogRow } from '@localsink/contract';
+import { decodeCursor, encodeCursor } from '@localsink/contract';
 import { sampleLogs } from '@localsink/contract/fixtures';
 
 const DEFAULT_LIMIT = 50;
@@ -76,12 +77,13 @@ export const handlers = [
     );
 
     let start = 0;
-    const cursor = params.get('cursor');
-    if (cursor !== null) {
-      const ts = Number(cursor.split(':')[0]);
-      const id = Number(cursor.split(':')[1]);
+    const cursorParam = params.get('cursor');
+    if (cursorParam !== null) {
+      const cursor = decodeCursor(cursorParam);
       const index = filtered.findIndex(
-        (log) => log.timestamp < ts || (log.timestamp === ts && log.id < id),
+        (log) =>
+          log.timestamp < cursor.timestamp ||
+          (log.timestamp === cursor.timestamp && log.id < cursor.id),
       );
       start = index < 0 ? filtered.length : index;
     }
@@ -95,7 +97,7 @@ export const handlers = [
 
     const page: LogPage = {
       data,
-      next_cursor: hasMore && last ? `${last.timestamp}:${last.id}` : null,
+      next_cursor: hasMore && last ? encodeCursor(last) : null,
       has_more: hasMore,
     };
     return HttpResponse.json(page);

@@ -11,9 +11,10 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar.tsx';
+import { useDebouncedCallback } from '@tanstack/react-pacer';
 import { useQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { useLogTail } from './hooks/use-log-tail.ts';
 import { fetchMeta } from './lib/api.ts';
@@ -31,6 +32,10 @@ const FALLBACK_LEVEL_STYLE: LevelStyle = {
 // Meta (facet counts) refreshes slower than the 1s log tail — new services
 // and levels appearing within a few seconds is plenty.
 const META_POLL_MS = 5000;
+// Search keystrokes settle before the URL (and thus the tail's query key)
+// changes — every distinct `q` tears down and re-seeds the whole tail, so
+// writing per keystroke would fire a seed fetch per character.
+const SEARCH_DEBOUNCE_MS = 250;
 // Consecutive failures before the banner escalates reconnecting → offline.
 const OFFLINE_AFTER = 3;
 
@@ -57,28 +62,45 @@ export default function App() {
   // written back via navigate. Sets are the working shape in components.
   const search = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
-  const selectedServices = useMemo(
-    () => new Set(search.service?.split(',') ?? []),
-    [search.service],
-  );
-  const selectedLevels = useMemo(
-    () => new Set(search.level?.split(',') ?? []),
-    [search.level],
-  );
+  // No manual memoization here or below: the React Compiler (vite + vitest
+  // run the same babel preset) caches these; queryKey stability additionally
+  // never depends on identity — TanStack hashes keys structurally.
+  const selectedServices = new Set(search.service?.split(',') ?? []);
+  const selectedLevels = new Set(search.level?.split(',') ?? []);
   const query = search.q ?? '';
 
-  const filters = useMemo(() => {
-    const params: LogQuery = {};
-    if (selectedServices.size > 0) params.service_name = [...selectedServices];
-    if (selectedLevels.size > 0) params.level = [...selectedLevels];
-    const trimmed = query.trim();
-    if (trimmed !== '') params.q = trimmed;
-    return params;
-  }, [selectedServices, selectedLevels, query]);
+  // The input renders a local draft; the URL (the source of truth the tail
+  // queries by) follows after the debounce. When q changes from outside
+  // (back/forward, shared link) the draft re-syncs — state adjusted during
+  // render (react.dev "adjusting state when a prop changes"), not in an
+  // effect, so there's no extra committed frame with the stale draft.
+  const [searchDraft, setSearchDraft] = useState(query);
+  const [draftBase, setDraftBase] = useState(query);
+  if (draftBase !== query) {
+    setDraftBase(query);
+    setSearchDraft(query);
+  }
+  const writeSearch = useDebouncedCallback(
+    (value: string) => {
+      // replace, not push — typing shouldn't spam the history stack.
+      void navigate({
+        to: '.',
+        search: (prev) => ({ ...prev, q: value === '' ? undefined : value }),
+        replace: true,
+      });
+    },
+    { wait: SEARCH_DEBOUNCE_MS },
+  );
+
+  const filters: LogQuery = {};
+  if (selectedServices.size > 0) filters.service_name = [...selectedServices];
+  if (selectedLevels.size > 0) filters.level = [...selectedLevels];
+  const trimmedQuery = query.trim();
+  if (trimmedQuery !== '') filters.q = trimmedQuery;
 
   const metaQuery = useQuery({
     queryKey: ['meta'],
-    queryFn: fetchMeta,
+    queryFn: ({ signal }) => fetchMeta(signal),
     retry: false,
     refetchInterval: META_POLL_MS,
   });
@@ -103,64 +125,47 @@ export default function App() {
     void metaQuery.refetch();
   };
 
-  const colorMap = useMemo(
-    () => buildServiceColorMap(meta?.services ?? []),
-    [meta],
-  );
-  const colorFor = useCallback(
-    (service: string): string => colorMap.get(service) ?? 'var(--ls-fg-faint)',
-    [colorMap],
-  );
+  const colorMap = buildServiceColorMap(meta?.services ?? []);
+  const colorFor = (service: string): string =>
+    colorMap.get(service) ?? 'var(--ls-fg-faint)';
 
-  const levelStyleMap = useMemo(
-    () => buildLevelStyleMap(meta?.levels ?? []),
-    [meta],
-  );
-  const levelStyleFor = useCallback(
-    (level: string): LevelStyle =>
-      levelStyleMap.get(level) ?? FALLBACK_LEVEL_STYLE,
-    [levelStyleMap],
-  );
+  const levelStyleMap = buildLevelStyleMap(meta?.levels ?? []);
+  const levelStyleFor = (level: string): LevelStyle =>
+    levelStyleMap.get(level) ?? FALLBACK_LEVEL_STYLE;
 
-  const toggle = useCallback((id: number): void => {
+  const toggle = (id: number): void => {
     setOpenIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  }, []);
+  };
 
   // Facet changes push history entries (back/forward steps through views).
-  const toggleService = useCallback(
-    (service: string): void => {
-      const next = joinSet(toggleInSet(selectedServices, service));
-      void navigate({
-        to: '.',
-        search: (prev) => ({ ...prev, service: next }),
-      });
-    },
-    [navigate, selectedServices],
-  );
-  const toggleLevel = useCallback(
-    (level: string): void => {
-      const next = joinSet(toggleInSet(selectedLevels, level));
-      void navigate({ to: '.', search: (prev) => ({ ...prev, level: next }) });
-    },
-    [navigate, selectedLevels],
-  );
-  const clearServices = useCallback(() => {
+  const toggleService = (service: string): void => {
+    const next = joinSet(toggleInSet(selectedServices, service));
+    void navigate({
+      to: '.',
+      search: (prev) => ({ ...prev, service: next }),
+    });
+  };
+  const toggleLevel = (level: string): void => {
+    const next = joinSet(toggleInSet(selectedLevels, level));
+    void navigate({ to: '.', search: (prev) => ({ ...prev, level: next }) });
+  };
+  const clearServices = (): void => {
     void navigate({
       to: '.',
       search: (prev) => ({ ...prev, service: undefined }),
     });
-  }, [navigate]);
-  const clearLevels = useCallback(() => {
+  };
+  const clearLevels = (): void => {
     void navigate({
       to: '.',
       search: (prev) => ({ ...prev, level: undefined }),
     });
-  }, [navigate]);
+  };
 
   return (
     <SidebarProvider className="h-svh overflow-hidden">
@@ -213,18 +218,10 @@ export default function App() {
         />
         <div className="flex-none border-t border-[var(--ls-border-soft)] px-5 pt-3 pb-4">
           <Input
-            value={query}
+            value={searchDraft}
             onChange={(event) => {
-              // replace, not push — typing shouldn't spam the history stack.
-              const value = event.target.value;
-              void navigate({
-                to: '.',
-                search: (prev) => ({
-                  ...prev,
-                  q: value === '' ? undefined : value,
-                }),
-                replace: true,
-              });
+              setSearchDraft(event.target.value);
+              writeSearch(event.target.value);
             }}
             placeholder="Search logs…"
           />

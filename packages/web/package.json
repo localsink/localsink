@@ -29,6 +29,7 @@
     "@fontsource-variable/geist": "catalog:",
     "@fontsource-variable/geist-mono": "catalog:",
     "@localsink/contract": "workspace:*",
+    "@tanstack/react-pacer": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
     "class-variance-authority": "catalog:",

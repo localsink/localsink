@@ -27,8 +27,10 @@ function buildQuery(query: LogQuery): string {
   return params.toString();
 }
 
-async function getJson(url: string): Promise<unknown> {
-  const response = await fetch(url);
+// signal comes from TanStack Query's queryFn context so superseded fetches
+// (filter change, unmount) abort at the network layer instead of racing on.
+async function getJson(url: string, signal?: AbortSignal): Promise<unknown> {
+  const response = await fetch(url, { signal: signal ?? null });
   if (!response.ok) {
     throw new Error(
       `Request failed: ${response.status} ${response.statusText}`,
@@ -37,12 +39,15 @@ async function getJson(url: string): Promise<unknown> {
   return response.json();
 }
 
-export async function fetchLogs(query: LogQuery = {}): Promise<LogPage> {
+export async function fetchLogs(
+  query: LogQuery = {},
+  signal?: AbortSignal,
+): Promise<LogPage> {
   const search = buildQuery(query);
-  const body = await getJson(`/api/logs${search ? `?${search}` : ''}`);
+  const body = await getJson(`/api/logs${search ? `?${search}` : ''}`, signal);
   return logPageSchema.parse(body);
 }
 
-export async function fetchMeta(): Promise<LogMeta> {
-  return logMetaSchema.parse(await getJson('/api/logs/meta'));
+export async function fetchMeta(signal?: AbortSignal): Promise<LogMeta> {
+  return logMetaSchema.parse(await getJson('/api/logs/meta', signal));
 }
