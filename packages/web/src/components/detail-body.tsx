@@ -6,7 +6,11 @@ import type { LogRow } from '@localsink/contract';
 // pre-baked detail object.
 
 function formatValue(value: unknown): string {
-  return typeof value === 'string' ? `"${value}"` : JSON.stringify(value);
+  if (value === undefined) return 'undefined';
+  if (typeof value === 'string') return `"${value}"`;
+  // JSON.stringify returns undefined for functions/symbols; keep the string
+  // contract intact so an expanded row never renders a bare undefined.
+  return JSON.stringify(value) ?? 'undefined';
 }
 
 function StackLines({ stack }: { stack: string }) {

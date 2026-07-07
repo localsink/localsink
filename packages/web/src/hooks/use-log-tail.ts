@@ -92,6 +92,9 @@ export function useLogTail(filters: LogQuery) {
     setPinnedState(true);
     setPendingCount(0);
     setDetachedState(false);
+    // The new tail starts a fresh connectivity cycle: a stale offline/
+    // reconnecting banner must not outlive the result set it was about.
+    setFailures(0);
   };
 
   // Re-pinning (scroll-to-bottom or the pill) flushes pending arrivals into
@@ -141,22 +144,22 @@ export function useLogTail(filters: LogQuery) {
             );
             if (stateRef.current !== state) return null;
             const last = page.data.at(-1);
-            if (last !== undefined) {
-              if (state.detached) {
-                // The window is deep in history: the poll only proves
-                // liveness and advances the watermark. The rows below get
-                // refilled by loadNewer or a jump-to-live reseed.
-              } else if (pinnedRef.current) {
-                state.rows = [...state.rows, ...page.data].slice(-MAX_ROWS);
-                setRows(state.rows);
-              } else {
-                state.pending = [...state.pending, ...page.data].slice(
-                  -MAX_ROWS,
-                );
-                setPendingCount(state.pending.length);
-              }
-              state.watermark = last.id;
+            // Empty page: nothing to append and the watermark can't advance,
+            // so honoring has_more here would spin forever on a misbehaving
+            // server. Stop and let the next scheduled poll try again.
+            if (last === undefined) break;
+            if (state.detached) {
+              // The window is deep in history: the poll only proves
+              // liveness and advances the watermark. The rows below get
+              // refilled by loadNewer or a jump-to-live reseed.
+            } else if (pinnedRef.current) {
+              state.rows = [...state.rows, ...page.data].slice(-MAX_ROWS);
+              setRows(state.rows);
+            } else {
+              state.pending = [...state.pending, ...page.data].slice(-MAX_ROWS);
+              setPendingCount(state.pending.length);
             }
+            state.watermark = last.id;
             hasMore = page.has_more;
           }
         }
