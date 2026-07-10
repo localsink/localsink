@@ -37,7 +37,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsgo -b .",
+    "typecheck": "tsc -b .",
     "lint": "oxlint .",
     "test": "vitest run",
     "integration": "vitest run --config vitest.integration.config.ts"

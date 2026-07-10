@@ -41,7 +41,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsgo -b .",
+    "typecheck": "tsc -b .",
     "lint": "oxlint .",
     "test": "vitest run",
     "dev": "node --conditions=@localsink/source --watch --watch-path=src src/server.ts",

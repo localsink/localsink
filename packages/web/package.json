@@ -18,7 +18,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "typecheck": "tsgo -b .",
+    "typecheck": "tsc -b .",
     "dev": "vite",
     "lint": "oxlint .",
     "preview": "vite preview",
