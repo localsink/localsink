@@ -12,11 +12,11 @@ bail: false
 blockExoticSubdeps: true
 
 catalog:
-  '@arethetypeswrong/core': 0.18.4
+  '@arethetypeswrong/core': 0.18.5
   '@base-ui/react': 1.6.0
   '@fontsource-variable/geist': 5.2.9
   '@fontsource-variable/geist-mono': 5.2.8
-  '@hono/mcp': ^0.3.0
+  '@hono/mcp': ^0.3.1
   '@hono/node-server': ^2.0.8
   '@hono/zod-validator': ^0.8.0
   '@libsql/client': ^0.17.4
@@ -40,7 +40,7 @@ catalog:
   clsx: 2.1.1
   drizzle-kit: 0.31.10
   drizzle-orm: ^0.45.2
-  hono: ^4.12.28
+  hono: ^4.12.29
   husky: 9.1.7
   lint-staged: 17.0.8
   lucide-react: 1.24.0
