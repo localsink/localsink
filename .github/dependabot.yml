@@ -14,11 +14,15 @@ updates:
     directory: /
     patterns: ['*']
     multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 1
 
   - package-ecosystem: npm
     directory: /
     patterns: ['*']
     multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 1
     ignore:
       - dependency-name: '@types/node'
         versions: ['>=25.0.0']
