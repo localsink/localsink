@@ -14,6 +14,7 @@ export function libConfig(overrides: UserConfig = {}): UserConfig {
       profile: 'esm-only',
     },
     failOnWarn: true,
+    suppressWarnings: ['TypeScript 7.0 does not yet have a stable API'],
     ...overrides,
   };
 }
