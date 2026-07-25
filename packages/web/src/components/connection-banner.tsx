@@ -43,6 +43,8 @@ export function ConnectionBanner({ conn, onRetry }: ConnectionBannerProps) {
 
   return (
     <div
+      data-testid="connection-banner"
+      data-state={conn}
       className="flex flex-none items-center gap-[11px] border-b border-l-2 border-b-[var(--ls-border-soft)] px-5 py-[9px] font-mono text-[12.5px]"
       style={{ borderLeftColor: state.color, background: state.background }}
     >

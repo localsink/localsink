@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "out-tsc/spec",
+    "types": ["node"],
+    "noEmit": true,
+    "rewriteRelativeImportExtensions": false,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src/**/*.spec.ts", "playwright.config.ts"],
+  "references": [{ "path": "./tsconfig.lib.json" }]
+}

@@ -173,7 +173,11 @@ export function AppSidebar({
 
   return (
     <Sidebar collapsible="offcanvas">
-      <SidebarHeader className="flex-row items-center gap-[9px] px-4 pt-[17px] pb-[15px]">
+      <SidebarHeader
+        data-testid="connection-status"
+        data-state={conn}
+        className="flex-row items-center gap-[9px] px-4 pt-[17px] pb-[15px]"
+      >
         <StatusDot color={status.color} pulse={status.pulse} />
         <span className="font-mono text-[16px] font-semibold">localsink</span>
       </SidebarHeader>
@@ -229,6 +233,7 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter
+        data-testid="tail-toggle"
         className={cn(
           'flex-row items-center gap-[9px] border-t border-[var(--ls-border-soft)] px-[18px] py-[13px] font-mono text-[12px] text-[var(--ls-fg-dim)]',
           connected && 'cursor-pointer hover:bg-[var(--ls-bg-hover)]',

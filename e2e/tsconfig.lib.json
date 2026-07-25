@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "out-tsc/lib",
+    "tsBuildInfoFile": "out-tsc/tsconfig.lib.tsbuildinfo"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["playwright.config.ts", "src/**/*.spec.ts"],
+  "references": []
+}

@@ -27,3 +27,4 @@ jobs:
       - run: node --run test:all
       - run: node --run integration:all
       - run: node --run format:check
+      - run: node --run e2e:all

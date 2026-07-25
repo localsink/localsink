@@ -151,7 +151,7 @@ export function LogList({
   }, [pinned, logs]);
 
   return (
-    <div className="relative min-h-0 flex-1">
+    <div data-testid="log-list" className="relative min-h-0 flex-1">
       <ScrollArea className="h-full" viewportRef={viewportRef}>
         <div className="px-2 py-1">
           {logs.length === 0 ? (
@@ -165,7 +165,7 @@ export function LogList({
               const detailStyle: StyleVars = { '--lvlc': levelStyle.color };
               return (
                 // data-log-id doubles as the scroll-anchor handle.
-                <div key={log.id} data-log-id={log.id}>
+                <div key={log.id} data-testid="log-row" data-log-id={log.id}>
                   <LogRow
                     log={log}
                     serviceColor={colorFor(log.service_name)}
