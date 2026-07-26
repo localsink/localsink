@@ -255,28 +255,6 @@ importers:
         specifier: 'catalog:'
         version: 2.2.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.10)
 
-  e2e:
-    dependencies:
-      '@hono/node-server':
-        specifier: 2.0.11
-        version: 2.0.11(hono@4.12.32)
-      '@libsql/client':
-        specifier: 'catalog:'
-        version: 0.17.4
-      '@localsink/contract':
-        specifier: workspace:*
-        version: link:../packages/contract
-      drizzle-orm:
-        specifier: 'catalog:'
-        version: 0.45.2(@libsql/client@0.17.4)
-      localsink:
-        specifier: workspace:*
-        version: link:../packages/localsink
-    devDependencies:
-      '@playwright/test':
-        specifier: 'catalog:'
-        version: 1.61.1
-
   packages/console:
     dependencies:
       '@localsink/sdk':
@@ -292,6 +270,28 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.4.3
+
+  packages/e2e:
+    dependencies:
+      '@hono/node-server':
+        specifier: 2.0.11
+        version: 2.0.11(hono@4.12.32)
+      '@libsql/client':
+        specifier: 'catalog:'
+        version: 0.17.4
+      '@localsink/contract':
+        specifier: workspace:*
+        version: link:../contract
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.2(@libsql/client@0.17.4)
+      localsink:
+        specifier: workspace:*
+        version: link:../localsink
+    devDependencies:
+      '@playwright/test':
+        specifier: 'catalog:'
+        version: 1.61.1
 
   packages/http:
     dependencies:
