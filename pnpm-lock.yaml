@@ -259,7 +259,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 2.0.11
-        version: 2.0.11(hono@4.12.31)
+        version: 2.0.11(hono@4.12.32)
       '@libsql/client':
         specifier: 'catalog:'
         version: 0.17.4
