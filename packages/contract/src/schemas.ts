@@ -46,13 +46,16 @@ export function decodeCursor(cursor: string): {
 
 const multiValueFilter = (description: string) =>
   z
-    .preprocess((val: unknown) => {
-      if (val === undefined) return undefined;
-      return (Array.isArray(val) ? val : [val])
-        .flatMap((v: unknown) => (typeof v === 'string' ? v.split(',') : [v]))
-        .map((v: unknown) => (typeof v === 'string' ? v.trim() : v))
-        .filter((v: unknown) => v !== '');
-    }, z.array(z.string().min(1)).min(1).optional())
+    .preprocess(
+      (val: unknown) => {
+        if (val === undefined) return undefined;
+        return (Array.isArray(val) ? val : [val])
+          .flatMap((v: unknown) => (typeof v === 'string' ? v.split(',') : [v]))
+          .map((v: unknown) => (typeof v === 'string' ? v.trim() : v))
+          .filter((v: unknown) => v !== '');
+      },
+      z.array(z.string().min(1)).min(1).optional(),
+    )
     .meta({ description });
 
 export const logsQuerySchema = z
