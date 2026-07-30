@@ -21,6 +21,9 @@ catalogs:
     '@hono/mcp':
       specifier: ^0.3.1
       version: 0.3.1
+    '@hono/node-server':
+      specifier: ^2.0.12
+      version: 2.0.12
     '@hono/zod-validator':
       specifier: ^0.9.0
       version: 0.9.0
@@ -166,7 +169,6 @@ catalogs:
 overrides:
   '@types/node': 24.13.3
   esbuild: 0.28.1
-  '@hono/node-server': 2.0.12
   rolldown: 1.2.0
 
 importers:
@@ -283,7 +285,7 @@ importers:
         specifier: 'catalog:'
         version: 0.3.1(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(hono-rate-limiter@0.5.3(hono@4.12.32))(hono@4.12.32)(zod@4.4.3)
       '@hono/node-server':
-        specifier: 2.0.12
+        specifier: 'catalog:'
         version: 2.0.12(hono@4.12.32)
       '@hono/zod-validator':
         specifier: 'catalog:'
@@ -342,7 +344,7 @@ importers:
   packages/test-harness:
     dependencies:
       '@hono/node-server':
-        specifier: 2.0.12
+        specifier: 'catalog:'
         version: 2.0.12(hono@4.12.32)
       '@libsql/client':
         specifier: 'catalog:'
