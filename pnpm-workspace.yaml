@@ -74,5 +74,4 @@ minimumReleaseAge: 1440
 overrides:
   '@types/node': '24.13.3'
   esbuild: '0.28.1'
-  '@hono/node-server': 2.0.12
   'rolldown': 1.2.0
