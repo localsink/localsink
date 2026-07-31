@@ -74,3 +74,4 @@ minimumReleaseAge: 1440
 overrides:
   '@types/node': '24.13.3'
   esbuild: '0.28.1'
+  lightningcss: '1.33.0'
