@@ -44,6 +44,7 @@ export default defineConfig({
   overrides: [
     {
       files: ['**/*.spec.ts', '**/*.spec.tsx'],
+      excludeFiles: ['**/*.e2e.spec.ts'],
       plugins: ['vitest'],
       env: {
         vitest: true,
@@ -51,6 +52,19 @@ export default defineConfig({
       // Vitest's asymmetric matchers (expect.any, expect.objectContaining, …)
       // are typed as `any` upstream, so the typescript/no-unsafe-* family
       // fires on routine test code. Relaxed for spec files only.
+      rules: {
+        'typescript/no-unsafe-assignment': 'off',
+        'typescript/no-unsafe-argument': 'off',
+        'typescript/no-unsafe-call': 'off',
+        'typescript/no-unsafe-member-access': 'off',
+        'typescript/no-unsafe-return': 'off',
+      },
+    },
+    {
+      // Root-level config files sit outside every tsconfig project (lib and
+      // spec both pin rootDir to ./src), so the type-aware pass has no types
+      // for them and reads process.env as an `error` type.
+      files: ['**/*.config.ts'],
       rules: {
         'typescript/no-unsafe-assignment': 'off',
         'typescript/no-unsafe-argument': 'off',

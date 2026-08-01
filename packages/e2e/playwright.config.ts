@@ -16,9 +16,9 @@ const chromiumPath = process.env['PLAYWRIGHT_CHROMIUM_PATH'];
 
 export default defineConfig({
   testDir: './src',
-  testMatch: '**/*.spec.ts',
+  testMatch: '**/*.e2e.spec.ts',
   outputDir: './test-results',
-  // One shared, seeded backend for the run (see src/*.spec.ts isolation notes):
+  // One shared, seeded backend for the run (see src/*.e2e.spec.ts isolation notes):
   // read-only suites assert on presence, the mutating tail suite ingests under a
   // unique token. Serial keeps ordering deterministic.
   fullyParallel: false,
