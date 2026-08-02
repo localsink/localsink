@@ -18,20 +18,17 @@ export class AppPage {
     route.abort('failed');
   readonly connectionStatus: Locator;
   readonly connectionBanner: Locator;
-  readonly logList: Locator;
   readonly logRows: Locator;
   readonly search: Locator;
   readonly tailToggle: Locator;
   readonly jumpPill: Locator;
   readonly emptyState: Locator;
   readonly editionBadge: Locator;
-  readonly retryButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.connectionStatus = page.getByTestId('connection-status');
     this.connectionBanner = page.getByTestId('connection-banner');
-    this.logList = page.getByTestId('log-list');
     this.logRows = page.getByTestId('log-row');
     this.search = page.getByTestId('log-search');
     this.tailToggle = page.getByTestId('tail-toggle');
@@ -39,7 +36,6 @@ export class AppPage {
     this.jumpPill = page.getByRole('button', { name: /↓/ });
     this.emptyState = page.getByText('no logs match the current filters');
     this.editionBadge = page.getByText('Community Edition');
-    this.retryButton = page.getByRole('button', { name: 'Retry now' });
   }
 
   // Service and severity facet rows are both role=button named by the facet;
