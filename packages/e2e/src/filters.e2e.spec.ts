@@ -1,8 +1,6 @@
 import { expect, test } from './fixtures.ts';
 
-// Facets are URL state (TanStack Router): ?service=…&level=… — comma-joined,
-// refresh-proof, shareable. Note the browser URL param is `service`, not the
-// backend's `service_name`.
+// The browser URL param is `service`; the backend's is `service_name`.
 
 test('facets filter rows and sync to the URL', async ({ app }) => {
   await app.goto();
@@ -15,7 +13,6 @@ test('facets filter rows and sync to the URL', async ({ app }) => {
   await app.facet('error').click();
   await expect(app.page).toHaveURL(/service=api/);
   await expect(app.page).toHaveURL(/level=error/);
-  // api ∧ error → the single unhandled-exception row.
   await expect(app.rowWithText('unhandled exception')).toBeVisible();
   await expect(app.rowWithText('GET /health 200')).toHaveCount(0);
 });

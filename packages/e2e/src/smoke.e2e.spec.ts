@@ -1,8 +1,6 @@
-import { expect, test } from './fixtures.ts';
+import { sampleLogs } from '@localsink/contract/fixtures';
 
-// The whole app against the real backend: real SPA (Vite dev + proxy) → real
-// Hono API → real libSQL. Asserts on presence of seeded content, never exact
-// totals (the tail suite mutates the shared backend).
+import { expect, test } from './fixtures.ts';
 
 test('loads the SPA and renders seeded logs from the real backend', async ({
   app,
@@ -11,13 +9,12 @@ test('loads the SPA and renders seeded logs from the real backend', async ({
 
   await expect(app.editionBadge).toBeVisible();
 
-  // Facets populate from real GET /api/logs/meta.
+  // Populated from GET /api/logs/meta.
   for (const service of ['api', 'auth', 'worker', 'payments']) {
     await expect(app.facet(service)).toBeVisible();
   }
 
-  // Seeded rows render; connectivity settled and the tail is live.
-  expect(await app.logRows.count()).toBeGreaterThan(1);
+  await expect(app.logRows).toHaveCount(sampleLogs.length);
   await app.expectState('connected');
   await expect(app.tailToggle).toContainText('tailing');
 });

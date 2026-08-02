@@ -1,16 +1,17 @@
 import { test as base, expect } from '@playwright/test';
 import type { APIRequestContext, Locator, Page, Route } from '@playwright/test';
 
+import { startBackend } from './backend.ts';
+import type { Backend } from './backend.ts';
+
 export type ConnState = 'connected' | 'reconnecting' | 'offline';
 
-// The live tail polls GET /api/logs (with a query string) once a second; the
-// meta poll hits GET /api/logs/meta. This predicate matches only the tail poll,
-// so fault injection can't collaterally break meta.
+const isApiRequest = (url: URL): boolean => url.pathname.startsWith('/api/');
+
+// Exact match, not a prefix: fault injection must not collaterally break the
+// separate /api/logs/meta poll.
 const isTailPoll = (url: URL): boolean => url.pathname === '/api/logs';
 
-// Page object over the real SPA. Locators lean on roles/text plus the small set
-// of data-testid anchors added to app source; helpers drive connectivity by
-// intercepting the real polls (no MSW in the running app).
 export class AppPage {
   readonly page: Page;
   // Stable handler reference so goOnline's unroute matches goOffline's route.
@@ -38,22 +39,18 @@ export class AppPage {
     this.editionBadge = page.getByText('Community Edition');
   }
 
-  // Service and severity facet rows are both role=button named by the facet;
-  // the two label sets are disjoint, so one accessor serves both. exact:true so
-  // a service name doesn't also match a log row (whose name includes it).
+  // Serves both service and severity facets — the two label sets are disjoint.
+  // exact:true so a service name doesn't also match a log row containing it.
   facet(name: string): Locator {
     return this.page.getByRole('button', { name, exact: true });
   }
 
-  // A row whose visible text contains the given substring (message/service).
   rowWithText(text: string): Locator {
     return this.logRows.filter({ hasText: text });
   }
 
   async goto(): Promise<void> {
     await this.page.goto('/');
-    // Wait until the first seed has rendered and connectivity has settled, so
-    // specs start from a known-good state.
     await this.expectState('connected');
     await expect(this.logRows.first()).toBeVisible();
   }
@@ -69,9 +66,8 @@ export class AppPage {
     );
   }
 
-  // Persistently fail every tail poll — the app climbs to OFFLINE_AFTER and
-  // shows the offline banner. Preferred over context.setOffline, which doesn't
-  // reliably block loopback requests. goOnline lifts it and polling recovers.
+  // Preferred over context.setOffline, which doesn't reliably block loopback
+  // requests.
   async goOffline(): Promise<void> {
     await this.page.route(isTailPoll, this.abortPoll);
   }
@@ -80,27 +76,28 @@ export class AppPage {
     await this.page.unroute(isTailPoll, this.abortPoll);
   }
 
-  // Abort the next `count` tail polls, then stop intercepting so polling
-  // recovers on its own — reaches "reconnecting" without escalating to
-  // "offline" (which needs OFFLINE_AFTER=3 consecutive failures). Deterministic,
-  // unlike racing setOffline against the threshold.
+  // Reaches "reconnecting" without escalating to "offline" — deterministic,
+  // unlike racing setOffline against the consecutive-failure threshold.
   async failNextPolls(count: number): Promise<void> {
     let failed = 0;
     await this.page.route(isTailPoll, async (route) => {
       if (failed < count) {
         failed += 1;
         await route.abort('failed');
-        if (failed >= count) void this.page.unroute(isTailPoll);
+        // Not awaited (this runs inside the handler), so swallow the rejection
+        // that unroute throws if the test ended and the page is already closing.
+        if (failed >= count) {
+          void this.page.unroute(isTailPoll).catch(() => undefined);
+        }
         return;
       }
-      await route.continue();
+      // fallback, not continue: continue() goes to the network, bypassing the
+      // backend handler the `page` fixture registered.
+      await route.fallback();
     });
   }
 }
 
-// POST a log through the same-origin proxy (Vite → backend). Defaults fill the
-// required ingest fields; callers pass a unique service_name/message token so
-// the row can't be confused with seeded data or another spec's ingest.
 export async function ingestLog(
   request: APIRequestContext,
   log: { service_name: string; message: string; level?: string },
@@ -111,7 +108,47 @@ export async function ingestLog(
   expect(response.status()).toBe(201);
 }
 
-export const test = base.extend<{ app: AppPage }>({
+export const test = base.extend<{ app: AppPage; backend: Backend }>({
+  // oxlint-disable-next-line no-empty-pattern -- Playwright reads the destructuring pattern to infer fixture dependencies; `{}` declares "none"
+  backend: async ({}, use) => {
+    const backend = await startBackend();
+    await use(backend);
+    await backend.close();
+  },
+
+  // Serve the page's /api/* from this test's backend. Registered before any
+  // fault injector so that, under Playwright's last-registered-wins matching,
+  // those can fall back to it. Fulfilling from a server-side fetch keeps the
+  // page's view of the request same-origin.
+  page: async ({ page, backend }, use) => {
+    await page.route(isApiRequest, async (route) => {
+      const url = new URL(route.request().url());
+      try {
+        const response = await route.fetch({
+          url: `${backend.url}${url.pathname}${url.search}`,
+        });
+        await route.fulfill({ response });
+      } catch {
+        // Fixture teardown runs in reverse setup order, so `backend` closes
+        // while this page can still be polling — a request in flight then hits
+        // a dead port. Nothing is asserting by that point, so fail it quietly
+        // rather than reject inside the handler.
+        await route.abort('failed').catch(() => undefined);
+      }
+    });
+    await use(page);
+  },
+
+  // page.route never sees APIRequestContext traffic, so ingestLog has to
+  // address the backend directly.
+  request: async ({ playwright, backend }, use) => {
+    const context = await playwright.request.newContext({
+      baseURL: backend.url,
+    });
+    await use(context);
+    await context.dispose();
+  },
+
   app: async ({ page }, use) => {
     await use(new AppPage(page));
   },
