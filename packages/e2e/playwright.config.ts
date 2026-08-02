@@ -20,9 +20,10 @@ export default defineConfig({
   outputDir: './test-results',
   // One shared, seeded backend for the run (see src/*.e2e.spec.ts isolation notes):
   // read-only suites assert on presence, the mutating tail suite ingests under a
-  // unique token. Serial keeps ordering deterministic.
-  fullyParallel: false,
-  workers: 1,
+  // unique token, so files can run in parallel. tail.e2e.spec.ts opts itself
+  // into serial mode since its own row-count assertions can't tolerate
+  // interleaving with its other tests.
+  fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],

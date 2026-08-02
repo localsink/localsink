@@ -2,6 +2,10 @@ import { expect, ingestLog, test } from './fixtures.ts';
 
 // The live tail is 1 s HTTP polling of GET /api/logs?after_id=…. These specs
 // ingest under a unique token so accumulated rows can't perturb other specs.
+// Still run serially and isolated from other files: the bulk-ingest test
+// below asserts on a row count ("bulk 39"), which a concurrently running spec
+// ingesting its own rows could race.
+test.describe.configure({ mode: 'serial' });
 
 test('a newly ingested log appears at the live edge', async ({
   app,

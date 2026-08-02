@@ -151,7 +151,7 @@ export function LogList({
   }, [pinned, logs]);
 
   return (
-    <div data-testid="log-list" className="relative min-h-0 flex-1">
+    <div className="relative min-h-0 flex-1">
       <ScrollArea className="h-full" viewportRef={viewportRef}>
         <div className="px-2 py-1">
           {logs.length === 0 ? (
