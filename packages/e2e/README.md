@@ -12,7 +12,7 @@ pnpm --filter @localsink/e2e e2e:ui   # Playwright UI mode
 First run locally needs the browser:
 
 ```sh
-pnpm exec playwright install chromium-headless-shell
+pnpm exec playwright install chromium chromium-headless-shell
 ```
 
 ## Writing a spec
