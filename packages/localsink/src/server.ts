@@ -33,18 +33,26 @@ export async function startServer(options: StartServerOptions): Promise<void> {
 
   const server = serve({ fetch: app.fetch, port });
 
-  server.once('error', (error: NodeJS.ErrnoException) => {
+  const onStartupError = (error: NodeJS.ErrnoException) => {
     process.stderr.write(
       error.code === 'EADDRINUSE'
         ? `Port ${String(port)} is already in use. Choose another with --port <number>.\n`
         : `Failed to start server: ${format(error)}\n`,
     );
-    try {
-      database.close();
-    } catch {
-      // Already failing; the close error would only obscure the real cause.
-    }
     process.exit(1);
+  };
+  server.once('error', onStartupError);
+
+  server.once('listening', () => {
+    server.removeListener('error', onStartupError);
+    const addressInfo = server.address();
+    const url =
+      addressInfo && typeof addressInfo === 'object'
+        ? `http://${addressInfo.address}:${String(addressInfo.port)}`
+        : null;
+    process.stdout.write(
+      url ? `Server is listening on ${url}\n` : 'Server is listening\n',
+    );
   });
 
   const exit = () => {
@@ -65,19 +73,4 @@ export async function startServer(options: StartServerOptions): Promise<void> {
   };
   process.once('SIGINT', exit);
   process.once('SIGTERM', exit);
-
-  await new Promise<void>((resolve) => {
-    server.addListener('listening', () => {
-      const addressInfo = server.address();
-      const url =
-        addressInfo && typeof addressInfo === 'object'
-          ? `http://${addressInfo.address}:${String(addressInfo.port)}`
-          : null;
-      process.stdout.write(
-        url ? `Server is listening on ${url}\n` : 'Server is listening\n',
-      );
-      if (staticDir) process.stdout.write(`Serving the UI from ${staticDir}\n`);
-      resolve();
-    });
-  });
 }
