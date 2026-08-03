@@ -33,11 +33,10 @@ if (values.help) {
   process.exit(0);
 }
 
-// A .env in the working directory is optional; shell env works just as well.
 try {
   process.loadEnvFile();
 } catch {
-  // no .env to load
+  // .env is optional
 }
 
 const portInput = values.port ?? process.env['PORT'];
@@ -55,9 +54,8 @@ if (!portResult.success) {
   process.exit(1);
 }
 
-// The build copies the SPA to dist/public, so this resolves next to the
-// bundled CLI. Running from source it points at src/public, which doesn't
-// exist — so dev serves API + MCP only and Vite keeps serving the UI.
+// The build copies the SPA to dist/public, next to the bundled CLI. From
+// source this is src/public, which doesn't exist, so dev serves API + MCP only.
 const bundledStatic = join(import.meta.dirname, 'public');
 
 await startServer({

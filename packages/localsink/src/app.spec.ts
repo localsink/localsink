@@ -576,6 +576,23 @@ describe('POST /mcp', () => {
   });
 });
 
+describe('unmatched routes', () => {
+  it('returns a JSON 404 for an unknown /api path', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/nope');
+    expect(res.status).toBe(404);
+    expect(res.headers.get('Content-Type')).toContain('application/json');
+    await expect(res.json()).resolves.toEqual({ error: 'Not found.' });
+  });
+
+  it('returns a JSON 404 for an unknown /mcp path', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/mcp/nope');
+    expect(res.status).toBe(404);
+    await expect(res.json()).resolves.toEqual({ error: 'Not found.' });
+  });
+});
+
 describe('static asset serving', () => {
   it('serves index.html at the root', async () => {
     const { app } = await createTestApp({ staticDir: createStaticDir() });
@@ -606,13 +623,6 @@ describe('static asset serving', () => {
     const res = await app.request('/api/nope');
     expect(res.status).toBe(404);
     expect(res.headers.get('Content-Type')).toContain('application/json');
-    await expect(res.json()).resolves.toEqual({ error: 'Not found.' });
-  });
-
-  it('keeps unmatched /mcp paths as JSON 404s', async () => {
-    const { app } = await createTestApp({ staticDir: createStaticDir() });
-    const res = await app.request('/mcp/nope');
-    expect(res.status).toBe(404);
     await expect(res.json()).resolves.toEqual({ error: 'Not found.' });
   });
 

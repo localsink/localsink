@@ -39,9 +39,8 @@ const validate = <
 
 export interface CreateAppOptions {
   /**
-   * Directory holding the built SPA (index.html + assets/). Omit to serve the
-   * API and MCP only — that's the dev setup, where Vite serves the SPA and
-   * proxies here.
+   * Directory holding the built SPA. Omit to serve the API and MCP only, which
+   * is the dev setup: Vite serves the SPA and proxies here.
    */
   staticDir?: string;
 }
@@ -74,6 +73,8 @@ export function createApp(database: Database, options: CreateAppOptions = {}) {
     return mcpTransport.handleRequest(c);
   });
 
+  app.all('/mcp/*', (c) => c.json({ error: 'Not found.' }, 404));
+
   app.get('/api/logs/meta', async (c) => {
     const meta = await getMeta();
     return c.json(meta);
@@ -100,18 +101,11 @@ export function createApp(database: Database, options: CreateAppOptions = {}) {
     return c.body(null, 201);
   });
 
-  // Static serving goes last: the API and MCP handlers above are terminal, so
-  // they're matched before anything here can see the request.
+  app.all('/api/*', (c) => c.json({ error: 'Not found.' }, 404));
+
   if (options.staticDir) {
     const root = options.staticDir;
-    // Real files — /assets/*, and `/` itself, since a directory hit resolves
-    // index.html. A miss calls next(), falling through to the handlers below.
     app.use('*', serveStatic({ root }));
-    // Without these, an unmatched /api path would reach the SPA fallback and
-    // answer an API client with index.html and a 200.
-    app.all('/api/*', (c) => c.json({ error: 'Not found.' }, 404));
-    app.all('/mcp/*', (c) => c.json({ error: 'Not found.' }, 404));
-    // Anything left is a client-side route.
     app.get('*', serveStatic({ path: 'index.html', root }));
   }
 

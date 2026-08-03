@@ -13,11 +13,6 @@ export interface StartServerOptions {
   staticDir?: string;
 }
 
-/**
- * Boots the database and HTTP server and installs signal handlers. Resolves
- * once the server is listening; the process then stays alive until a signal
- * arrives. Argument parsing lives in cli.ts so this stays callable in-process.
- */
 export async function startServer(options: StartServerOptions): Promise<void> {
   const { port, dbFileName, staticDir } = options;
 
@@ -33,6 +28,8 @@ export async function startServer(options: StartServerOptions): Promise<void> {
 
   const server = serve({ fetch: app.fetch, port });
 
+  // A failed bind emits 'error' in place of 'listening'. Dropped once
+  // listening, so a later runtime error isn't reported as a startup failure.
   const onStartupError = (error: NodeJS.ErrnoException) => {
     process.stderr.write(
       error.code === 'EADDRINUSE'

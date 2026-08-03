@@ -210,10 +210,8 @@ export function makeDatabase(db: DrizzleClient) {
 export const DEFAULT_DB_FILE_NAME = 'file:localsink.db';
 
 /**
- * Opens (creating if absent) the database at `dbFileName` and brings it up to
- * the current schema. Migrating here is what lets `npx localsink` work against
- * a path that doesn't exist yet; drizzle's migrator records what it has
- * applied, so repeat starts are a no-op.
+ * Opens the database, creating and migrating it if absent. Drizzle's migrator
+ * records what it has applied, so repeat starts are a no-op.
  */
 export async function initializeDatabase(
   dbFileName: string = DEFAULT_DB_FILE_NAME,
