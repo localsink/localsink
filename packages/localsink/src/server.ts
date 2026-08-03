@@ -33,6 +33,20 @@ export async function startServer(options: StartServerOptions): Promise<void> {
 
   const server = serve({ fetch: app.fetch, port });
 
+  server.once('error', (error: NodeJS.ErrnoException) => {
+    process.stderr.write(
+      error.code === 'EADDRINUSE'
+        ? `Port ${String(port)} is already in use. Choose another with --port <number>.\n`
+        : `Failed to start server: ${format(error)}\n`,
+    );
+    try {
+      database.close();
+    } catch {
+      // Already failing; the close error would only obscure the real cause.
+    }
+    process.exit(1);
+  });
+
   const exit = () => {
     server.close((err) => {
       let exitCode = 0;
