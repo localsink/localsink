@@ -5,6 +5,8 @@ import { sampleLogs } from '@localsink/contract/fixtures';
 import { createClient } from '@localsink/sdk';
 import type { LogInput } from '@localsink/sdk';
 
+import { loadEnv, resolveServerUrl } from './config.ts';
+
 // Emits a continuous stream of synthetic logs against a *running* server
 // through the real ingest path (SDK → POST /api/logs) — unlike seed.ts, which
 // writes straight to the database. Use it to exercise live tailing in the web
@@ -12,7 +14,9 @@ import type { LogInput } from '@localsink/sdk';
 // swallowed so logging can never crash a host app), so reachability is probed
 // once up front instead. Runs until Ctrl-C.
 
-const url = process.env['LOCALSINK_URL'] ?? 'http://localhost:3000';
+loadEnv();
+
+const url = resolveServerUrl();
 
 try {
   const response = await fetch(new URL('/api/logs/meta', url));

@@ -20,8 +20,12 @@
     "url": "git+https://github.com/localsink/localsink.git",
     "directory": "packages/localsink"
   },
+  "bin": {
+    "localsink": "./src/cli.ts"
+  },
   "files": [
-    "dist"
+    "dist",
+    "drizzle"
   ],
   "type": "module",
   "sideEffects": false,
@@ -31,11 +35,19 @@
       "@localsink/source": "./src/index.ts",
       "default": "./dist/index.mjs"
     },
+    "./cli": {
+      "@localsink/source": "./src/cli.ts",
+      "default": "./dist/cli.mjs"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
+    "bin": {
+      "localsink": "./dist/cli.mjs"
+    },
     "exports": {
       ".": "./dist/index.mjs",
+      "./cli": "./dist/cli.mjs",
       "./package.json": "./package.json"
     }
   },
@@ -44,8 +56,8 @@
     "typecheck": "tsc -b .",
     "lint": "oxlint .",
     "test": "vitest run",
-    "dev": "node --conditions=@localsink/source --watch --watch-path=src src/server.ts",
-    "start": "node --conditions=@localsink/source src/server.ts",
+    "dev": "node --conditions=@localsink/source --watch --watch-path=src src/cli.ts",
+    "start": "node --conditions=@localsink/source src/cli.ts",
     "seed": "node --conditions=@localsink/source src/seed.ts",
     "emit": "node --conditions=@localsink/source src/emit.ts",
     "drizzle-kit:push": "drizzle-kit push",
@@ -64,7 +76,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@localsink/sdk": "workspace:*"
+    "@localsink/sdk": "workspace:*",
+    "@localsink/web": "workspace:*"
   },
   "engines": {
     "node": ">=24"
