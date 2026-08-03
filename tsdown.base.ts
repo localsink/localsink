@@ -1,20 +1,23 @@
+import { mergeConfig } from 'tsdown';
 import type { UserConfig } from 'tsdown';
 
 export function libConfig(overrides: UserConfig = {}): UserConfig {
-  return {
-    exports: {
-      devExports: '@localsink/source',
+  return mergeConfig(
+    {
+      exports: {
+        devExports: '@localsink/source',
+      },
+      tsconfig: 'tsconfig.lib.json',
+      dts: {
+        tsgo: true,
+      },
+      publint: true,
+      attw: {
+        profile: 'esm-only',
+      },
+      failOnWarn: true,
+      suppressWarnings: ['TypeScript 7.0 does not yet have a stable API'],
     },
-    tsconfig: 'tsconfig.lib.json',
-    dts: {
-      tsgo: true,
-    },
-    publint: true,
-    attw: {
-      profile: 'esm-only',
-    },
-    failOnWarn: true,
-    suppressWarnings: ['TypeScript 7.0 does not yet have a stable API'],
-    ...overrides,
-  };
+    overrides,
+  );
 }

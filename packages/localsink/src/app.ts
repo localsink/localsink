@@ -1,6 +1,7 @@
 import { format } from 'node:util';
 
 import { StreamableHTTPTransport } from '@hono/mcp';
+import { serveStatic } from '@hono/node-server/serve-static';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import type { ValidationTargets } from 'hono';
@@ -36,7 +37,15 @@ const validate = <
     }
   });
 
-export function createApp(database: Database) {
+export interface CreateAppOptions {
+  /**
+   * Directory holding the built SPA. Omit to serve the API and MCP only, which
+   * is the dev setup: Vite serves the SPA and proxies here.
+   */
+  staticDir?: string;
+}
+
+export function createApp(database: Database, options: CreateAppOptions = {}) {
   const { findLogs, getMeta, findLogById, createLog } = database;
 
   const mcpServer = createMcpServer(database);
@@ -64,6 +73,8 @@ export function createApp(database: Database) {
     return mcpTransport.handleRequest(c);
   });
 
+  app.all('/mcp/*', (c) => c.json({ error: 'Not found.' }, 404));
+
   app.get('/api/logs/meta', async (c) => {
     const meta = await getMeta();
     return c.json(meta);
@@ -89,6 +100,14 @@ export function createApp(database: Database) {
     await createLog(log);
     return c.body(null, 201);
   });
+
+  app.all('/api/*', (c) => c.json({ error: 'Not found.' }, 404));
+
+  if (options.staticDir) {
+    const root = options.staticDir;
+    app.use('*', serveStatic({ root }));
+    app.get('*', serveStatic({ path: 'index.html', root }));
+  }
 
   return app;
 }

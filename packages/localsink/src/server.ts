@@ -1,68 +1,73 @@
 import { format } from 'node:util';
 
 import { serve } from '@hono/node-server';
-import { z } from 'zod';
 
 import { createApp } from './app.ts';
 import { initializeDatabase } from './database.ts';
 import type { Database } from './database.ts';
 
-const portResult = z.coerce
-  .number()
-  .int()
-  .min(0)
-  .max(65535)
-  .default(3000)
-  .safeParse(process.env['PORT']);
-if (!portResult.success) {
-  process.stderr.write(
-    `Invalid PORT "${String(process.env['PORT'])}": ${portResult.error.issues.map((i) => i.message).join('; ')}\n`,
-  );
-  process.exit(1);
-}
-const port = portResult.data;
-
-let database: Database;
-try {
-  database = await initializeDatabase();
-} catch (error) {
-  process.stderr.write(`Failed to initialize database: ${format(error)}\n`);
-  process.exit(1);
+export interface StartServerOptions {
+  port: number;
+  dbFileName: string;
+  /** Directory holding the built SPA. Omitted in dev, where Vite serves it. */
+  staticDir?: string;
 }
 
-const app = createApp(database);
+export async function startServer(options: StartServerOptions): Promise<void> {
+  const { port, dbFileName, staticDir } = options;
 
-const server = serve({
-  fetch: app.fetch,
-  port,
-});
-
-server.addListener('listening', () => {
-  const addressInfo = server.address();
-  if (addressInfo && typeof addressInfo === 'object') {
-    process.stdout.write(
-      `Server is listening on http://${addressInfo.address}:${String(addressInfo.port)}\n`,
-    );
-  } else {
-    process.stdout.write('Server is listening\n');
+  let database: Database;
+  try {
+    database = await initializeDatabase(dbFileName);
+  } catch (error) {
+    process.stderr.write(`Failed to initialize database: ${format(error)}\n`);
+    process.exit(1);
   }
-});
 
-const exit = () => {
-  server.close((err) => {
-    let exitCode = 0;
-    if (err) {
-      process.stderr.write(`${format(err)}\n`);
-      exitCode = 1;
-    }
-    try {
-      database.close();
-    } catch (error) {
-      process.stderr.write(`Failed to close database: ${format(error)}\n`);
-      exitCode = 1;
-    }
-    process.exit(exitCode);
+  const app = createApp(database, staticDir ? { staticDir } : {});
+
+  const server = serve({ fetch: app.fetch, port });
+
+  // A failed bind emits 'error' in place of 'listening'. Dropped once
+  // listening, so a later runtime error isn't reported as a startup failure.
+  const onStartupError = (error: NodeJS.ErrnoException) => {
+    process.stderr.write(
+      error.code === 'EADDRINUSE'
+        ? `Port ${String(port)} is already in use. Choose another with --port <number>.\n`
+        : `Failed to start server: ${format(error)}\n`,
+    );
+    process.exit(1);
+  };
+  server.once('error', onStartupError);
+
+  server.once('listening', () => {
+    server.removeListener('error', onStartupError);
+    const addressInfo = server.address();
+    const url =
+      addressInfo && typeof addressInfo === 'object'
+        ? `http://${addressInfo.address}:${String(addressInfo.port)}`
+        : null;
+    process.stdout.write(
+      url ? `Server is listening on ${url}\n` : 'Server is listening\n',
+    );
   });
-};
-process.once('SIGINT', exit);
-process.once('SIGTERM', exit);
+
+  const exit = () => {
+    server.close((err) => {
+      let exitCode = 0;
+      if (err) {
+        process.stderr.write(`${format(err)}\n`);
+        exitCode = 1;
+      }
+      try {
+        database.close();
+      } catch (error) {
+        process.stderr.write(`Failed to close database: ${format(error)}\n`);
+        exitCode = 1;
+      }
+      process.exit(exitCode);
+    });
+  };
+  process.once('SIGINT', exit);
+  process.once('SIGTERM', exit);
+}

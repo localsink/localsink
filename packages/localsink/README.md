@@ -5,22 +5,35 @@ The localsink server: HTTP + MCP API for ingesting and querying logs, backed by 
 ## Run the server
 
 ```sh
+npx localsink
+```
+
+This serves the UI, the REST API and the MCP endpoint on a single origin at
+`http://localhost:3000`, creating and migrating `localsink.db` in the working
+directory if it isn't there yet.
+
+### From a clone
+
+```sh
 git clone https://github.com/localsink/localsink.git
 cd localsink
 pnpm install
-echo 'DB_FILE_NAME=./local.db' > packages/localsink/.env
-pnpm --filter localsink drizzle-kit:push   # first time only — apply schema + FTS
-pnpm --filter localsink dev                # node --watch src/server.ts
+pnpm --filter localsink dev   # API + MCP only; @localsink/web serves the UI
 ```
 
-The server listens on `http://localhost:3000` by default.
+In dev the UI comes from Vite (`pnpm --filter @localsink/web dev`), which
+proxies `/api` and `/mcp` here. The bundled UI is only served from a build,
+where the assets sit next to the CLI in `dist/public`.
 
-### Environment variables
+### Options
 
-| Var            | Required | Default | Description                       |
-| -------------- | -------- | ------- | --------------------------------- |
-| `DB_FILE_NAME` | yes      | —       | Path to the SQLite database file. |
-| `PORT`         | no       | `3000`  | HTTP port to bind.                |
+Flags win over the environment, which wins over the default.
+
+| Flag           | Env            | Default             | Description                       |
+| -------------- | -------------- | ------------------- | --------------------------------- |
+| `--port`, `-p` | `PORT`         | `3000`              | HTTP port to bind.                |
+| `--db`, `-d`   | `DB_FILE_NAME` | `file:localsink.db` | Path to the SQLite database file. |
+| `--help`, `-h` | —              | —                   | Print usage.                      |
 
 A `.env` file in the working directory is auto-loaded via `process.loadEnvFile()`.
 
