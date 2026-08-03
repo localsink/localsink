@@ -23,6 +23,7 @@ import {
   logsQuerySchema,
 } from '@localsink/contract';
 
+import { DEFAULT_DB_FILE_NAME } from './config.ts';
 import { logsTable } from './db/schema.ts';
 import { applySchema } from './migrate.ts';
 
@@ -205,9 +206,6 @@ export function makeDatabase(db: DrizzleClient) {
     close,
   };
 }
-
-/** Created in the working directory when nothing else is configured. */
-export const DEFAULT_DB_FILE_NAME = 'file:localsink.db';
 
 /**
  * Opens the database, creating and migrating it if absent. Drizzle's migrator

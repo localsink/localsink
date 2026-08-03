@@ -2,19 +2,20 @@ import { format } from 'node:util';
 
 import { sampleLogs } from '@localsink/contract/fixtures';
 
+import { loadEnv, resolveDbFileName } from './config.ts';
 import { initializeDatabase } from './database.ts';
 import type { Database } from './database.ts';
 
 // Seeds the dev database with the shared sample fixtures so the UI has data
 // to render against the real API. Idempotent: skips when the database already
 // holds logs. Rows are inserted verbatim (ids included) so the seeded data
-// matches the web package's MSW pseudo-backend exactly. Assumes the schema
-// exists — run `pnpm drizzle-kit:migrate` first on a fresh DB (migrate, not
-// push: the FTS5 table and trigger live only in the migration SQL).
+// matches the web package's MSW pseudo-backend exactly.
+
+loadEnv();
 
 let database: Database;
 try {
-  database = await initializeDatabase();
+  database = await initializeDatabase(resolveDbFileName());
 } catch (error) {
   process.stderr.write(`Failed to initialize database: ${format(error)}\n`);
   process.exit(1);
@@ -34,11 +35,6 @@ try {
   }
 } catch (error) {
   process.stderr.write(`Seeding failed: ${format(error)}\n`);
-  if (format(error).includes('no such table')) {
-    process.stderr.write(
-      'The schema is missing — run `pnpm drizzle-kit:migrate` first.\n',
-    );
-  }
   process.exitCode = 1;
 } finally {
   database.close();

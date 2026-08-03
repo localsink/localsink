@@ -5,7 +5,13 @@ import { parseArgs } from 'node:util';
 
 import { z } from 'zod';
 
-import { DEFAULT_DB_FILE_NAME } from './database.ts';
+import {
+  configured,
+  DEFAULT_DB_FILE_NAME,
+  DEFAULT_PORT,
+  loadEnv,
+  resolveDbFileName,
+} from './config.ts';
 import { startServer } from './server.ts';
 
 const USAGE = `localsink — local-first log sink with a searchable UI, API and MCP server.
@@ -13,7 +19,7 @@ const USAGE = `localsink — local-first log sink with a searchable UI, API and 
 Usage: localsink [options]
 
 Options:
-  -p, --port <number>  Port to listen on (env PORT) [default: 3000]
+  -p, --port <number>  Port to listen on (env PORT) [default: ${String(DEFAULT_PORT)}]
   -d, --db <file>      libSQL database file (env DB_FILE_NAME)
                        [default: ${DEFAULT_DB_FILE_NAME}]
   -h, --help           Show this message
@@ -33,19 +39,15 @@ if (values.help) {
   process.exit(0);
 }
 
-try {
-  process.loadEnvFile();
-} catch {
-  // .env is optional
-}
+loadEnv();
 
-const portInput = values.port ?? process.env['PORT'];
+const portInput = configured(values.port, process.env['PORT']);
 const portResult = z.coerce
   .number()
   .int()
   .min(0)
   .max(65535)
-  .default(3000)
+  .default(DEFAULT_PORT)
   .safeParse(portInput);
 if (!portResult.success) {
   process.stderr.write(
@@ -60,6 +62,6 @@ const bundledStatic = join(import.meta.dirname, 'public');
 
 await startServer({
   port: portResult.data,
-  dbFileName: values.db ?? process.env['DB_FILE_NAME'] ?? DEFAULT_DB_FILE_NAME,
+  dbFileName: resolveDbFileName(values.db),
   ...(existsSync(bundledStatic) ? { staticDir: bundledStatic } : {}),
 });
