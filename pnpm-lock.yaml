@@ -312,6 +312,9 @@ importers:
       '@localsink/sdk':
         specifier: workspace:*
         version: link:../sdk
+      '@localsink/web':
+        specifier: workspace:*
+        version: link:../web
 
   packages/pino:
     dependencies:

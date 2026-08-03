@@ -12,6 +12,11 @@ import { defaultClientConditions, defineConfig } from 'vite';
 const API_TARGET = process.env['VITE_API_TARGET'] ?? 'http://localhost:3000';
 
 export default defineConfig({
+  // public/ holds only MSW's worker, which is test-only and must not end up in
+  // the bundle localsink ships. Dev still serves publicDir from source, so
+  // browser tests are unaffected. Revisit if a real public asset (favicon,
+  // manifest) is ever added — it would be silently dropped from the build.
+  build: { copyPublicDir: false },
   plugins: [
     tailwindcss(),
     react(),

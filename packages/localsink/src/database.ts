@@ -24,6 +24,7 @@ import {
 } from '@localsink/contract';
 
 import { logsTable } from './db/schema.ts';
+import { applySchema } from './migrate.ts';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 
@@ -205,19 +206,21 @@ export function makeDatabase(db: DrizzleClient) {
   };
 }
 
-export async function initializeDatabase() {
-  try {
-    process.loadEnvFile();
-  } catch {
-    // .env is optional; env vars may be set via shell
-  }
-  const dbFileName = process.env['DB_FILE_NAME'];
-  if (!dbFileName) {
-    throw new Error('DB_FILE_NAME environment variable is not set.');
-  }
+/** Created in the working directory when nothing else is configured. */
+export const DEFAULT_DB_FILE_NAME = 'file:localsink.db';
 
+/**
+ * Opens (creating if absent) the database at `dbFileName` and brings it up to
+ * the current schema. Migrating here is what lets `npx localsink` work against
+ * a path that doesn't exist yet; drizzle's migrator records what it has
+ * applied, so repeat starts are a no-op.
+ */
+export async function initializeDatabase(
+  dbFileName: string = DEFAULT_DB_FILE_NAME,
+): Promise<Database> {
   const db = drizzle(dbFileName);
   await db.run(sql`PRAGMA journal_mode = WAL`);
+  await applySchema(db);
 
   return makeDatabase(db);
 }

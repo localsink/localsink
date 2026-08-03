@@ -1,17 +1,32 @@
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { drizzle } from 'drizzle-orm/libsql';
 
 import { logPageSchema } from '@localsink/contract';
 
+import type { CreateAppOptions } from './app.ts';
 import { createApp } from './app.ts';
 import { makeDatabase } from './database.ts';
 import { applySchema } from './migrate.ts';
 
-async function createTestApp() {
+async function createTestApp(options?: CreateAppOptions) {
   const client = drizzle(':memory:');
   await applySchema(client);
   const db = makeDatabase(client);
   onTestFinished(() => db.close());
-  return { app: createApp(db), db };
+  return { app: createApp(db, options), db };
+}
+
+// Stand-in for a built packages/web/dist: index.html plus a hashed asset.
+function createStaticDir() {
+  const dir = mkdtempSync(join(tmpdir(), 'localsink-static-'));
+  onTestFinished(() => rmSync(dir, { recursive: true, force: true }));
+  writeFileSync(join(dir, 'index.html'), '<!doctype html><title>spa</title>');
+  mkdirSync(join(dir, 'assets'));
+  writeFileSync(join(dir, 'assets', 'app-abc123.js'), 'export default 1;\n');
+  return dir;
 }
 
 const minimalPayload = {
@@ -558,5 +573,61 @@ describe('POST /mcp', () => {
         ],
       },
     });
+  });
+});
+
+describe('static asset serving', () => {
+  it('serves index.html at the root', async () => {
+    const { app } = await createTestApp({ staticDir: createStaticDir() });
+    const res = await app.request('/');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toContain('text/html');
+    await expect(res.text()).resolves.toContain('<title>spa</title>');
+  });
+
+  it('serves hashed assets with their own content type', async () => {
+    const { app } = await createTestApp({ staticDir: createStaticDir() });
+    const res = await app.request('/assets/app-abc123.js');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toContain('javascript');
+  });
+
+  it('falls back to index.html for client-side routes', async () => {
+    const { app } = await createTestApp({ staticDir: createStaticDir() });
+    const res = await app.request('/some/client/route');
+    expect(res.status).toBe(200);
+    await expect(res.text()).resolves.toContain('<title>spa</title>');
+  });
+
+  // The fallback must not swallow API 404s — an API client asking for a
+  // mistyped path should get JSON, not the SPA shell with a 200.
+  it('keeps unmatched /api paths as JSON 404s', async () => {
+    const { app } = await createTestApp({ staticDir: createStaticDir() });
+    const res = await app.request('/api/nope');
+    expect(res.status).toBe(404);
+    expect(res.headers.get('Content-Type')).toContain('application/json');
+    await expect(res.json()).resolves.toEqual({ error: 'Not found.' });
+  });
+
+  it('keeps unmatched /mcp paths as JSON 404s', async () => {
+    const { app } = await createTestApp({ staticDir: createStaticDir() });
+    const res = await app.request('/mcp/nope');
+    expect(res.status).toBe(404);
+    await expect(res.json()).resolves.toEqual({ error: 'Not found.' });
+  });
+
+  it('still serves the API when static serving is on', async () => {
+    const { app, db } = await createTestApp({ staticDir: createStaticDir() });
+    await db.createLog(minimalPayload);
+    const res = await app.request('/api/logs');
+    expect(res.status).toBe(200);
+    expect(logPageSchema.parse(await res.json()).data).toHaveLength(1);
+  });
+
+  // Guards the four existing call sites that pass no options.
+  it('serves no static content when staticDir is omitted', async () => {
+    const { app } = await createTestApp();
+    expect((await app.request('/')).status).toBe(404);
+    expect((await app.request('/index.html')).status).toBe(404);
   });
 });

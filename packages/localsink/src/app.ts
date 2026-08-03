@@ -1,6 +1,7 @@
 import { format } from 'node:util';
 
 import { StreamableHTTPTransport } from '@hono/mcp';
+import { serveStatic } from '@hono/node-server/serve-static';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import type { ValidationTargets } from 'hono';
@@ -36,7 +37,16 @@ const validate = <
     }
   });
 
-export function createApp(database: Database) {
+export interface CreateAppOptions {
+  /**
+   * Directory holding the built SPA (index.html + assets/). Omit to serve the
+   * API and MCP only — that's the dev setup, where Vite serves the SPA and
+   * proxies here.
+   */
+  staticDir?: string;
+}
+
+export function createApp(database: Database, options: CreateAppOptions = {}) {
   const { findLogs, getMeta, findLogById, createLog } = database;
 
   const mcpServer = createMcpServer(database);
@@ -89,6 +99,21 @@ export function createApp(database: Database) {
     await createLog(log);
     return c.body(null, 201);
   });
+
+  // Static serving goes last: the API and MCP handlers above are terminal, so
+  // they're matched before anything here can see the request.
+  if (options.staticDir) {
+    const root = options.staticDir;
+    // Real files — /assets/*, and `/` itself, since a directory hit resolves
+    // index.html. A miss calls next(), falling through to the handlers below.
+    app.use('*', serveStatic({ root }));
+    // Without these, an unmatched /api path would reach the SPA fallback and
+    // answer an API client with index.html and a 200.
+    app.all('/api/*', (c) => c.json({ error: 'Not found.' }, 404));
+    app.all('/mcp/*', (c) => c.json({ error: 'Not found.' }, 404));
+    // Anything left is a client-side route.
+    app.get('*', serveStatic({ path: 'index.html', root }));
+  }
 
   return app;
 }

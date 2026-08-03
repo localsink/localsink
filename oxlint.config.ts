@@ -59,5 +59,15 @@ export default defineConfig({
         'typescript/no-unsafe-return': 'off',
       },
     },
+    {
+      files: ['**/*.config.ts'],
+      rules: {
+        'typescript/no-unsafe-assignment': 'off',
+        'typescript/no-unsafe-argument': 'off',
+        'typescript/no-unsafe-call': 'off',
+        'typescript/no-unsafe-member-access': 'off',
+        'typescript/no-unsafe-return': 'off',
+      },
+    },
   ],
 });
