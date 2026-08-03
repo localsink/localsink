@@ -15,18 +15,18 @@ First run locally needs the browser:
 pnpm exec playwright install chromium chromium-headless-shell
 ```
 
-### Dev server locally, built bundle in CI
+### The built bundle, always
 
-Locally the SPA is served by `vite dev`, so editing app source and re-running just works. **In CI it is served by `vite preview` against `packages/web/dist`** — CI runs `build:all` before `e2e:all`, and the built bundle is the only place minification, Tailwind's class purge, and the React Compiler's production output are exercised. A failure that reproduces only in CI is most likely one of those.
+There is no Vite server. Each test's backend serves the SPA out of `packages/localsink/dist/public` exactly as `npx localsink` does, so every run exercises minification, Tailwind's class purge, the React Compiler's production output, and the real static-asset and SPA-fallback routes.
 
-To reproduce a CI run locally, build first:
+That build is a prerequisite. `src/global-setup.ts` runs it for you locally — which also stops the assets going stale after an edit to `packages/web` — and skips it under `CI`, where `build:all` has already run before `e2e:all`. Either way it fails with an actionable message if the assets are missing.
+
+Set `CI=1` to skip the build and use whatever is in `dist` (also enables retries and `forbidOnly`):
 
 ```sh
-pnpm --filter @localsink/web build
+pnpm --filter 'localsink...' build
 CI=1 pnpm --filter @localsink/e2e e2e
 ```
-
-`CI=1` also enables retries and `forbidOnly`, and disables dev-server reuse. Note that `preview` serves whatever is in `dist` — rebuild after changing app source, or you are testing a stale bundle.
 
 ## Writing a spec
 
@@ -46,12 +46,12 @@ Prefer adding a locator or helper to `AppPage` over inlining selectors in a spec
 
 ## Isolation
 
-**Every test gets its own backend.** The `backend` fixture (`src/backend.ts`) starts the real Hono app over a fresh in-memory libSQL database on an OS-assigned port, seeded from `@localsink/contract/fixtures`, and tears it down afterwards. Tests may ingest freely and assert exact row counts — nothing leaks between them, and specs run fully parallel.
+**Every test gets its own server.** The `backend` fixture (`src/backend.ts`) starts the real Hono app — SPA, API and MCP together — over a fresh in-memory libSQL database on an OS-assigned port, seeded from `@localsink/contract/fixtures`, and tears it down afterwards. Tests may ingest freely and assert exact row counts — nothing leaks between them, and specs run fully parallel.
 
-The frontend server is the one shared process. It's stateless — it only serves the SPA — so it costs nothing in isolation terms. Page requests to `/api/*` are intercepted and routed to the test's own backend, so no proxy is involved (which is also why `vite preview`, which ignores `server.proxy`, works unchanged).
+Nothing is shared, and nothing is intercepted. A `baseURL` fixture points each test at its own server, so the page and `ingestLog`'s request context are both genuinely same-origin against it — the same single-origin arrangement a user gets from `npx localsink`.
 
-If per-test backend startup ever shows up in profiles, `backend` can be changed to `{ scope: 'worker' }` in `src/fixtures.ts` — at the cost of state accumulating across the tests in a worker.
+If per-test startup ever shows up in profiles, `backend` can be changed to `{ scope: 'worker' }` in `src/fixtures.ts` — at the cost of state accumulating across the tests in a worker.
 
 ## Fault injection
 
-`app.goOffline()` / `app.failNextPolls(n)` register their own routes, which take precedence over the backend binding (Playwright matches the most recently registered handler first). A fault injector that wants a request to reach the backend must call `route.fallback()`, not `route.continue()` — `continue()` goes to the network, where nothing is listening.
+`app.goOffline()` / `app.failNextPolls(n)` register a `page.route` over the tail poll (`/api/logs` exactly, so the separate `/api/logs/meta` poll is untouched) and abort matching requests. A fault injector that wants a request to go through calls `route.continue()` — the network is this test's own backend.

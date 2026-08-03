@@ -6,8 +6,6 @@ import type { Backend } from './backend.ts';
 
 export type ConnState = 'connected' | 'reconnecting' | 'offline';
 
-const isApiRequest = (url: URL): boolean => url.pathname.startsWith('/api/');
-
 // Exact match, not a prefix: fault injection must not collaterally break the
 // separate /api/logs/meta poll.
 const isTailPoll = (url: URL): boolean => url.pathname === '/api/logs';
@@ -91,13 +89,13 @@ export class AppPage {
         }
         return;
       }
-      // fallback, not continue: continue() goes to the network, bypassing the
-      // backend handler the `page` fixture registered.
-      await route.fallback();
+      await route.continue();
     });
   }
 }
 
+// Uses Playwright's own request context, which picks up the baseURL fixture
+// below and so addresses this test's backend.
 export async function ingestLog(
   request: APIRequestContext,
   log: { service_name: string; message: string; level?: string },
@@ -116,37 +114,10 @@ export const test = base.extend<{ app: AppPage; backend: Backend }>({
     await backend.close();
   },
 
-  // Serve the page's /api/* from this test's backend. Registered before any
-  // fault injector so that, under Playwright's last-registered-wins matching,
-  // those can fall back to it. Fulfilling from a server-side fetch keeps the
-  // page's view of the request same-origin.
-  page: async ({ page, backend }, use) => {
-    await page.route(isApiRequest, async (route) => {
-      const url = new URL(route.request().url());
-      try {
-        const response = await route.fetch({
-          url: `${backend.url}${url.pathname}${url.search}`,
-        });
-        await route.fulfill({ response });
-      } catch {
-        // Fixture teardown runs in reverse setup order, so `backend` closes
-        // while this page can still be polling — a request in flight then hits
-        // a dead port. Nothing is asserting by that point, so fail it quietly
-        // rather than reject inside the handler.
-        await route.abort('failed').catch(() => undefined);
-      }
-    });
-    await use(page);
-  },
-
-  // page.route never sees APIRequestContext traffic, so ingestLog has to
-  // address the backend directly.
-  request: async ({ playwright, backend }, use) => {
-    const context = await playwright.request.newContext({
-      baseURL: backend.url,
-    });
-    await use(context);
-    await context.dispose();
+  // The backend serves the SPA as well as /api, so everything the page does is
+  // genuinely same-origin against this test's own server — no interception.
+  baseURL: async ({ backend }, use) => {
+    await use(backend.url);
   },
 
   app: async ({ page }, use) => {
