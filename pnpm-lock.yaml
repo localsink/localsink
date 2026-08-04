@@ -33,6 +33,9 @@ catalogs:
     '@modelcontextprotocol/sdk':
       specifier: ^1.30.0
       version: 1.30.0
+    '@playwright/test':
+      specifier: 1.62.1
+      version: 1.62.1
     '@rolldown/plugin-babel':
       specifier: 0.2.3
       version: 0.2.3
@@ -269,6 +272,27 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.4.3
+
+  packages/e2e:
+    dependencies:
+      '@hono/node-server':
+        specifier: 'catalog:'
+        version: 2.0.12(hono@4.12.33)
+      '@libsql/client':
+        specifier: 'catalog:'
+        version: 0.17.4
+      '@localsink/contract':
+        specifier: workspace:*
+        version: link:../contract
+      '@playwright/test':
+        specifier: 'catalog:'
+        version: 1.62.1
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.2(@libsql/client@0.17.4)
+      localsink:
+        specifier: workspace:*
+        version: link:../localsink
 
   packages/http:
     dependencies:
@@ -1288,6 +1312,11 @@ packages:
 
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
+
+  '@playwright/test@1.62.1':
+    resolution: {integrity: sha512-DTcUc8qii+cpHvtOwggMtBRMjKZHXYWdw8syRYu2vtzuq4Wxphqq4NfCs5Zt44L6mA8rfDfj+PHnxFc/FeK6mQ==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -4660,6 +4689,10 @@ snapshots:
     optional: true
 
   '@pinojs/redact@0.4.0': {}
+
+  '@playwright/test@1.62.1':
+    dependencies:
+      playwright: 1.62.1
 
   '@polka/url@1.0.0-next.29': {}
 

@@ -218,6 +218,7 @@ export default function App() {
         />
         <div className="flex-none border-t border-[var(--ls-border-soft)] px-5 pt-3 pb-4">
           <Input
+            data-testid="log-search"
             value={searchDraft}
             onChange={(event) => {
               setSearchDraft(event.target.value);

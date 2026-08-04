@@ -8,6 +8,7 @@
     "build:all": "pnpm --recursive build",
     "test:all": "pnpm --recursive test",
     "integration:all": "pnpm --recursive integration",
+    "e2e:all": "pnpm --recursive e2e",
     "lint": "oxlint oxfmt.config.ts oxlint.config.ts lint-staged.config.ts vitest.config.ts vitest.shared.ts tsdown.base.ts",
     "lint:all": "pnpm --recursive --include-workspace-root lint",
     "format": "oxfmt --write .",

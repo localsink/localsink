@@ -11,6 +11,7 @@
     { "path": "./packages/localsink" },
     { "path": "./packages/test-harness" },
     { "path": "./packages/web" },
+    { "path": "./packages/e2e" },
     { "path": "./scripts" }
   ]
 }

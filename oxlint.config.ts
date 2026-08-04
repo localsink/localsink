@@ -44,6 +44,7 @@ export default defineConfig({
   overrides: [
     {
       files: ['**/*.spec.ts', '**/*.spec.tsx'],
+      excludeFiles: ['**/*.e2e.spec.ts'],
       plugins: ['vitest'],
       env: {
         vitest: true,
@@ -60,6 +61,9 @@ export default defineConfig({
       },
     },
     {
+      // Root-level config files sit outside every tsconfig project (lib and
+      // spec both pin rootDir to ./src), so the type-aware pass has no types
+      // for them and reads process.env as an `error` type.
       files: ['**/*.config.ts'],
       rules: {
         'typescript/no-unsafe-assignment': 'off',
