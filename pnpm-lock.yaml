@@ -284,16 +284,15 @@ importers:
       '@localsink/contract':
         specifier: workspace:*
         version: link:../contract
+      '@playwright/test':
+        specifier: 'catalog:'
+        version: 1.62.1
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.2(@libsql/client@0.17.4)
       localsink:
         specifier: workspace:*
         version: link:../localsink
-    devDependencies:
-      '@playwright/test':
-        specifier: 'catalog:'
-        version: 1.62.1
 
   packages/http:
     dependencies:

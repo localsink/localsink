@@ -12,11 +12,9 @@
     "@hono/node-server": "catalog:",
     "@libsql/client": "catalog:",
     "@localsink/contract": "workspace:*",
+    "@playwright/test": "catalog:",
     "drizzle-orm": "catalog:",
     "localsink": "workspace:*"
-  },
-  "devDependencies": {
-    "@playwright/test": "catalog:"
   },
   "engines": {
     "node": ">=24"
