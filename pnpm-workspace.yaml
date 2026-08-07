@@ -25,7 +25,7 @@ catalog:
   '@tailwindcss/vite': 4.3.3
   '@tanstack/react-pacer': ^0.22.1
   '@tanstack/react-query': ^5.101.4
-  '@tanstack/react-router': ^1.170.19
+  '@tanstack/react-router': ^1.170.20
   '@tsconfig/node-ts': 23.6.4
   '@tsconfig/node24': 24.0.4
   '@tsconfig/strictest': 2.0.8
@@ -43,7 +43,7 @@ catalog:
   hono: ^4.13.0
   husky: 9.1.7
   lint-staged: 17.3.0
-  lucide-react: 1.28.0
+  lucide-react: 1.29.0
   msw: 2.15.0
   oxfmt: 0.62.0
   oxlint: 1.77.0
@@ -54,7 +54,7 @@ catalog:
   publint: 0.3.23
   react: ^19.2.8
   react-dom: ^19.2.8
-  shadcn: 4.16.1
+  shadcn: 4.16.2
   tailwind-merge: 3.6.0
   tailwindcss: 4.3.3
   tsdown: 0.22.14
