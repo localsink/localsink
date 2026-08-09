@@ -43,7 +43,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="v$(node -p "require('./packages/localsink/package.json').version")"
+          tag="v$(jq -r .version packages/localsink/package.json)"
           gh release create "$tag" \
             --draft \
             --target "$RELEASE_SHA" \
