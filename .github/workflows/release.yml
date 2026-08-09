@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Full commit SHA to release'
+        required: true
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_SHA: ${{ inputs.sha }}
+
+jobs:
+  Release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Ensure the release commit is on main
+        run: |
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "$RELEASE_SHA" FETCH_HEAD \
+            || { echo "::error::$RELEASE_SHA is not on main"; exit 1; }
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: 'package.json'
+      - uses: ./.github/actions/install-dependencies
+      - run: node --run build:all
+      - run: pnpm stage publish --recursive
+      - name: Draft the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v$(node -p "require('./packages/localsink/package.json').version")"
+          gh release create "$tag" \
+            --draft \
+            --target "$RELEASE_SHA" \
+            --title "$tag" \
+            --generate-notes
