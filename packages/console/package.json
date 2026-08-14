@@ -9,6 +9,8 @@
     "log-transport",
     "logging"
   ],
+  "homepage": "https://github.com/localsink/localsink/tree/main/packages/console#readme",
+  "bugs": "https://github.com/localsink/localsink/issues",
   "license": "PolyForm-Noncommercial-1.0.0",
   "repository": {
     "type": "git",

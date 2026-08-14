@@ -25,6 +25,9 @@ export default defineConfig(
   libConfig({
     entry: ['src/index.ts', 'src/cli.ts'],
     copy: [{ from: webDist, to: 'dist', rename: 'public' }],
-    exports: { bin: true },
+    exports: {
+      bin: true,
+      exclude: ['cli'],
+    },
   }),
 );

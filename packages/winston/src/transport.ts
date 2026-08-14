@@ -1,15 +1,18 @@
 import Transport from 'winston-transport';
 
 import { TransportOptionsSchema, createClient } from '@localsink/sdk';
-import type { LocalsinkClient } from '@localsink/sdk';
+import type { LocalsinkClient, TransportOptions } from '@localsink/sdk';
 
 import { mapWinstonLog } from './mapper.ts';
+
+export type LocalsinkTransportOptions = TransportOptions &
+  Transport.TransportStreamOptions;
 
 export class LocalsinkTransport extends Transport {
   private readonly client: LocalsinkClient;
   private readonly pending = new Set<Promise<void>>();
 
-  constructor(opts: unknown) {
+  constructor(opts: LocalsinkTransportOptions) {
     super(typeof opts === 'object' && opts !== null ? opts : undefined);
     this.client = createClient(TransportOptionsSchema.parse(opts));
   }

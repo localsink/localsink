@@ -1,16 +1,10 @@
 import { findPackageJSON } from 'node:module';
 import { dirname, join } from 'node:path';
 
-import { serve } from '@hono/node-server';
-import { drizzle } from 'drizzle-orm/libsql';
-import { applySchema, createApp, makeDatabase } from 'localsink';
+import { startServer } from 'localsink';
 import type { Database } from 'localsink';
 
 import { sampleLogs } from '@localsink/contract/fixtures';
-
-// Mirrors packages/test-harness/src/test-server.ts, minus the vitest coupling
-// (that harness registers teardown via onTestFinished, which Playwright has no
-// equivalent of) — hence the exposed `close`.
 
 const localsinkPackageJson = findPackageJSON('localsink', import.meta.url);
 if (!localsinkPackageJson) {
@@ -31,33 +25,12 @@ export interface Backend {
 }
 
 export async function startBackend(): Promise<Backend> {
-  const client = drizzle(':memory:');
-  await applySchema(client);
-  const db = makeDatabase(client);
+  const { url, db, close } = await startServer({
+    port: 0,
+    dbFileName: ':memory:',
+    staticDir,
+  });
   for (const log of sampleLogs) await db.createLog(log);
 
-  const { server, port } = await new Promise<{
-    server: ReturnType<typeof serve>;
-    port: number;
-  }>((resolve) => {
-    const s = serve(
-      { fetch: createApp(db, { staticDir }).fetch, port: 0 },
-      (info) => {
-        resolve({ server: s, port: info.port });
-      },
-    );
-  });
-
-  return {
-    url: `http://localhost:${String(port)}`,
-    db,
-    close: () =>
-      new Promise<void>((resolve, reject) => {
-        server.close((error) => {
-          db.close();
-          if (error) reject(error);
-          else resolve();
-        });
-      }),
-  };
+  return { url, db, close };
 }

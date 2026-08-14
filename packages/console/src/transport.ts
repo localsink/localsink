@@ -1,12 +1,12 @@
 import { TransportOptionsSchema, createClient } from '@localsink/sdk';
-import type { LocalsinkClient } from '@localsink/sdk';
+import type { LocalsinkClient, TransportOptions } from '@localsink/sdk';
 
 import { mapConsoleArgs } from './mapper.ts';
 import type { Level } from './mapper.ts';
 
 let installed = false;
 
-export function localsink(opts: unknown): () => void {
+export function localsink(opts: TransportOptions): () => void {
   const parsed = TransportOptionsSchema.safeParse(opts);
   if (!parsed.success) {
     console.warn(

@@ -8,8 +8,10 @@ export function libConfig(overrides: UserConfig = {}): UserConfig {
         devExports: '@localsink/source',
       },
       tsconfig: 'tsconfig.lib.json',
+      sourcemap: true,
       dts: {
         tsgo: true,
+        sourcemap: false,
       },
       publint: true,
       attw: {

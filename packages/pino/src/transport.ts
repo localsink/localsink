@@ -1,10 +1,11 @@
 import build from 'pino-abstract-transport';
 
 import { createClient, TransportOptionsSchema } from '@localsink/sdk';
+import type { TransportOptions } from '@localsink/sdk';
 
 import { mapPinoLog } from './mapper.ts';
 
-export default function (opts: unknown) {
+export default function localsinkTransport(opts: TransportOptions) {
   const client = createClient(TransportOptionsSchema.parse(opts));
   const pending = new Set<Promise<void>>();
 
