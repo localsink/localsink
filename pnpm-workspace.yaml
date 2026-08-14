@@ -40,7 +40,7 @@ catalog:
   clsx: 2.1.1
   drizzle-kit: 0.31.10
   drizzle-orm: ^0.45.2
-  hono: ^4.13.1
+  hono: ^4.13.2
   husky: 9.1.7
   lint-staged: 17.3.0
   lucide-react: 1.31.0
