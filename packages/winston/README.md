@@ -50,6 +50,11 @@ Standard `winston-transport` options (`level`, `format`, `silent`, …) are hono
 | `serviceName` | `string` | —                       | **Required.** Identifies the source. |
 | `url`         | `string` | `http://localhost:3000` | Base URL of the localsink server.    |
 
+For TypeScript callers, `LocalsinkTransportOptions` is the constructor's full
+options type — the localsink options above intersected with winston's own
+`TransportStreamOptions`. `TransportOptions` (the localsink half alone) is also
+exported.
+
 ## Notes
 
 - `transport.close()` waits for in-flight requests to settle before emitting `finish`, so calling `logger.close()` during graceful shutdown is safe.
