@@ -2,6 +2,7 @@
   "name": "localsink",
   "private": true,
   "license": "PolyForm-Noncommercial-1.0.0",
+  "author": "localsink, LLC <hello@localsink.io> (https://localsink.io)",
   "type": "module",
   "scripts": {
     "typecheck:all": "pnpm --recursive typecheck",
