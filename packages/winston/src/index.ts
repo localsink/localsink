@@ -1,1 +1,5 @@
-export { LocalsinkTransport } from './transport.ts';
+export {
+  LocalsinkTransport,
+  type LocalsinkTransportOptions,
+} from './transport.ts';
+export type { TransportOptions } from '@localsink/sdk';

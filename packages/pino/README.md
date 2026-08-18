@@ -48,6 +48,8 @@ Numeric pino levels (`10`–`60`) are mapped to `trace`/`debug`/`info`/`warn`/`e
 | `serviceName` | `string` | —                       | **Required.** Identifies the source. |
 | `url`         | `string` | `http://localhost:3000` | Base URL of the localsink server.    |
 
+The options type is exported as `TransportOptions` for TypeScript callers.
+
 ## Notes
 
 - Pino runs `target` transports in a worker thread, so `options` must be JSON-serializable — pass plain values only, no functions or class instances.

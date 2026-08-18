@@ -69,6 +69,10 @@ catalog:
 
 catalogMode: strict
 
+catalogs:
+  peer:
+    vitest: ^4.0.0
+
 minimumReleaseAge: 1440
 
 overrides:

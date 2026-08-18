@@ -9,11 +9,8 @@
     "lint": "oxlint ."
   },
   "dependencies": {
-    "@hono/node-server": "catalog:",
-    "@libsql/client": "catalog:",
     "@localsink/contract": "workspace:*",
     "@playwright/test": "catalog:",
-    "drizzle-orm": "catalog:",
     "localsink": "workspace:*"
   },
   "engines": {

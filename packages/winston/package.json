@@ -10,7 +10,10 @@
     "winston",
     "winston-transport"
   ],
+  "homepage": "https://github.com/localsink/localsink/tree/main/packages/winston#readme",
+  "bugs": "https://github.com/localsink/localsink/issues",
   "license": "PolyForm-Noncommercial-1.0.0",
+  "author": "localsink, LLC <hello@localsink.io> (https://localsink.io)",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/localsink/localsink.git",

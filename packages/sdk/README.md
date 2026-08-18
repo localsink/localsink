@@ -66,3 +66,10 @@ await client.log({
 | `attributes` | `Record<string, unknown> \| null`        | Free-form structured data; FTS-searchable.      |
 
 `log` resolves to `void` and **never rejects** — `@localsink/http` swallows transport failures so localsink being down can't break your application.
+
+### Types
+
+`TransportOptions` (the `createClient` options), `LocalsinkClient` (the returned
+client) and `LogInput` are all exported, alongside the `TransportOptionsSchema`
+used to validate options at runtime. The localsink logger transports build on
+these, so they are also what you want when writing your own.

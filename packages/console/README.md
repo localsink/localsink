@@ -44,6 +44,8 @@ The first `Error` argument is lifted into the structured `error` field (`message
 | `serviceName` | `string` | —                       | **Required.** Identifies the source. |
 | `url`         | `string` | `http://localhost:3000` | Base URL of the localsink server.    |
 
+The options type is exported as `TransportOptions` for TypeScript callers.
+
 ## Notes
 
 - **Idempotent.** A second `localsink(...)` call warns and returns a no-op uninstaller — only the first install takes effect.

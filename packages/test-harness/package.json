@@ -10,7 +10,10 @@
     "testing",
     "vitest"
   ],
+  "homepage": "https://github.com/localsink/localsink/tree/main/packages/test-harness#readme",
+  "bugs": "https://github.com/localsink/localsink/issues",
   "license": "PolyForm-Noncommercial-1.0.0",
+  "author": "localsink, LLC <hello@localsink.io> (https://localsink.io)",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/localsink/localsink.git",
@@ -42,13 +45,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@hono/node-server": "catalog:",
-    "@libsql/client": "catalog:",
-    "drizzle-orm": "catalog:",
     "localsink": "workspace:*"
   },
   "peerDependencies": {
-    "vitest": "catalog:"
+    "vitest": "catalog:peer"
   },
   "engines": {
     "node": ">=24"

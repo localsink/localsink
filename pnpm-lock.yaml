@@ -168,6 +168,10 @@ catalogs:
     zod:
       specifier: ^4.4.3
       version: 4.4.3
+  peer:
+    vitest:
+      specifier: ^4.0.0
+      version: 4.1.10
 
 overrides:
   '@types/node': 24.13.3
@@ -275,21 +279,12 @@ importers:
 
   packages/e2e:
     dependencies:
-      '@hono/node-server':
-        specifier: 'catalog:'
-        version: 2.1.1(hono@4.13.2)
-      '@libsql/client':
-        specifier: 'catalog:'
-        version: 0.17.4
       '@localsink/contract':
         specifier: workspace:*
         version: link:../contract
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.62.1
-      drizzle-orm:
-        specifier: 'catalog:'
-        version: 0.45.2(@libsql/client@0.17.4)
       localsink:
         specifier: workspace:*
         version: link:../localsink
@@ -370,20 +365,11 @@ importers:
 
   packages/test-harness:
     dependencies:
-      '@hono/node-server':
-        specifier: 'catalog:'
-        version: 2.1.1(hono@4.13.2)
-      '@libsql/client':
-        specifier: 'catalog:'
-        version: 0.17.4
-      drizzle-orm:
-        specifier: 'catalog:'
-        version: 0.45.2(@libsql/client@0.17.4)
       localsink:
         specifier: workspace:*
         version: link:../localsink
       vitest:
-        specifier: 'catalog:'
+        specifier: catalog:peer
         version: 4.1.10(@types/node@24.13.3)(@vitest/browser-playwright@4.1.10)(msw@2.15.0(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
 
   packages/web:
