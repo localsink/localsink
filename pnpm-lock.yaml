@@ -19,8 +19,8 @@ catalogs:
       specifier: 5.3.0
       version: 5.3.0
     '@hono/mcp':
-      specifier: ^0.3.1
-      version: 0.3.1
+      specifier: ^0.3.2
+      version: 0.3.2
     '@hono/node-server':
       specifier: ^2.1.1
       version: 2.1.1
@@ -91,8 +91,8 @@ catalogs:
       specifier: ^0.45.2
       version: 0.45.2
     hono:
-      specifier: ^4.13.2
-      version: 4.13.2
+      specifier: ^4.13.3
+      version: 4.13.3
     husky:
       specifier: 9.1.7
       version: 9.1.7
@@ -100,8 +100,8 @@ catalogs:
       specifier: 17.3.0
       version: 17.3.0
     lucide-react:
-      specifier: 1.31.0
-      version: 1.31.0
+      specifier: 1.32.0
+      version: 1.32.0
     msw:
       specifier: 2.15.0
       version: 2.15.0
@@ -302,13 +302,13 @@ importers:
     dependencies:
       '@hono/mcp':
         specifier: 'catalog:'
-        version: 0.3.1(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(hono-rate-limiter@0.5.3(hono@4.13.2))(hono@4.13.2)(zod@4.4.3)
+        version: 0.3.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(hono-rate-limiter@0.5.3(hono@4.13.3))(hono@4.13.3)(zod@4.4.3)
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.1.1(hono@4.13.2)
+        version: 2.1.1(hono@4.13.3)
       '@hono/zod-validator':
         specifier: 'catalog:'
-        version: 0.9.0(hono@4.13.2)(zod@4.4.3)
+        version: 0.9.0(hono@4.13.3)(zod@4.4.3)
       '@libsql/client':
         specifier: 'catalog:'
         version: 0.17.4
@@ -323,7 +323,7 @@ importers:
         version: 0.45.2(@libsql/client@0.17.4)
       hono:
         specifier: 'catalog:'
-        version: 4.13.2
+        version: 4.13.3
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -403,7 +403,7 @@ importers:
         version: 2.1.1
       lucide-react:
         specifier: 'catalog:'
-        version: 1.31.0(react@19.2.8)
+        version: 1.32.0(react@19.2.8)
       react:
         specifier: 'catalog:'
         version: 19.2.8
@@ -840,8 +840,8 @@ packages:
   '@fontsource-variable/geist@5.3.0':
     resolution: {integrity: sha512-j0m+vLQuG5XAYoHtGCVu0spvlGreR3EzpECUVzkFmI1mTVnAO38l/NEPDCFgZ177JxzYJCLSmTQibIiYPilGrA==}
 
-  '@hono/mcp@0.3.1':
-    resolution: {integrity: sha512-EB2rTyyl27qT8KtvEysgfcLK2jhp4KBb5+XyJ5/bcKNA64usp6qyuUWja9X4QB8Rx9U/yhZHGpfI96Xa/jem4Q==}
+  '@hono/mcp@0.3.2':
+    resolution: {integrity: sha512-IJQ4RazhwFLRwcTM95Dj9YfNBYXwOQzd1IfnDy4S3hiaBbtnVY0sWiT83auOOnhaCiE0TTbud4JV9UD30zknXA==}
     peerDependencies:
       '@modelcontextprotocol/sdk': ^1.29.0
       hono: '*'
@@ -2636,8 +2636,8 @@ packages:
       unstorage:
         optional: true
 
-  hono@4.13.2:
-    resolution: {integrity: sha512-JydRilDRkYBQMt9qR9U92mXxmbGqsqSn/IKOrh4e7/gEbn+0zSr8igTu0obwJoNGN4sez28DIql7FBHWydoJpA==}
+  hono@4.13.3:
+    resolution: {integrity: sha512-r8AO2mYHoLxSHkgafNeC/BXyb2vWRxD3jem4Ts+ptav8oTG5FIRifAjuJEmZI4bSvvc2ns0GxmIYiZnHqN3mMw==}
     engines: {node: '>=16.9.0'}
 
   hookable@6.1.1:
@@ -2945,8 +2945,8 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@1.31.0:
-    resolution: {integrity: sha512-G8u2eEtoHUnUa9f8lbvqDhCiORMnYLdUEo06EEG9MQvHQrInKcX3Pa2TH39MM5qyzRcWETxB0+aOwAPI1g1kEg==}
+  lucide-react@1.32.0:
+    resolution: {integrity: sha512-txX56hMFnRxPi1f9/nH69YN8uvAO6a7Y1KSWKjCDAtdD9+soEgmWuCt6iRm1pkxUZo2+YntSdsE1L6bIuKoY8Q==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -4338,21 +4338,21 @@ snapshots:
 
   '@fontsource-variable/geist@5.3.0': {}
 
-  '@hono/mcp@0.3.1(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(hono-rate-limiter@0.5.3(hono@4.13.2))(hono@4.13.2)(zod@4.4.3)':
+  '@hono/mcp@0.3.2(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(hono-rate-limiter@0.5.3(hono@4.13.3))(hono@4.13.3)(zod@4.4.3)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.30.0(zod@4.4.3)
-      hono: 4.13.2
-      hono-rate-limiter: 0.5.3(hono@4.13.2)
+      hono: 4.13.3
+      hono-rate-limiter: 0.5.3(hono@4.13.3)
       pkce-challenge: 5.0.1
       zod: 4.4.3
 
-  '@hono/node-server@2.1.1(hono@4.13.2)':
+  '@hono/node-server@2.1.1(hono@4.13.3)':
     dependencies:
-      hono: 4.13.2
+      hono: 4.13.3
 
-  '@hono/zod-validator@0.9.0(hono@4.13.2)(zod@4.4.3)':
+  '@hono/zod-validator@0.9.0(hono@4.13.3)(zod@4.4.3)':
     dependencies:
-      hono: 4.13.2
+      hono: 4.13.3
       zod: 4.4.3
 
   '@inquirer/ansi@2.0.7': {}
@@ -4465,7 +4465,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.30.0(zod@3.25.76)':
     dependencies:
-      '@hono/node-server': 2.1.1(hono@4.13.2)
+      '@hono/node-server': 2.1.1(hono@4.13.3)
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       content-type: 1.0.5
@@ -4475,7 +4475,7 @@ snapshots:
       eventsource-parser: 3.1.0
       express: 5.2.1
       express-rate-limit: 8.6.1(express@5.2.1)
-      hono: 4.13.2
+      hono: 4.13.3
       jose: 6.2.5
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -4487,7 +4487,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.30.0(zod@4.4.3)':
     dependencies:
-      '@hono/node-server': 2.1.1(hono@4.13.2)
+      '@hono/node-server': 2.1.1(hono@4.13.3)
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       content-type: 1.0.5
@@ -4497,7 +4497,7 @@ snapshots:
       eventsource-parser: 3.1.0
       express: 5.2.1
       express-rate-limit: 8.6.1(express@5.2.1)
-      hono: 4.13.2
+      hono: 4.13.3
       jose: 6.2.5
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -5726,11 +5726,11 @@ snapshots:
       '@types/set-cookie-parser': 2.4.10
       set-cookie-parser: 3.1.2
 
-  hono-rate-limiter@0.5.3(hono@4.13.2):
+  hono-rate-limiter@0.5.3(hono@4.13.3):
     dependencies:
-      hono: 4.13.2
+      hono: 4.13.3
 
-  hono@4.13.2: {}
+  hono@4.13.3: {}
 
   hookable@6.1.1: {}
 
@@ -5960,7 +5960,7 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@1.31.0(react@19.2.8):
+  lucide-react@1.32.0(react@19.2.8):
     dependencies:
       react: 19.2.8
 
