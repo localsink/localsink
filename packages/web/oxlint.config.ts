@@ -12,7 +12,10 @@ export default defineConfig({
     'react/react-in-jsx-scope': 'off',
     'react/rules-of-hooks': 'error',
     'react/exhaustive-deps': 'error',
-    'react/react-compiler': 'error',
+    'react/no-deriving-state-in-effects': 'error',
+    'react/unsupported-syntax': 'error',
+    'react/syntax': 'error',
+    'react/rule-suppression': 'error',
     'import/no-unassigned-import': ['error', { allow: ['**/*.css'] }],
   },
 });
