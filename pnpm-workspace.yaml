@@ -71,7 +71,7 @@ catalogMode: strict
 
 catalogs:
   peer:
-    vitest: ^4.0.0
+    vitest: ^4.1.11
 
 minimumReleaseAge: 1440
 
