@@ -63,7 +63,7 @@ export default function App() {
   const search = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
   // No manual memoization here or below: the React Compiler (vite + vitest
-  // run the same babel preset) caches these; queryKey stability additionally
+  // run the same transform) caches these; queryKey stability additionally
   // never depends on identity — TanStack hashes keys structurally.
   const selectedServices = new Set(search.service?.split(',') ?? []);
   const selectedLevels = new Set(search.level?.split(',') ?? []);
