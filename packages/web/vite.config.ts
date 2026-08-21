@@ -1,8 +1,7 @@
 import path from 'node:path';
 
-import babel from '@rolldown/plugin-babel';
 import tailwindcss from '@tailwindcss/vite';
-import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react';
 import { defaultClientConditions, defineConfig } from 'vite';
 
 // In prod the SPA is served by localsink itself, so /api is same-origin. In dev
@@ -17,13 +16,7 @@ export default defineConfig({
   // browser tests still work — but a real public asset added later (favicon,
   // manifest) would be silently dropped from the build.
   build: { copyPublicDir: false },
-  plugins: [
-    tailwindcss(),
-    react(),
-    babel({
-      presets: [reactCompilerPreset()],
-    }),
-  ],
+  plugins: [tailwindcss(), react({ compiler: true })],
   // vitest.config.ts merges this whole config so tests share the exact build
   // pipeline. The proxy stays out of test runs: MSW serves /api in-page there,
   // and proxying its bypassed teardown polls at a dead :3000 just logs

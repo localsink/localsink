@@ -9,7 +9,7 @@ import viteConfig from './vite.config.ts';
 
 // Inherit the app's vite config wholesale (plugins incl. Tailwind — specs
 // import the real stylesheet so layout-dependent behavior like scroll pinning
-// is real — the React Compiler babel preset, and the '@' alias) so tests run
+// is real — the React Compiler, and the '@' alias) so tests run
 // the same transform pipeline as the production build and the two configs
 // can't drift apart. vite.config.ts drops its dev proxy under VITEST.
 export default mergeConfig(

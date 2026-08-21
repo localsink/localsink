@@ -196,24 +196,24 @@ export function useLogTail(filters: LogQuery) {
     state.loadingOlder = true;
     try {
       const page = await fetchLogs({ ...filters, cursor: state.olderCursor });
-      if (stateRef.current !== state) return;
-      if (page.data.length > 0) {
-        state.rows = [...page.data.toReversed(), ...state.rows];
-        if (state.rows.length > MAX_ROWS) {
-          state.rows = state.rows.slice(0, MAX_ROWS);
-          state.pending = [];
-          state.detached = true;
-          setPendingCount(0);
-          setDetachedState(true);
+      if (stateRef.current === state) {
+        if (page.data.length > 0) {
+          state.rows = [...page.data.toReversed(), ...state.rows];
+          if (state.rows.length > MAX_ROWS) {
+            state.rows = state.rows.slice(0, MAX_ROWS);
+            state.pending = [];
+            state.detached = true;
+            setPendingCount(0);
+            setDetachedState(true);
+          }
+          setRows(state.rows);
         }
-        setRows(state.rows);
+        state.olderCursor = page.next_cursor;
       }
-      state.olderCursor = page.next_cursor;
     } catch {
       // Keep the cursor; the next near-top scroll retries.
-    } finally {
-      state.loadingOlder = false;
     }
+    state.loadingOlder = false;
   };
 
   // Forward refill while detached: fetch the after_id page above the
@@ -228,38 +228,38 @@ export function useLogTail(filters: LogQuery) {
     state.loadingNewer = true;
     try {
       const page = await fetchLogs({ ...filters, after_id: bottom.id });
-      if (stateRef.current !== state) return;
-      const lastId = state.rows.at(-1)?.id ?? -1;
-      const fresh = page.data.filter((row) => row.id > lastId);
-      if (fresh.length > 0) {
-        state.rows = [...state.rows, ...fresh];
-        if (state.rows.length > MAX_ROWS) {
-          state.rows = state.rows.slice(-MAX_ROWS);
-          // The old top rows are gone; re-point the history cursor just
-          // below the new top so the next loadOlder stays gapless.
-          const top = state.rows.at(0);
-          if (top !== undefined) {
-            state.olderCursor = encodeCursor(top);
+      if (stateRef.current === state) {
+        const lastId = state.rows.at(-1)?.id ?? -1;
+        const fresh = page.data.filter((row) => row.id > lastId);
+        if (fresh.length > 0) {
+          state.rows = [...state.rows, ...fresh];
+          if (state.rows.length > MAX_ROWS) {
+            state.rows = state.rows.slice(-MAX_ROWS);
+            // The old top rows are gone; re-point the history cursor just
+            // below the new top so the next loadOlder stays gapless.
+            const top = state.rows.at(0);
+            if (top !== undefined) {
+              state.olderCursor = encodeCursor(top);
+            }
           }
+          setRows(state.rows);
         }
-        setRows(state.rows);
-      }
-      if (!page.has_more) {
-        state.detached = false;
-        setDetachedState(false);
-        const last = state.rows.at(-1);
-        if (
-          last !== undefined &&
-          (state.watermark === null || last.id > state.watermark)
-        ) {
-          state.watermark = last.id;
+        if (!page.has_more) {
+          state.detached = false;
+          setDetachedState(false);
+          const last = state.rows.at(-1);
+          if (
+            last !== undefined &&
+            (state.watermark === null || last.id > state.watermark)
+          ) {
+            state.watermark = last.id;
+          }
         }
       }
     } catch {
       // The next near-bottom scroll retries.
-    } finally {
-      state.loadingNewer = false;
     }
+    state.loadingNewer = false;
   };
 
   // The pill. Attached: flush pending and glue to the bottom. Detached:

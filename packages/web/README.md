@@ -6,7 +6,7 @@ React + Vite SPA for browsing, searching, and live-tailing logs from a localsink
 
 ## Stack
 
-- **React 19** with the [React Compiler](https://react.dev/learn/react-compiler) (wired via `babel-plugin-react-compiler` in `vite.config.ts`)
+- **React 19** with the [React Compiler](https://react.dev/learn/react-compiler) (enabled via `react({ compiler: true })` in `vite.config.ts`, powered by `oxc-transform-react`)
 - **Vite** for dev server and production build
 - **Tailwind CSS v4** (via `@tailwindcss/vite`)
 - **Vitest** in browser mode (Playwright / headless Chromium) for unit specs
