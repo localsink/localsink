@@ -155,6 +155,30 @@ describe('makeDatabase', () => {
       expect(data[0]?.trace_id).toBe('trace-1');
     });
 
+    it('filters by span_id', async () => {
+      const db = await createDb();
+      await db.createLog({ ...minimalLog, span_id: 'span-1' });
+      await db.createLog({ ...minimalLog, span_id: 'span-2' });
+      const { data } = await db.findLogs({ limit: 50, span_id: 'span-1' });
+      expect(data).toHaveLength(1);
+      expect(data[0]?.span_id).toBe('span-1');
+    });
+
+    // trace_id and span_id are AND-ed like every other filter, which is what
+    // makes "one span within one trace" a single query.
+    it('narrows to one span within a trace', async () => {
+      const db = await createDb();
+      await db.createLog({ ...minimalLog, trace_id: 't1', span_id: 's1' });
+      await db.createLog({ ...minimalLog, trace_id: 't1', span_id: 's2' });
+      await db.createLog({ ...minimalLog, trace_id: 't2', span_id: 's1' });
+      const { data } = await db.findLogs({
+        limit: 50,
+        trace_id: 't1',
+        span_id: 's1',
+      });
+      expect(data).toHaveLength(1);
+    });
+
     it('filters by logger', async () => {
       const db = await createDb();
       await db.createLog({ ...minimalLog, logger: 'winston' });

@@ -15,6 +15,7 @@ CREATE INDEX `idx_logs_timestamp` ON `logs` (`timestamp`,`id`);--> statement-bre
 CREATE INDEX `idx_logs_service_name` ON `logs` (`service_name`,`timestamp`,`id`);--> statement-breakpoint
 CREATE INDEX `idx_logs_level` ON `logs` (`level`,`timestamp`,`id`);--> statement-breakpoint
 CREATE INDEX `idx_logs_trace_id` ON `logs` (`trace_id`);--> statement-breakpoint
+CREATE INDEX `idx_logs_span_id` ON `logs` (`span_id`);--> statement-breakpoint
 CREATE INDEX `idx_logs_logger` ON `logs` (`logger`);--> statement-breakpoint
 CREATE INDEX `idx_logs_service_name_id` ON `logs` (`service_name`,`id`);--> statement-breakpoint
 CREATE INDEX `idx_logs_level_id` ON `logs` (`level`,`id`);--> statement-breakpoint

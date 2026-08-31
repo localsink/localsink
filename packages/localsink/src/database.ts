@@ -82,6 +82,9 @@ export function makeDatabase(db: DrizzleClient) {
         filter.trace_id !== undefined
           ? eq(logsTable.trace_id, filter.trace_id)
           : undefined,
+        filter.span_id !== undefined
+          ? eq(logsTable.span_id, filter.span_id)
+          : undefined,
         filter.from !== undefined
           ? gte(logsTable.timestamp, filter.from)
           : undefined,
