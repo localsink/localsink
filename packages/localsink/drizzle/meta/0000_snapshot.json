@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "e611301a-2b5f-48e6-843a-5a7f08be1ac0",
+  "id": "20b84a89-4502-458f-9466-e6a13d39f4a6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "logs": {
@@ -109,6 +109,13 @@
           "name": "idx_logs_trace_id",
           "columns": [
             "trace_id"
+          ],
+          "isUnique": false
+        },
+        "idx_logs_span_id": {
+          "name": "idx_logs_span_id",
+          "columns": [
+            "span_id"
           ],
           "isUnique": false
         },

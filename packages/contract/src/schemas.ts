@@ -78,6 +78,11 @@ export const logsQuerySchema = z
       .min(1)
       .meta({ description: 'Filter logs by trace ID.' })
       .optional(),
+    span_id: z
+      .string()
+      .min(1)
+      .meta({ description: 'Filter logs by span ID.' })
+      .optional(),
     from: z.coerce
       .number()
       .int()
