@@ -123,6 +123,7 @@ Query logs with optional filters. All query params are AND-ed together.
 | `level`        | Exact match.                                                           |
 | `logger`       | Exact match.                                                           |
 | `trace_id`     | Exact match.                                                           |
+| `span_id`      | Exact match.                                                           |
 | `from`         | Epoch ms, inclusive lower bound on `timestamp`.                        |
 | `to`           | Epoch ms, exclusive upper bound on `timestamp`.                        |
 | `q`            | FTS5 free-text query — see below.                                      |
