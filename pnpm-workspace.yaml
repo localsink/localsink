@@ -17,8 +17,8 @@ catalog:
   '@fontsource-variable/geist-mono': 5.3.0
   '@hono/mcp': ^0.3.2
   '@hono/node-server': ^2.1.1
-  '@hono/zod-validator': ^0.9.0
-  '@libsql/client': ^0.17.4
+  '@hono/zod-validator': ^0.9.1
+  '@libsql/client': ^0.18.0
   '@modelcontextprotocol/sdk': ^1.30.0
   '@playwright/test': 1.62.1
   '@tailwindcss/vite': 4.3.3
@@ -41,11 +41,11 @@ catalog:
   hono: ^4.13.5
   husky: 9.1.7
   lint-staged: 17.4.1
-  lucide-react: 1.35.0
+  lucide-react: 1.39.0
   msw: 2.15.0
-  oxc-transform-react: 0.147.0
-  oxfmt: 0.65.0
-  oxlint: 1.80.0
+  oxc-transform-react: 0.148.0
+  oxfmt: 0.66.0
+  oxlint: 1.81.0
   oxlint-tsgolint: 7.0.2001
   pino: ^10.3.1
   pino-abstract-transport: ^3.0.0
@@ -53,7 +53,7 @@ catalog:
   publint: 0.3.24
   react: ^19.2.8
   react-dom: ^19.2.8
-  shadcn: 4.19.0
+  shadcn: 4.20.1
   tailwind-merge: 3.6.0
   tailwindcss: 4.3.3
   tsdown: 0.22.14
@@ -64,7 +64,7 @@ catalog:
   vitest-browser-react: 2.2.0
   winston: ^3.19.0
   winston-transport: ^4.9.0
-  zod: ^4.5.1
+  zod: ^4.5.4
 
 catalogMode: strict
 
@@ -75,6 +75,5 @@ catalogs:
 minimumReleaseAge: 1440
 
 overrides:
-  '@types/node': '24.13.3'
-  esbuild: '0.28.1'
+  esbuild: '0.28.2'
   lightningcss: '1.33.0'
