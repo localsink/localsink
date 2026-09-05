@@ -10,13 +10,11 @@ export function libConfig(overrides: UserConfig = {}): UserConfig {
       tsconfig: 'tsconfig.lib.json',
       sourcemap: true,
       dts: {
-        tsgo: true,
+        generator: 'tsgo',
         sourcemap: false,
       },
       publint: true,
-      attw: {
-        profile: 'esm-only',
-      },
+      attw: true,
       failOnWarn: true,
       suppressWarnings: ['TypeScript 7.0 does not yet have a stable API'],
     },
