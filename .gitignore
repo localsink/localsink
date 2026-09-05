@@ -13,9 +13,8 @@ out-tsc/
 # Testing
 coverage/
 *.lcov
-.vitest-attachments/
+.vitest/
 .vitest-cache/
-__screenshots__/
 playwright-report/
 test-results/
 
