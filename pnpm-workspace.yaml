@@ -20,11 +20,11 @@ catalog:
   '@hono/zod-validator': ^0.9.1
   '@libsql/client': ^0.18.0
   '@modelcontextprotocol/sdk': ^1.30.0
-  '@playwright/test': 1.62.1
+  '@playwright/test': 1.63.0
   '@tailwindcss/vite': 4.3.3
   '@tanstack/react-pacer': ^0.23.0
   '@tanstack/react-query': ^5.102.8
-  '@tanstack/react-router': ^1.170.32
+  '@tanstack/react-router': ^1.170.33
   '@tsconfig/node-ts': 23.6.4
   '@tsconfig/node24': 24.0.5
   '@tsconfig/strictest': 2.0.8
@@ -38,18 +38,18 @@ catalog:
   clsx: 2.1.1
   drizzle-kit: 0.31.10
   drizzle-orm: ^0.45.2
-  hono: ^4.13.5
+  hono: ^4.13.7
   husky: 9.1.7
-  lint-staged: 17.4.1
-  lucide-react: 1.41.0
+  lint-staged: 17.5.0
+  lucide-react: 1.42.0
   msw: 2.15.0
-  oxc-transform-react: 0.148.0
-  oxfmt: 0.66.0
-  oxlint: 1.81.0
+  oxc-transform-react: 0.149.0
+  oxfmt: 0.67.0
+  oxlint: 1.82.0
   oxlint-tsgolint: 7.0.2001
   pino: ^10.3.1
   pino-abstract-transport: ^3.0.0
-  playwright: 1.62.1
+  playwright: 1.63.0
   publint: 0.3.24
   react: ^19.2.8
   react-dom: ^19.2.8
