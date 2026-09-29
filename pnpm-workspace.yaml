@@ -24,7 +24,7 @@ catalog:
   '@tailwindcss/vite': 4.3.3
   '@tanstack/react-pacer': ^0.23.0
   '@tanstack/react-query': ^5.104.0
-  '@tanstack/react-router': ^1.170.39
+  '@tanstack/react-router': ^1.170.40
   '@tsconfig/node-ts': 23.6.4
   '@tsconfig/node24': 24.0.5
   '@tsconfig/strictest': 2.0.8
@@ -38,14 +38,14 @@ catalog:
   clsx: 2.1.1
   drizzle-kit: 0.31.11
   drizzle-orm: ^0.45.3
-  hono: ^4.13.9
+  hono: ^4.13.10
   husky: 9.1.7
   lint-staged: 17.6.0
   lucide-react: 1.48.0
   msw: 2.15.0
   oxc-transform-react: 0.151.0
-  oxfmt: 0.70.0
-  oxlint: 1.85.0
+  oxfmt: 0.71.0
+  oxlint: 1.86.0
   oxlint-tsgolint: 7.0.2003
   pino: ^10.3.1
   pino-abstract-transport: ^3.0.0
