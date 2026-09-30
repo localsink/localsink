@@ -11,13 +11,13 @@ import './index.css';
 // the whole run. resetHandlers() between tests drops any per-test overrides
 // (worker.use(...) — e.g. simulating a 500 or network error) so they don't leak.
 beforeAll(async () => {
-  await worker.start({ onUnhandledRequest: 'bypass', quiet: true });
+  await worker.start({ onUnhandledFrame: 'bypass', quiet: true });
 });
 
 afterEach(() => {
   worker.resetHandlers();
 });
 
-afterAll(() => {
-  worker.stop();
+afterAll(async () => {
+  await worker.stop();
 });
