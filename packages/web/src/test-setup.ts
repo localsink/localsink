@@ -7,7 +7,7 @@ import { worker } from './mocks/browser.ts';
 // bounded height and overflows.
 import './index.css';
 
-// Browser-mode MSW: start the same service worker the dev app uses, once for
+// Browser-mode MSW: start the service worker (served by msw/vite), once for
 // the whole run. resetHandlers() between tests drops any per-test overrides
 // (worker.use(...) — e.g. simulating a 500 or network error) so they don't leak.
 beforeAll(async () => {
