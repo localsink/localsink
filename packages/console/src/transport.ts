@@ -6,25 +6,28 @@ import type { Level } from './mapper.ts';
 
 let installed = false;
 
-export function localsink(opts: TransportOptions): () => void {
+export function localsink(opts: TransportOptions): () => Promise<void> {
   const parsed = TransportOptionsSchema.safeParse(opts);
   if (!parsed.success) {
     console.warn(
       '[localsink] Invalid options — transport disabled.',
       parsed.error.issues,
     );
-    return () => {};
+    return () => Promise.resolve();
   }
 
   if (installed) {
     console.warn('[localsink] Already installed — ignoring duplicate call.');
-    return () => {};
+    return () => Promise.resolve();
   }
 
   const client: LocalsinkClient = createClient(parsed.data);
+  const pending = new Set<Promise<void>>();
 
   function send(level: Level, args: unknown[]): void {
-    void client.log(mapConsoleArgs(level, args));
+    const p = client.log(mapConsoleArgs(level, args));
+    pending.add(p);
+    void p.then(() => pending.delete(p));
   }
 
   const orig = {
@@ -63,7 +66,7 @@ export function localsink(opts: TransportOptions): () => void {
     send('trace', args);
   };
 
-  return function uninstall(): void {
+  return async function uninstall(): Promise<void> {
     console.log = orig.log;
     console.error = orig.error;
     console.warn = orig.warn;
@@ -71,5 +74,6 @@ export function localsink(opts: TransportOptions): () => void {
     console.debug = orig.debug;
     console.trace = orig.trace;
     installed = false;
+    await Promise.all(pending);
   };
 }

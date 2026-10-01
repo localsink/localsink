@@ -1,11 +1,18 @@
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw/http';
 import { setupServer } from 'msw/node';
 import winston from 'winston';
 
 import { LocalsinkTransport } from './index.ts';
 
+function closeTransport(transport: LocalsinkTransport): Promise<void> {
+  return new Promise<void>((resolve) => {
+    transport.once('finish', resolve);
+    transport.close();
+  });
+}
+
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
@@ -33,7 +40,7 @@ describe('@localsink/winston transport', () => {
     });
   });
 
-  it('does not throw when pointed at a port with nothing listening', () => {
+  it('does not throw when pointed at a port with nothing listening', async () => {
     server.use(
       http.post('http://localhost/api/logs', () => HttpResponse.error()),
     );
@@ -43,9 +50,10 @@ describe('@localsink/winston transport', () => {
     });
     const logger = winston.createLogger({ transports: [transport] });
     expect(() => logger.info('test')).not.toThrow();
+    await closeTransport(transport);
   });
 
-  it('does not throw when the mock server returns 500', () => {
+  it('does not throw when the mock server returns 500', async () => {
     server.use(
       http.post(
         'http://localhost/api/logs',
@@ -58,6 +66,7 @@ describe('@localsink/winston transport', () => {
     });
     const logger = winston.createLogger({ transports: [transport] });
     expect(() => logger.info('test')).not.toThrow();
+    await closeTransport(transport);
   });
 
   it('silently drops records that fail schema validation and continues processing', async () => {
