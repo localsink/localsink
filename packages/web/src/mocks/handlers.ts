@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw/http';
 
 import type { LogMeta, LogPage, LogRow } from '@localsink/contract';
 import { decodeCursor, encodeCursor } from '@localsink/contract';

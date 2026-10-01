@@ -57,4 +57,4 @@ exported.
 
 ## Notes
 
-- `transport.close()` waits for in-flight requests to settle before emitting `finish`, so calling `logger.close()` during graceful shutdown is safe.
+- `transport.close()` waits for in-flight requests to settle before emitting `finish`, so after `logger.close()`, wait for the transport's `finish` event before exiting.

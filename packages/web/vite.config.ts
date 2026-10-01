@@ -11,11 +11,6 @@ import { defaultClientConditions, defineConfig } from 'vite';
 const API_TARGET = process.env['VITE_API_TARGET'] ?? 'http://localhost:3000';
 
 export default defineConfig({
-  // public/ holds only MSW's test-only worker, which must not ship in the
-  // bundle localsink copies. Dev serves publicDir from source regardless, so
-  // browser tests still work — but a real public asset added later (favicon,
-  // manifest) would be silently dropped from the build.
-  build: { copyPublicDir: false },
   plugins: [tailwindcss(), react({ compiler: true })],
   // vitest.config.ts merges this whole config so tests share the exact build
   // pipeline. The proxy stays out of test runs: MSW serves /api in-page there,

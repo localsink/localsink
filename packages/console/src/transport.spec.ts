@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw/http';
 import { setupServer } from 'msw/node';
 
 import { localsink } from './transport.ts';
@@ -9,7 +9,7 @@ function bodyLevel(b: unknown): unknown {
 }
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
@@ -35,7 +35,7 @@ describe('@localsink/console transport', () => {
         logger: 'console',
       });
     } finally {
-      uninstall();
+      await uninstall();
     }
   });
 
@@ -61,7 +61,7 @@ describe('@localsink/console transport', () => {
           message: `${method} message`,
         });
       } finally {
-        uninstall();
+        await uninstall();
       }
     },
   );
@@ -92,11 +92,11 @@ describe('@localsink/console transport', () => {
         message: 'trace message',
       });
     } finally {
-      uninstall();
+      await uninstall();
     }
   });
 
-  it('still calls the original console method after install', () => {
+  it('still calls the original console method after install', async () => {
     server.use(
       http.post('http://localhost/api/logs', () => HttpResponse.error()),
     );
@@ -109,12 +109,12 @@ describe('@localsink/console transport', () => {
       console.log('test message');
       expect(spy).toHaveBeenCalledWith('test message');
     } finally {
-      uninstall();
+      await uninstall();
       spy.mockRestore();
     }
   });
 
-  it('stops forwarding after uninstall', () => {
+  it('stops forwarding after uninstall', async () => {
     let called = false;
     server.use(
       http.post('http://localhost/api/logs', () => {
@@ -126,14 +126,14 @@ describe('@localsink/console transport', () => {
       serviceName: 'test-service',
       url: 'http://localhost',
     });
-    uninstall();
+    await uninstall();
 
     console.log('should not be sent');
 
     expect(called).toBe(false);
   });
 
-  it('does not throw when pointed at a port with nothing listening', () => {
+  it('does not throw when pointed at a port with nothing listening', async () => {
     server.use(
       http.post('http://localhost/api/logs', () => HttpResponse.error()),
     );
@@ -144,11 +144,11 @@ describe('@localsink/console transport', () => {
     try {
       expect(() => console.log('test')).not.toThrow();
     } finally {
-      uninstall();
+      await uninstall();
     }
   });
 
-  it('does not throw when the mock server returns 500', () => {
+  it('does not throw when the mock server returns 500', async () => {
     server.use(
       http.post(
         'http://localhost/api/logs',
@@ -162,7 +162,7 @@ describe('@localsink/console transport', () => {
     try {
       expect(() => console.log('test')).not.toThrow();
     } finally {
-      uninstall();
+      await uninstall();
     }
   });
 
@@ -185,7 +185,7 @@ describe('@localsink/console transport', () => {
         error: { message: 'boom', type: 'TypeError' },
       });
     } finally {
-      uninstall();
+      await uninstall();
     }
   });
 
@@ -194,7 +194,7 @@ describe('@localsink/console transport', () => {
     const uninstall = localsink({ serviceName: '' });
     expect(typeof uninstall).toBe('function');
     expect(() => {
-      uninstall();
+      void uninstall();
     }).not.toThrow();
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('[localsink]'),
@@ -203,7 +203,7 @@ describe('@localsink/console transport', () => {
     warnSpy.mockRestore();
   });
 
-  it('ignores a duplicate install and returns a no-op', () => {
+  it('ignores a duplicate install and returns a no-op', async () => {
     server.use(
       http.post('http://localhost/api/logs', () => HttpResponse.json({})),
     );
@@ -220,19 +220,19 @@ describe('@localsink/console transport', () => {
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining('[localsink]'),
       );
-      uninstall2();
-      uninstall1();
+      await uninstall2();
+      await uninstall1();
       const uninstall3 = localsink({
         serviceName: 'test-service',
         url: 'http://localhost',
       });
-      uninstall3();
+      await uninstall3();
     } finally {
       warnSpy.mockRestore();
     }
   });
 
-  it('does not throw when an argument has a circular reference', () => {
+  it('does not throw when an argument has a circular reference', async () => {
     server.use(
       http.post('http://localhost/api/logs', () => HttpResponse.error()),
     );
@@ -247,7 +247,7 @@ describe('@localsink/console transport', () => {
         console.log(circular);
       }).not.toThrow();
     } finally {
-      uninstall();
+      await uninstall();
     }
   });
 });

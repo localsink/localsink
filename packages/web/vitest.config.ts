@@ -1,4 +1,5 @@
 import { playwright } from '@vitest/browser-playwright';
+import { msw } from 'msw/vite';
 import { defineProject, mergeConfig } from 'vitest/config';
 
 import configShared, {
@@ -15,6 +16,7 @@ import viteConfig from './vite.config.ts';
 export default mergeConfig(
   mergeConfig(viteConfig, configShared),
   defineProject({
+    plugins: [msw({ mode: 'worker-only' })],
     test: {
       name: 'web-unit',
       include: SPEC_GLOB,
