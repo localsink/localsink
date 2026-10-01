@@ -31,8 +31,8 @@ const uninstall = localsink({
 console.log('hello world');
 console.error(new TypeError('boom'));
 
-// on shutdown
-uninstall();
+// on shutdown — restores console and resolves once in-flight logs are sent
+await uninstall();
 ```
 
 The first `Error` argument is lifted into the structured `error` field (`message`, `stack`, `type`); all arguments are joined into the `message` via `node:util.format` (so `%s` / `%d` specifiers work).

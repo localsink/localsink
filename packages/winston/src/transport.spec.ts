@@ -4,120 +4,114 @@ import winston from 'winston';
 
 import { LocalsinkTransport } from './index.ts';
 
+function closeTransport(transport: LocalsinkTransport): Promise<void> {
+  return new Promise<void>((resolve) => {
+    transport.once('finish', resolve);
+    transport.close();
+  });
+}
+
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('@localsink/winston transport', () => {
-  it(
-    'sends a log emitted via winston to the mock server',
-    server.boundary(async () => {
-      const { promise: received, resolve } = Promise.withResolvers<unknown>();
-      server.use(
-        http.post('http://localhost/api/logs', async ({ request }) => {
-          resolve(await request.json());
-          return HttpResponse.json({});
-        }),
-      );
-      const transport = new LocalsinkTransport({
-        serviceName: 'test-service',
-        url: 'http://localhost',
-      });
-      const logger = winston.createLogger({ transports: [transport] });
+  it('sends a log emitted via winston to the mock server', async () => {
+    const { promise: received, resolve } = Promise.withResolvers<unknown>();
+    server.use(
+      http.post('http://localhost/api/logs', async ({ request }) => {
+        resolve(await request.json());
+        return HttpResponse.json({});
+      }),
+    );
+    const transport = new LocalsinkTransport({
+      serviceName: 'test-service',
+      url: 'http://localhost',
+    });
+    const logger = winston.createLogger({ transports: [transport] });
 
-      logger.info('hello world');
+    logger.info('hello world');
 
-      await expect(received).resolves.toMatchObject({
-        service_name: 'test-service',
-        level: 'info',
-        message: 'hello world',
-      });
-    }),
-  );
+    await expect(received).resolves.toMatchObject({
+      service_name: 'test-service',
+      level: 'info',
+      message: 'hello world',
+    });
+  });
 
-  it(
-    'does not throw when pointed at a port with nothing listening',
-    server.boundary(() => {
-      server.use(
-        http.post('http://localhost/api/logs', () => HttpResponse.error()),
-      );
-      const transport = new LocalsinkTransport({
-        serviceName: 'test-service',
-        url: 'http://localhost',
-      });
-      const logger = winston.createLogger({ transports: [transport] });
-      expect(() => logger.info('test')).not.toThrow();
-    }),
-  );
+  it('does not throw when pointed at a port with nothing listening', async () => {
+    server.use(
+      http.post('http://localhost/api/logs', () => HttpResponse.error()),
+    );
+    const transport = new LocalsinkTransport({
+      serviceName: 'test-service',
+      url: 'http://localhost',
+    });
+    const logger = winston.createLogger({ transports: [transport] });
+    expect(() => logger.info('test')).not.toThrow();
+    await closeTransport(transport);
+  });
 
-  it(
-    'does not throw when the mock server returns 500',
-    server.boundary(() => {
-      server.use(
-        http.post(
-          'http://localhost/api/logs',
-          () => new HttpResponse(null, { status: 500 }),
-        ),
-      );
-      const transport = new LocalsinkTransport({
-        serviceName: 'test-service',
-        url: 'http://localhost',
-      });
-      const logger = winston.createLogger({ transports: [transport] });
-      expect(() => logger.info('test')).not.toThrow();
-    }),
-  );
+  it('does not throw when the mock server returns 500', async () => {
+    server.use(
+      http.post(
+        'http://localhost/api/logs',
+        () => new HttpResponse(null, { status: 500 }),
+      ),
+    );
+    const transport = new LocalsinkTransport({
+      serviceName: 'test-service',
+      url: 'http://localhost',
+    });
+    const logger = winston.createLogger({ transports: [transport] });
+    expect(() => logger.info('test')).not.toThrow();
+    await closeTransport(transport);
+  });
 
-  it(
-    'silently drops records that fail schema validation and continues processing',
-    server.boundary(async () => {
-      const { promise: received, resolve } = Promise.withResolvers<unknown>();
-      server.use(
-        http.post('http://localhost/api/logs', async ({ request }) => {
-          resolve(await request.json());
-          return HttpResponse.json({});
-        }),
-      );
-      const transport = new LocalsinkTransport({
-        serviceName: 'test-service',
-        url: 'http://localhost',
-      });
-      const logger = winston.createLogger({ transports: [transport] });
+  it('silently drops records that fail schema validation and continues processing', async () => {
+    const { promise: received, resolve } = Promise.withResolvers<unknown>();
+    server.use(
+      http.post('http://localhost/api/logs', async ({ request }) => {
+        resolve(await request.json());
+        return HttpResponse.json({});
+      }),
+    );
+    const transport = new LocalsinkTransport({
+      serviceName: 'test-service',
+      url: 'http://localhost',
+    });
+    const logger = winston.createLogger({ transports: [transport] });
 
-      transport.log({ level: 42, message: 123 }, () => undefined);
-      logger.info('still alive');
+    transport.log({ level: 42, message: 123 }, () => undefined);
+    logger.info('still alive');
 
-      await expect(received).resolves.toMatchObject({ message: 'still alive' });
-    }),
-  );
+    await expect(received).resolves.toMatchObject({ message: 'still alive' });
+  });
 
-  it(
-    'emits finish after close() drains in-flight logs',
-    server.boundary(async () => {
-      let received: unknown;
-      server.use(
-        http.post('http://localhost/api/logs', async ({ request }) => {
-          received = await request.json();
-          return HttpResponse.json({});
-        }),
-      );
-      const transport = new LocalsinkTransport({
-        serviceName: 'test-service',
-        url: 'http://localhost',
-      });
-      const logger = winston.createLogger({ transports: [transport] });
+  it('emits finish after close() drains in-flight logs', async () => {
+    let received: unknown;
+    server.use(
+      http.post('http://localhost/api/logs', async ({ request }) => {
+        received = await request.json();
+        return HttpResponse.json({});
+      }),
+    );
+    const transport = new LocalsinkTransport({
+      serviceName: 'test-service',
+      url: 'http://localhost',
+    });
+    const logger = winston.createLogger({ transports: [transport] });
 
-      logger.info('before close');
+    logger.info('before close');
 
-      const finished = new Promise<void>((resolve) => {
-        transport.once('finish', resolve);
-      });
+    const finished = new Promise<void>((resolve) => {
+      transport.once('finish', resolve);
+    });
 
-      transport.close();
-      await finished;
+    transport.close();
+    await finished;
 
-      expect(received).toMatchObject({ message: 'before close' });
-    }),
-  );
+    expect(received).toMatchObject({ message: 'before close' });
+  });
 });
