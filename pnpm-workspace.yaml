@@ -38,10 +38,10 @@ catalog:
   clsx: 2.1.1
   drizzle-kit: 0.31.11
   drizzle-orm: ^0.45.3
-  hono: ^4.13.12
+  hono: ^4.13.13
   husky: 9.1.7
   lint-staged: 17.6.0
-  lucide-react: 1.51.0
+  lucide-react: 1.52.0
   msw: 3.0.2
   oxc-transform-react: 0.152.0
   oxfmt: 0.71.0
