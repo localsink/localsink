@@ -22,6 +22,7 @@ yarn add winston @localsink/winston
 
 ```ts
 import { createLogger, format } from 'winston';
+
 import { LocalsinkTransport } from '@localsink/winston';
 
 const logger = createLogger({
