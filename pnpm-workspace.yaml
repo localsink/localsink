@@ -77,5 +77,5 @@ minimumReleaseAge: 1440
 overrides:
   esbuild: '0.28.2'
   lightningcss: '1.33.0'
-  '@types/node': '24.19.2'
-  zod: '4.6.7'
+  '@types/node': 'catalog:'
+  zod: 'catalog:'
