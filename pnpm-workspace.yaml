@@ -78,4 +78,3 @@ overrides:
   esbuild: '0.28.2'
   lightningcss: '1.33.0'
   '@types/node': 'catalog:'
-  zod: 'catalog:'
