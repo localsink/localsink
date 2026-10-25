@@ -8,6 +8,7 @@ import { z } from 'zod';
 import {
   configured,
   DEFAULT_DB_FILE_NAME,
+  DEFAULT_HOST,
   DEFAULT_PORT,
   loadEnv,
   resolveDbFileName,
@@ -21,6 +22,9 @@ Usage: localsink [options]
 
 Options:
   -p, --port <number>  Port to listen on (env PORT) [default: ${String(DEFAULT_PORT)}]
+      --host <addr>    Address to listen on (env HOST) [default: ${DEFAULT_HOST}]
+                       Use 0.0.0.0 to reach localsink from a container or
+                       another machine.
   -d, --db <file>      libSQL database file (env DB_FILE_NAME)
                        [default: ${DEFAULT_DB_FILE_NAME}]
   -v, --version        Print the version
@@ -67,6 +71,7 @@ function parseCliArgs() {
     return parseArgs({
       options: {
         port: { type: 'string', short: 'p' },
+        host: { type: 'string' },
         db: { type: 'string', short: 'd' },
         version: { type: 'boolean', short: 'v' },
         help: { type: 'boolean', short: 'h' },
@@ -114,6 +119,7 @@ let server: ServerHandle;
 try {
   server = await startServer({
     port: portResult.data,
+    host: configured(values.host, process.env['HOST']) ?? DEFAULT_HOST,
     dbFileName: resolveDbFileName(values.db),
     ...(existsSync(bundledStatic) ? { staticDir: bundledStatic } : {}),
   });

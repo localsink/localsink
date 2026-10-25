@@ -32,11 +32,43 @@ Flags win over the environment, which wins over the default.
 | Flag              | Env            | Default             | Description                       |
 | ----------------- | -------------- | ------------------- | --------------------------------- |
 | `--port`, `-p`    | `PORT`         | `3000`              | HTTP port to bind.                |
+| `--host`          | `HOST`         | `127.0.0.1`         | Address to bind.                  |
 | `--db`, `-d`      | `DB_FILE_NAME` | `file:localsink.db` | Path to the SQLite database file. |
 | `--version`, `-v` | —              | —                   | Print the version.                |
 | `--help`, `-h`    | —              | —                   | Print usage.                      |
 
 A `.env` file in the working directory is auto-loaded via `process.loadEnvFile()`.
+
+### Reaching localsink from elsewhere
+
+By default localsink listens on `127.0.0.1` only, so nothing beyond your machine
+can reach it. To reach it from a Docker container, a devcontainer or another
+machine, bind every interface:
+
+```sh
+npx localsink --host 0.0.0.0
+```
+
+Anyone who can reach that address can then read and write your logs.
+
+### Browsers
+
+Your logs shouldn't be readable by whatever website you happen to have open, so
+only `POST /api/logs` is shared with other origins (via CORS), so browser apps
+can send logs. Every other route answers web pages on its own origin only, and
+a form-style write (a form post, or a `text/plain` or bodyless `fetch`) from a
+page on another origin gets `403` from Hono's
+[CSRF middleware](https://hono.dev/docs/middleware/builtin/csrf). Requests that
+don't come from a browser (the transports, `curl`, MCP clients) are unaffected.
+
+Responses also carry Hono's
+[secure headers](https://hono.dev/docs/middleware/builtin/secure-headers), so
+other sites can't frame the UI (`X-Frame-Options: SAMEORIGIN`).
+
+While bound to loopback, the server also answers only requests addressed to
+`localhost`, `127.0.0.1` or `[::1]`, which defeats DNS rebinding. Binding
+another address with `--host` lifts that check, since the server is then meant
+to be reached by other names.
 
 `Ctrl-C` (or `SIGTERM`) shuts down cleanly, closing in-flight connections and the
 database. A second `Ctrl-C` kills the process immediately.
@@ -55,7 +87,7 @@ const server = await startServer({
   dbFileName: ':memory:',
 });
 
-console.log(server.url); // http://localhost:54321
+console.log(server.url); // http://127.0.0.1:54321
 
 await server.close();
 ```
@@ -65,11 +97,12 @@ which wraps this and registers teardown for you.
 
 ### `startServer(options): Promise<ServerHandle>`
 
-| Option       | Type      | Description                                                             |
-| ------------ | --------- | ----------------------------------------------------------------------- |
-| `port`       | `number`  | Port to bind. `0` lets the OS pick a free one.                          |
-| `dbFileName` | `string`  | libSQL database file, e.g. `file:localsink.db` or `:memory:`.           |
-| `staticDir`  | `string?` | Directory holding a built SPA. Omit to serve the API and MCP endpoints. |
+| Option       | Type      | Description                                                                                                         |
+| ------------ | --------- | ------------------------------------------------------------------------------------------------------------------- |
+| `port`       | `number`  | Port to bind. `0` lets the OS pick a free one.                                                                      |
+| `host`       | `string?` | Address to bind (default `127.0.0.1`). See [Reaching localsink from elsewhere](#reaching-localsink-from-elsewhere). |
+| `dbFileName` | `string`  | libSQL database file, e.g. `file:localsink.db` or `:memory:`.                                                       |
+| `staticDir`  | `string?` | Directory holding a built SPA. Omit to serve the API and MCP endpoints.                                             |
 
 Resolves to a `ServerHandle`:
 
@@ -98,7 +131,8 @@ bound. The underlying error is preserved on `cause`, so callers can branch on
 | `makeDatabase(drizzleClient)`                    | Wraps an existing Drizzle client in the `Database` API.        |
 | `applySchema(db)`                                | Applies the schema and migrations to a Drizzle client.         |
 | `InvalidQueryError`                              | Thrown for mutually exclusive query params; maps to `400`.     |
-| `DEFAULT_PORT`, `DEFAULT_DB_FILE_NAME`           | `3000` and `file:localsink.db`.                                |
+| `DEFAULT_PORT`, `DEFAULT_HOST`                   | `3000` and `127.0.0.1`.                                        |
+| `DEFAULT_DB_FILE_NAME`                           | `file:localsink.db`.                                           |
 | `DEFAULT_SERVER_URL`                             | `http://localhost:3000`.                                       |
 | `logsQuerySchema`                                | Zod schema for `GET /api/logs` query params.                   |
 | `Database`, `ServerHandle`, `StartServerOptions` | Types for the above.                                           |
@@ -111,7 +145,7 @@ All endpoints return JSON. Request bodies are validated against the [`@localsink
 
 ### `POST /api/logs`
 
-Ingest a single log. Body must match `ingestPayloadSchema`. Returns `201` with an empty body.
+Ingest a single log. Body must match `ingestPayloadSchema`. Returns `201` with an empty body. The only endpoint open to other origins, so browser apps can send logs.
 
 ### `GET /api/logs`
 
@@ -175,4 +209,4 @@ Malformed FTS5 queries return `400` with the underlying parser error.
 - `search_logs` → same as `GET /api/logs`
 - `get_log_by_id` → same as `GET /api/logs/:id`
 
-Point an MCP-capable client (e.g. Claude Desktop) at `http://localhost:3000/mcp` to let an LLM search your logs.
+Point an MCP-capable client (e.g. Claude Desktop) at `http://localhost:3000/mcp` to let an LLM search your logs. Browser-based MCP clients on another origin can't reach it (see [Browsers](#browsers)).

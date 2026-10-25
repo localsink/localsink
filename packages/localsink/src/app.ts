@@ -6,7 +6,9 @@ import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import type { ValidationTargets } from 'hono';
 import { cors } from 'hono/cors';
+import { csrf } from 'hono/csrf';
 import { HTTPException } from 'hono/http-exception';
+import { secureHeaders } from 'hono/secure-headers';
 import { z } from 'zod';
 
 import { ingestPayloadSchema } from '@localsink/contract';
@@ -43,6 +45,8 @@ export interface CreateAppOptions {
    * is the dev setup: Vite serves the SPA and proxies here.
    */
   staticDir?: string;
+  /** Host names to answer requests for. Omit to answer any. */
+  allowedHosts?: string[];
 }
 
 export function createApp(database: Database, options: CreateAppOptions = {}) {
@@ -64,7 +68,25 @@ export function createApp(database: Database, options: CreateAppOptions = {}) {
     return c.json({ error: 'Internal server error.' }, 500);
   });
 
-  app.use('*', cors());
+  // HSTS is off: localsink is served over plain HTTP, where browsers ignore it.
+  app.use(secureHeaders({ strictTransportSecurity: false }));
+
+  const { allowedHosts } = options;
+  if (allowedHosts) {
+    app.use('*', async (c, next) => {
+      if (!allowedHosts.includes(new URL(c.req.url).hostname)) {
+        throw new HTTPException(403, {
+          res: c.json({ error: 'Host not allowed.' }, 403),
+        });
+      }
+      await next();
+    });
+  }
+
+  app.use(csrf());
+
+  // Only log ingest is shared cross-origin, for browser apps.
+  const ingestCors = cors({ allowMethods: ['POST'] });
 
   app.all('/mcp', async (c) => {
     if (!mcpServer.isConnected()) {
@@ -95,11 +117,18 @@ export function createApp(database: Database, options: CreateAppOptions = {}) {
     return c.json(log);
   });
 
-  app.post('/api/logs', validate('json', ingestPayloadSchema), async (c) => {
-    const log = c.req.valid('json');
-    await createLog(log);
-    return c.body(null, 201);
-  });
+  app.options('/api/logs', ingestCors);
+
+  app.post(
+    '/api/logs',
+    ingestCors,
+    validate('json', ingestPayloadSchema),
+    async (c) => {
+      const log = c.req.valid('json');
+      await createLog(log);
+      return c.body(null, 201);
+    },
+  );
 
   app.all('/api/*', (c) => c.json({ error: 'Not found.' }, 404));
 
