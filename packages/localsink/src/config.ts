@@ -24,6 +24,9 @@ export const DEFAULT_DB_FILE_NAME = 'file:localsink.db';
 /** Bound when nothing else is configured. */
 export const DEFAULT_PORT = 3000;
 
+/** Loopback only, unless configured otherwise. */
+export const DEFAULT_HOST = '127.0.0.1';
+
 /** Where the server listens when nothing else is configured. */
 export const DEFAULT_SERVER_URL = `http://localhost:${String(DEFAULT_PORT)}`;
 

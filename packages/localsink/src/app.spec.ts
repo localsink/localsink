@@ -339,29 +339,6 @@ describe('GET /api/logs', () => {
       expect(page.data).toHaveLength(1);
     });
   });
-
-  describe('CORS', () => {
-    it('returns Access-Control-Allow-Origin on /api/* responses', async () => {
-      const { app } = await createTestApp();
-      const res = await app.request('/api/logs', {
-        headers: { Origin: 'http://localhost:5173' },
-      });
-      expect(res.headers.get('Access-Control-Allow-Origin')).not.toBeNull();
-    });
-
-    it('responds to preflight OPTIONS on /api/*', async () => {
-      const { app } = await createTestApp();
-      const res = await app.request('/api/logs', {
-        method: 'OPTIONS',
-        headers: {
-          Origin: 'http://localhost:5173',
-          'Access-Control-Request-Method': 'GET',
-        },
-      });
-      expect(res.status).toBeLessThan(300);
-      expect(res.headers.get('Access-Control-Allow-Origin')).not.toBeNull();
-    });
-  });
 });
 
 describe('GET /api/logs/:id', () => {
@@ -604,6 +581,12 @@ function putLicense(key: string) {
   };
 }
 
+// Bodyless, as the UI sends them. csrf() refuses a bodyless write that has
+// neither header a browser adds, so these carry the one the UI's would.
+function fromUi(method: 'POST' | 'DELETE') {
+  return { method, headers: { 'Sec-Fetch-Site': 'same-origin' } };
+}
+
 describe('/api/license', () => {
   const KEY = '0f8fad5b-d9cb-469f-a165-70867728950e';
   const answer = {
@@ -654,14 +637,12 @@ describe('/api/license', () => {
       },
     );
 
-    const checked = await app.request('/api/license/check', {
-      method: 'POST',
-    });
+    const checked = await app.request('/api/license/check', fromUi('POST'));
     expect(licenseStatusSchema.parse(await checked.json())).toMatchObject({
       edition: 'licensed',
     });
 
-    const removed = await app.request('/api/license', { method: 'DELETE' });
+    const removed = await app.request('/api/license', fromUi('DELETE'));
     expect(licenseStatusSchema.parse(await removed.json())).toMatchObject({
       edition: 'community',
       source: 'none',
@@ -698,9 +679,67 @@ describe('/api/license', () => {
     expect((await app.request('/api/license', putLicense(KEY))).status).toBe(
       409,
     );
-    expect(
-      (await app.request('/api/license', { method: 'DELETE' })).status,
-    ).toBe(409);
+    expect((await app.request('/api/license', fromUi('DELETE'))).status).toBe(
+      409,
+    );
+  });
+});
+
+describe('cross-origin requests', () => {
+  const FOREIGN = 'https://evil.example';
+
+  it('lets a browser app on another origin send logs', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/logs', {
+      method: 'POST',
+      headers: { Origin: FOREIGN, 'Content-Type': 'application/json' },
+      body: JSON.stringify(minimalPayload),
+    });
+    expect(res.status).toBe(201);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+  });
+
+  it('answers the preflight for sending logs', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/logs', {
+      method: 'OPTIONS',
+      headers: {
+        Origin: FOREIGN,
+        'Access-Control-Request-Method': 'POST',
+        'Access-Control-Request-Headers': 'content-type',
+      },
+    });
+    expect(res.status).toBe(204);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+  });
+
+  it("doesn't share logs with another origin", async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/logs', {
+      headers: { Origin: FOREIGN },
+    });
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
+  });
+});
+
+describe('allowedHosts', () => {
+  it('answers a listed host', async () => {
+    const { app } = await createTestApp({ allowedHosts: ['localhost'] });
+    const res = await app.request('http://localhost:3000/api/logs');
+    expect(res.status).toBe(200);
+  });
+
+  it('rejects any other, as a DNS-rebound page would send', async () => {
+    const { app } = await createTestApp({ allowedHosts: ['localhost'] });
+    const res = await app.request('http://evil.example:3000/api/logs');
+    expect(res.status).toBe(403);
+    await expect(res.json()).resolves.toEqual({ error: 'Host not allowed.' });
+  });
+
+  it('answers any host when omitted', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('http://localsink:3000/api/logs');
+    expect(res.status).toBe(200);
   });
 });
 

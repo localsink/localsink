@@ -16,6 +16,7 @@ export { startServer } from './server.ts';
 export type { ServerHandle, StartServerOptions } from './server.ts';
 export {
   DEFAULT_DB_FILE_NAME,
+  DEFAULT_HOST,
   DEFAULT_PORT,
   DEFAULT_SERVER_URL,
 } from './config.ts';
