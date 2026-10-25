@@ -34,7 +34,9 @@ export class AppPage {
     // The jump pill ("↓ N new" / "↓ live"), a button with a down arrow.
     this.jumpPill = page.getByRole('button', { name: /↓/ });
     this.emptyState = page.getByText('no logs match the current filters');
-    this.editionBadge = page.getByText('Community Edition');
+    // The badge is the license dialog's trigger; the dialog's own title reads
+    // "Community Edition" too, so match the button, not the text.
+    this.editionBadge = page.getByRole('button', { name: 'Community Edition' });
   }
 
   // Serves both service and severity facets — the two label sets are disjoint.

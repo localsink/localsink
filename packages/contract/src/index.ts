@@ -11,4 +11,12 @@ export {
   type LogPage,
   logMetaSchema,
   type LogMeta,
+  licenseKeyInputSchema,
+  type LicenseKeyInput,
+  licenseReasonSchema,
+  type LicenseReason,
+  licenseStatusSchema,
+  type LicenseStatus,
+  licenseActivationSchema,
+  type LicenseActivation,
 } from './schemas.ts';

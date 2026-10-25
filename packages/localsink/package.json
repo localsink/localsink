@@ -70,6 +70,7 @@
     "@localsink/contract": "workspace:*",
     "@modelcontextprotocol/sdk": "catalog:",
     "drizzle-orm": "catalog:",
+    "env-paths": "catalog:",
     "hono": "catalog:",
     "zod": "catalog:"
   },

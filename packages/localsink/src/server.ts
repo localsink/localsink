@@ -7,6 +7,7 @@ import type { ServerType } from '@hono/node-server';
 import { createApp } from './app.ts';
 import { initializeDatabase } from './database.ts';
 import type { Database } from './database.ts';
+import type { LicenseManager } from './license/manager.ts';
 
 export interface StartServerOptions {
   /** Port to bind. Pass `0` to let the OS pick a free one. */
@@ -15,6 +16,11 @@ export interface StartServerOptions {
   dbFileName: string;
   /** Directory holding the built SPA. Omitted in dev, where Vite serves it. */
   staticDir?: string;
+  /**
+   * Serves /api/license. The server takes ownership: it is closed with the
+   * server, or straight away if startup fails.
+   */
+  license?: LicenseManager;
 }
 
 export interface ServerHandle {
@@ -58,7 +64,12 @@ function startupError(port: number, error: unknown): Error {
   });
 }
 
-async function stop(server: ServerType, db: Database): Promise<void> {
+async function stop(
+  server: ServerType,
+  db: Database,
+  license: LicenseManager | undefined,
+): Promise<void> {
+  license?.close();
   const closed = server[Symbol.asyncDispose]();
   // `close` waits out every in-flight request, and an MCP stream never ends on
   // its own, so a client attached to /mcp would otherwise block shutdown. Node
@@ -80,12 +91,13 @@ async function stop(server: ServerType, db: Database): Promise<void> {
 export async function startServer(
   options: StartServerOptions,
 ): Promise<ServerHandle> {
-  const { port, dbFileName, staticDir } = options;
+  const { port, dbFileName, staticDir, license } = options;
 
   let db: Database;
   try {
     db = await initializeDatabase(dbFileName);
   } catch (error) {
+    license?.close();
     throw new Error(`Failed to initialize database: ${format(error)}`, {
       cause: error,
     });
@@ -93,12 +105,16 @@ export async function startServer(
 
   let server: ServerType;
   try {
-    const app = createApp(db, staticDir ? { staticDir } : {});
+    const app = createApp(db, {
+      ...(staticDir ? { staticDir } : {}),
+      ...(license ? { license } : {}),
+    });
     server = serve({ fetch: app.fetch, port });
     // A failed bind emits 'error' in place of 'listening'; `once` rejects on
     // that and detaches both listeners either way.
     await once(server, 'listening');
   } catch (error) {
+    license?.close();
     try {
       db.close();
     } catch {
@@ -118,7 +134,7 @@ export async function startServer(
     port: bound?.port ?? port,
     db,
     close: () => {
-      stopping ??= stop(server, db);
+      stopping ??= stop(server, db, license);
       return stopping;
     },
   };
