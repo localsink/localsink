@@ -590,23 +590,22 @@ describe('cross-origin requests', () => {
   });
 });
 
-describe('Host check', () => {
-  // URL.hostname keeps the brackets on an IPv6 literal.
-  it.each(['localhost', '[::1]'])('accepts %s', async (host) => {
-    const { app } = await createTestApp();
-    const res = await app.request(`http://${host}:3000/api/logs`);
+describe('allowedHosts', () => {
+  it('answers a listed host', async () => {
+    const { app } = await createTestApp({ allowedHosts: ['localhost'] });
+    const res = await app.request('http://localhost:3000/api/logs');
     expect(res.status).toBe(200);
   });
 
-  it('rejects any other name, as a DNS-rebound page would send', async () => {
-    const { app } = await createTestApp();
+  it('rejects any other, as a DNS-rebound page would send', async () => {
+    const { app } = await createTestApp({ allowedHosts: ['localhost'] });
     const res = await app.request('http://evil.example:3000/api/logs');
     expect(res.status).toBe(403);
     await expect(res.json()).resolves.toEqual({ error: 'Host not allowed.' });
   });
 
-  it('accepts any host when bound beyond loopback', async () => {
-    const { app } = await createTestApp({ anyHost: true });
+  it('answers any host when omitted', async () => {
+    const { app } = await createTestApp();
     const res = await app.request('http://localsink:3000/api/logs');
     expect(res.status).toBe(200);
   });

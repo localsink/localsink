@@ -12,6 +12,9 @@ import type { Database } from './database.ts';
 /** Bind addresses that keep the server on this machine. */
 const LOOPBACK_BINDS = ['127.0.0.1', 'localhost', '::1'];
 
+/** The names those are reached by, as `URL.hostname` gives them. */
+const LOOPBACK_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]'];
+
 export interface StartServerOptions {
   /** Port to bind. Pass `0` to let the OS pick a free one. */
   port: number;
@@ -101,7 +104,9 @@ export async function startServer(
   try {
     const app = createApp(db, {
       ...(staticDir ? { staticDir } : {}),
-      anyHost: !LOOPBACK_BINDS.includes(host),
+      ...(LOOPBACK_BINDS.includes(host)
+        ? { allowedHosts: LOOPBACK_HOSTNAMES }
+        : {}),
     });
     server = serve({ fetch: app.fetch, port, hostname: host });
     // A failed bind emits 'error' in place of 'listening'; `once` rejects on

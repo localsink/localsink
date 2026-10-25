@@ -45,11 +45,9 @@ export interface CreateAppOptions {
    * is the dev setup: Vite serves the SPA and proxies here.
    */
   staticDir?: string;
-  /** Accept requests addressed to any host name, not just loopback ones. */
-  anyHost?: boolean;
+  /** Host names to answer requests for. Omit to answer any. */
+  allowedHosts?: string[];
 }
-
-const LOOPBACK_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]'];
 
 export function createApp(database: Database, options: CreateAppOptions = {}) {
   const { findLogs, getMeta, findLogById, createLog } = database;
@@ -73,9 +71,10 @@ export function createApp(database: Database, options: CreateAppOptions = {}) {
   // HSTS is off: localsink is served over plain HTTP, where browsers ignore it.
   app.use(secureHeaders({ strictTransportSecurity: false }));
 
-  if (!options.anyHost) {
+  const { allowedHosts } = options;
+  if (allowedHosts) {
     app.use('*', async (c, next) => {
-      if (!LOOPBACK_HOSTNAMES.includes(new URL(c.req.url).hostname)) {
+      if (!allowedHosts.includes(new URL(c.req.url).hostname)) {
         throw new HTTPException(403, {
           res: c.json({ error: 'Host not allowed.' }, 403),
         });
