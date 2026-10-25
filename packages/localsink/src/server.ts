@@ -5,12 +5,18 @@ import { serve } from '@hono/node-server';
 import type { ServerType } from '@hono/node-server';
 
 import { createApp } from './app.ts';
+import { DEFAULT_HOST } from './config.ts';
 import { initializeDatabase } from './database.ts';
 import type { Database } from './database.ts';
+
+/** Bind addresses that keep the server on this machine. */
+const LOOPBACK_BINDS = ['127.0.0.1', 'localhost', '::1'];
 
 export interface StartServerOptions {
   /** Port to bind. Pass `0` to let the OS pick a free one. */
   port: number;
+  /** Address to bind. Anything but loopback also lifts the `Host` check. */
+  host?: string;
   /** libSQL database file, e.g. `file:localsink.db` or `:memory:`. */
   dbFileName: string;
   /** Directory holding the built SPA. Omitted in dev, where Vite serves it. */
@@ -18,7 +24,7 @@ export interface StartServerOptions {
 }
 
 export interface ServerHandle {
-  /** Origin the server is reachable at, e.g. `http://localhost:3000`. */
+  /** Origin the server is reachable at, e.g. `http://127.0.0.1:3000`. */
   url: string;
   /** The port actually bound, which differs from the request when it was `0`. */
   port: number;
@@ -80,7 +86,7 @@ async function stop(server: ServerType, db: Database): Promise<void> {
 export async function startServer(
   options: StartServerOptions,
 ): Promise<ServerHandle> {
-  const { port, dbFileName, staticDir } = options;
+  const { port, host = DEFAULT_HOST, dbFileName, staticDir } = options;
 
   let db: Database;
   try {
@@ -93,8 +99,11 @@ export async function startServer(
 
   let server: ServerType;
   try {
-    const app = createApp(db, staticDir ? { staticDir } : {});
-    server = serve({ fetch: app.fetch, port });
+    const app = createApp(db, {
+      ...(staticDir ? { staticDir } : {}),
+      anyHost: !LOOPBACK_BINDS.includes(host),
+    });
+    server = serve({ fetch: app.fetch, port, hostname: host });
     // A failed bind emits 'error' in place of 'listening'; `once` rejects on
     // that and detaches both listeners either way.
     await once(server, 'listening');

@@ -332,29 +332,6 @@ describe('GET /api/logs', () => {
       expect(page.data).toHaveLength(1);
     });
   });
-
-  describe('CORS', () => {
-    it('returns Access-Control-Allow-Origin on /api/* responses', async () => {
-      const { app } = await createTestApp();
-      const res = await app.request('/api/logs', {
-        headers: { Origin: 'http://localhost:5173' },
-      });
-      expect(res.headers.get('Access-Control-Allow-Origin')).not.toBeNull();
-    });
-
-    it('responds to preflight OPTIONS on /api/*', async () => {
-      const { app } = await createTestApp();
-      const res = await app.request('/api/logs', {
-        method: 'OPTIONS',
-        headers: {
-          Origin: 'http://localhost:5173',
-          'Access-Control-Request-Method': 'GET',
-        },
-      });
-      expect(res.status).toBeLessThan(300);
-      expect(res.headers.get('Access-Control-Allow-Origin')).not.toBeNull();
-    });
-  });
 });
 
 describe('GET /api/logs/:id', () => {
@@ -573,6 +550,65 @@ describe('POST /mcp', () => {
         ],
       },
     });
+  });
+});
+
+describe('cross-origin requests', () => {
+  const FOREIGN = 'https://evil.example';
+
+  it('lets a browser app on another origin send logs', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/logs', {
+      method: 'POST',
+      headers: { Origin: FOREIGN, 'Content-Type': 'application/json' },
+      body: JSON.stringify(minimalPayload),
+    });
+    expect(res.status).toBe(201);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+  });
+
+  it('answers the preflight for sending logs', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/logs', {
+      method: 'OPTIONS',
+      headers: {
+        Origin: FOREIGN,
+        'Access-Control-Request-Method': 'POST',
+        'Access-Control-Request-Headers': 'content-type',
+      },
+    });
+    expect(res.status).toBe(204);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+  });
+
+  it("doesn't share logs with another origin", async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/logs', {
+      headers: { Origin: FOREIGN },
+    });
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
+  });
+});
+
+describe('Host check', () => {
+  // URL.hostname keeps the brackets on an IPv6 literal.
+  it.each(['localhost', '[::1]'])('accepts %s', async (host) => {
+    const { app } = await createTestApp();
+    const res = await app.request(`http://${host}:3000/api/logs`);
+    expect(res.status).toBe(200);
+  });
+
+  it('rejects any other name, as a DNS-rebound page would send', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('http://evil.example:3000/api/logs');
+    expect(res.status).toBe(403);
+    await expect(res.json()).resolves.toEqual({ error: 'Host not allowed.' });
+  });
+
+  it('accepts any host when bound beyond loopback', async () => {
+    const { app } = await createTestApp({ anyHost: true });
+    const res = await app.request('http://localsink:3000/api/logs');
+    expect(res.status).toBe(200);
   });
 });
 
