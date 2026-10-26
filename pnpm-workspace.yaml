@@ -39,7 +39,7 @@ catalog:
   drizzle-kit: 0.31.11
   drizzle-orm: ^0.45.4
   env-paths: ^4.0.0
-  hono: ^4.13.13
+  hono: ^4.13.14
   husky: 9.1.7
   lint-staged: 17.6.0
   lucide-react: 1.61.0
