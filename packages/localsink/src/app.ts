@@ -1,8 +1,8 @@
 import { format } from 'node:util';
 
-import { StreamableHTTPTransport } from '@hono/mcp';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { zValidator } from '@hono/zod-validator';
+import { createMcpHandler } from '@modelcontextprotocol/server';
 import { Hono } from 'hono';
 import type { ValidationTargets } from 'hono';
 import { cors } from 'hono/cors';
@@ -52,9 +52,6 @@ export interface CreateAppOptions {
 export function createApp(database: Database, options: CreateAppOptions = {}) {
   const { findLogs, getMeta, findLogById, createLog } = database;
 
-  const mcpServer = createMcpServer(database);
-  const mcpTransport = new StreamableHTTPTransport();
-
   const app = new Hono();
 
   app.onError((error, c) => {
@@ -88,12 +85,8 @@ export function createApp(database: Database, options: CreateAppOptions = {}) {
   // Only log ingest is shared cross-origin, for browser apps.
   const ingestCors = cors({ allowMethods: ['POST'] });
 
-  app.all('/mcp', async (c) => {
-    if (!mcpServer.isConnected()) {
-      await mcpServer.connect(mcpTransport);
-    }
-    return mcpTransport.handleRequest(c);
-  });
+  const mcpHandler = createMcpHandler(() => createMcpServer(database));
+  app.all('/mcp', (c) => mcpHandler.fetch(c.req.raw));
 
   app.all('/mcp/*', (c) => c.json({ error: 'Not found.' }, 404));
 

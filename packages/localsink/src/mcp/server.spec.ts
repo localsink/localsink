@@ -1,7 +1,8 @@
-// oxlint-disable-next-line import/extensions -- SDK uses ./* wildcard exports; .js is required for resolution
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-// oxlint-disable-next-line import/extensions -- same as above
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import {
+  Client,
+  StreamableHTTPClientTransport,
+} from '@modelcontextprotocol/client';
+import { createMcpHandler } from '@modelcontextprotocol/server';
 import { drizzle } from 'drizzle-orm/libsql';
 
 import { makeDatabase } from '../database.ts';
@@ -14,12 +15,17 @@ async function connectedClient() {
   const db = makeDatabase(drizzleClient);
   onTestFinished(() => db.close());
 
-  const mcpServer = createMcpServer(db);
-  const [clientT, serverT] = InMemoryTransport.createLinkedPair();
-  await mcpServer.connect(serverT);
-
-  const client = new Client({ name: 'test', version: '0.0.0' });
-  await client.connect(clientT);
+  const handler = createMcpHandler(() => createMcpServer(db));
+  const client = new Client(
+    { name: 'test', version: '0.0.0' },
+    { versionNegotiation: { mode: { pin: '2026-07-28' } } },
+  );
+  await client.connect(
+    new StreamableHTTPClientTransport(new URL('http://localhost/mcp'), {
+      fetch: async (url, init) => handler.fetch(new Request(url, init)),
+    }),
+  );
+  onTestFinished(() => client.close());
 
   return { client, db };
 }
