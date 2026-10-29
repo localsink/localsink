@@ -25,6 +25,6 @@ updates:
       default-days: 1
     ignore:
       - dependency-name: '@types/node'
-        versions: ['>=25.0.0']
+        versions: ['>=27.0.0']
       - dependency-name: 'typescript'
         versions: ['>= 7.1.0-dev, < 7.1.0-rc']
