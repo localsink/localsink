@@ -25,10 +25,7 @@ async function connectedClient() {
       fetch: async (url, init) => handler.fetch(new Request(url, init)),
     }),
   );
-  onTestFinished(async () => {
-    await client.close();
-    await handler.close();
-  });
+  onTestFinished(() => client.close());
 
   return { client, db };
 }
