@@ -2,6 +2,10 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import {
+  Client,
+  StreamableHTTPClientTransport,
+} from '@modelcontextprotocol/client';
 import { drizzle } from 'drizzle-orm/libsql';
 import { http, HttpResponse } from 'msw/http';
 import { setupServer } from 'msw/node';
@@ -482,81 +486,36 @@ describe('GET /api/logs/meta', () => {
   });
 });
 
-function parseSseResponse(text: string) {
-  const lines = text.split('\n');
-  const dataLine = lines.find((l) => l.startsWith('data: '));
-  if (!dataLine) {
-    throw new Error(`No data line found in SSE response. Full text:\n${text}`);
-  }
-  const jsonStr = dataLine.slice('data: '.length);
-  return JSON.parse(jsonStr);
-}
-
 describe('POST /mcp', () => {
-  it('handles tools/list request', async () => {
-    const { app } = await createTestApp();
-    const res = await app.request('/mcp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'tools/list',
-        params: {},
-      }),
-    });
-    expect(res.status).toBe(200);
-    expect(res.headers.get('Content-Type')).toContain('text/event-stream');
-    const text = await res.text();
-    const body = parseSseResponse(text);
-    expect(body).toMatchObject({
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        tools: expect.any(Array),
-      },
-    });
-
-    const tools = body.result.tools
-      .map((t: { name: string }) => t.name)
-      .toSorted((a: string, b: string) => a.localeCompare(b));
-    expect(tools).toEqual(['describe_logs', 'get_log_by_id', 'search_logs']);
-  });
-
-  it('handles tools/call request for describe_logs', async () => {
+  it('serves the 2026-07-28 revision to a client pinned to it', async () => {
     const { app, db } = await createTestApp();
     await db.createLog(minimalPayload);
 
-    const res = await app.request('/mcp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'tools/call',
-        params: {
-          name: 'describe_logs',
-          arguments: {},
-        },
+    const client = new Client(
+      { name: 'test', version: '0.0.0' },
+      { versionNegotiation: { mode: { pin: '2026-07-28' } } },
+    );
+    await client.connect(
+      new StreamableHTTPClientTransport(new URL('http://localhost/mcp'), {
+        fetch: async (url, init) => app.request(url, init),
       }),
-    });
+    );
+    onTestFinished(() => client.close());
 
-    expect(res.status).toBe(200);
-    expect(res.headers.get('Content-Type')).toContain('text/event-stream');
-    const text = await res.text();
-    const body = parseSseResponse(text);
-    expect(body).toMatchObject({
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        content: [
-          {
-            type: 'text',
-            text: expect.stringContaining('"total": 1'),
-          },
-        ],
-      },
+    expect(client.getProtocolEra()).toBe('modern');
+    const { tools } = await client.listTools();
+    expect(tools.map((t) => t.name).toSorted()).toEqual([
+      'describe_logs',
+      'get_log_by_id',
+      'search_logs',
+    ]);
+    const result = await client.callTool({
+      name: 'describe_logs',
+      arguments: {},
     });
+    expect(result.content).toEqual([
+      { type: 'text', text: expect.stringContaining('"total": 1') },
+    ]);
   });
 });
 

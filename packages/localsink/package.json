@@ -63,12 +63,11 @@
     "drizzle-kit:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@hono/mcp": "catalog:",
     "@hono/node-server": "catalog:",
     "@hono/zod-validator": "catalog:",
     "@libsql/client": "catalog:",
     "@localsink/contract": "workspace:*",
-    "@modelcontextprotocol/sdk": "catalog:",
+    "@modelcontextprotocol/server": "catalog:",
     "drizzle-orm": "catalog:",
     "env-paths": "catalog:",
     "hono": "catalog:",
@@ -76,7 +75,8 @@
   },
   "devDependencies": {
     "@localsink/sdk": "workspace:*",
-    "@localsink/web": "workspace:*"
+    "@localsink/web": "workspace:*",
+    "@modelcontextprotocol/client": "catalog:"
   },
   "engines": {
     "node": ">=26"
