@@ -26,5 +26,3 @@ updates:
     ignore:
       - dependency-name: '@types/node'
         versions: ['>=27.0.0']
-      - dependency-name: 'typescript'
-        versions: ['>= 7.1.0-dev, < 7.1.0-rc']
