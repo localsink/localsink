@@ -28,6 +28,8 @@ import {
 // contact the licensing service, so it can poll freely. An expiry shows up
 // within a minute without the page reloading.
 const LICENSE_POLL_MS = 60_000;
+// While a background check runs, so its result shows as soon as it lands.
+const CHECKING_POLL_MS = 1000;
 const PRODUCTION_LICENSING_HOST = 'licensing.localsink.io';
 const PRICING_URL = 'https://localsink.io/pricing';
 const BILLING_URL = 'https://paddle.net';
@@ -329,7 +331,8 @@ export function LicenseDialog() {
     queryKey: LICENSE_KEY,
     queryFn: ({ signal }) => fetchLicense(signal),
     retry: false,
-    refetchInterval: LICENSE_POLL_MS,
+    refetchInterval: (query) =>
+      query.state.data?.checking ? CHECKING_POLL_MS : LICENSE_POLL_MS,
   });
   const status = license.data;
 

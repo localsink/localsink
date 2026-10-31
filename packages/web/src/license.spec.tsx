@@ -277,3 +277,17 @@ test('the badge opens and closes the dialog from the keyboard', async () => {
   await userEvent.keyboard('{Escape}');
   await expect.element(screen.getByRole('dialog')).not.toBeInTheDocument();
 });
+
+test('shows the result of a background check as soon as it lands', async () => {
+  const { dialog } = await openDialog({ ...licensed, checking: true });
+  await expect
+    .element(dialog.getByRole('button', { name: 'Checking…' }))
+    .toBeDisabled();
+
+  serveStatus(licensed);
+  await expect
+    .element(dialog.getByRole('button', { name: 'Check now' }), {
+      timeout: 3000,
+    })
+    .toBeEnabled();
+});

@@ -727,6 +727,14 @@ describe('openLicenseManager', () => {
       expect(existsSync(configDir)).toBe(false);
     });
 
+    it('rejects a value that is not a license key', async () => {
+      const requests = recordRequests();
+      await expect(open({ envKey: `"${KEY}"` })).rejects.toThrow(
+        'LOCALSINK_LICENSE_KEY is not a license key.',
+      );
+      expect(requests).toEqual([]);
+    });
+
     it('refuses activation and removal', async () => {
       fakeService();
       const manager = await open({ envKey: KEY });

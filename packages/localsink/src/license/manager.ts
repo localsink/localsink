@@ -1,5 +1,6 @@
 import { format } from 'node:util';
 
+import { licenseKeyInputSchema } from '@localsink/contract';
 import type { LicenseActivation, LicenseStatus } from '@localsink/contract';
 
 import type { CheckOutcome } from './client.ts';
@@ -276,7 +277,7 @@ function memoryStore(initial: LicenseRecord): RecordStore {
  * Loads the saved state and schedules the first check. Never waits on the
  * network: a check that is due runs in the background.
  *
- * Throws only for an invalid `licensingUrl`.
+ * Throws only for an invalid `licensingUrl` or `envKey`.
  */
 export async function openLicenseManager(
   options: LicenseManagerOptions,
@@ -287,7 +288,14 @@ export async function openLicenseManager(
     options.log ?? ((message) => process.stderr.write(`${message}\n`));
   const userAgent = `localsink/${options.version} (${process.platform}; ${process.arch})`;
 
-  const envKey = options.envKey?.trim().toLowerCase();
+  let envKey: string | undefined;
+  if (options.envKey !== undefined) {
+    const parsed = licenseKeyInputSchema.safeParse({ key: options.envKey });
+    if (!parsed.success) {
+      throw new Error('LOCALSINK_LICENSE_KEY is not a license key.');
+    }
+    envKey = parsed.data.key;
+  }
   const source = envKey ? 'env' : 'file';
   const store: RecordStore = envKey
     ? // Never confirmed yet, and due immediately.
