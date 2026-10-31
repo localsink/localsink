@@ -41,7 +41,7 @@ catalog:
   hono: ^4.13.14
   husky: 9.1.7
   lint-staged: 17.6.0
-  lucide-react: 1.64.0
+  lucide-react: 1.65.0
   msw: 3.0.3
   oxc-transform-react: 0.156.0
   oxfmt: 0.75.0
