@@ -16,7 +16,7 @@ export function libConfig(overrides: UserConfig = {}): UserConfig {
       publint: true,
       attw: true,
       failOnWarn: true,
-      suppressWarnings: ['TypeScript Go is experimental'],
+      suppressWarnings: ['TypeScript 7.0 does not yet have a stable API'],
     },
     overrides,
   );
