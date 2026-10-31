@@ -67,6 +67,14 @@ describe('license file', () => {
     expect(statSync(path).mode & 0o777).toBe(0o600);
   });
 
+  it('tightens an existing file', async () => {
+    if (process.platform === 'win32') return;
+    const path = join(tempDir(), 'license.json');
+    writeFileSync(path, '{}', { mode: 0o644 });
+    await writeLicenseFile(path, record);
+    expect(statSync(path).mode & 0o777).toBe(0o600);
+  });
+
   it('reads a missing file as no key', async () => {
     await expect(
       readLicenseFile(join(tempDir(), 'license.json')),

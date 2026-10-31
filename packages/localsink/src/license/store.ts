@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import envPaths from 'env-paths';
@@ -100,6 +100,7 @@ export async function writeLicenseFile(
     `${JSON.stringify({ version: 1, ...record }, null, 2)}\n`,
     { mode: 0o600 },
   );
+  await chmod(path, 0o600);
 }
 
 export async function removeLicenseFile(path: string): Promise<void> {
