@@ -5,6 +5,8 @@ import { format, parseArgs } from 'node:util';
 
 import { z } from 'zod';
 
+import type { LicenseStatus } from '@localsink/contract';
+
 import {
   configured,
   DEFAULT_DB_FILE_NAME,
@@ -13,6 +15,8 @@ import {
   loadEnv,
   resolveDbFileName,
 } from './config.ts';
+import { openLicenseManager } from './license/manager.ts';
+import type { LicenseManager } from './license/manager.ts';
 import { startServer } from './server.ts';
 import type { ServerHandle } from './server.ts';
 
@@ -29,6 +33,10 @@ Options:
                        [default: ${DEFAULT_DB_FILE_NAME}]
   -v, --version        Print the version
   -h, --help           Show this message
+
+Environment:
+  LOCALSINK_LICENSE_KEY  Commercial license key, for containers and other
+                         setups without a persistent home directory
 `;
 
 function fail(message: string): never {
@@ -48,6 +56,16 @@ function isAddressInUse(error: unknown): boolean {
     'code' in error.cause &&
     error.cause.code === 'EADDRINUSE'
   );
+}
+
+/** One startup line, from what is already known — never waits on the network. */
+function describeEdition(status: LicenseStatus): string {
+  if (status.edition === 'licensed' && status.expires_at !== null) {
+    const through = new Date(status.expires_at).toISOString().slice(0, 10);
+    return `Licensed to ${status.customer ?? 'unknown'} through ${through}`;
+  }
+  if (status.reason === 'unverified') return 'License: checking…';
+  return 'Community Edition';
 }
 
 const manifestSchema = z.object({ version: z.string() });
@@ -111,6 +129,17 @@ if (!portResult.success) {
   );
 }
 
+let license: LicenseManager;
+try {
+  license = await openLicenseManager({
+    version: readVersion(),
+    envKey: configured(process.env['LOCALSINK_LICENSE_KEY']),
+    licensingUrl: configured(process.env['LOCALSINK_LICENSING_URL']),
+  });
+} catch (error) {
+  fail(`${describe(error)}\n`);
+}
+
 // The build copies the SPA to dist/public, next to the bundled CLI. From
 // source this is src/public, which doesn't exist, so dev serves API + MCP only.
 const bundledStatic = join(import.meta.dirname, 'public');
@@ -121,6 +150,7 @@ try {
     port: portResult.data,
     host: configured(values.host, process.env['HOST']) ?? DEFAULT_HOST,
     dbFileName: resolveDbFileName(values.db),
+    license,
     ...(existsSync(bundledStatic) ? { staticDir: bundledStatic } : {}),
   });
 } catch (error) {
@@ -130,6 +160,7 @@ try {
 }
 
 process.stdout.write(`Server is listening on ${server.url}\n`);
+process.stdout.write(`${describeEdition(await license.status())}\n`);
 
 const shutdown = () => {
   void server.close().then(

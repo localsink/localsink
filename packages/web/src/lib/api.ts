@@ -1,5 +1,15 @@
-import { logMetaSchema, logPageSchema } from '@localsink/contract';
-import type { LogMeta, LogPage } from '@localsink/contract';
+import {
+  licenseActivationSchema,
+  licenseStatusSchema,
+  logMetaSchema,
+  logPageSchema,
+} from '@localsink/contract';
+import type {
+  LicenseActivation,
+  LicenseStatus,
+  LogMeta,
+  LogPage,
+} from '@localsink/contract';
 
 export type LogQuery = {
   service_name?: string[];
@@ -50,4 +60,46 @@ export async function fetchLogs(
 
 export async function fetchMeta(signal?: AbortSignal): Promise<LogMeta> {
   return logMetaSchema.parse(await getJson('/api/logs/meta', signal));
+}
+
+async function send(
+  url: string,
+  method: 'PUT' | 'POST' | 'DELETE',
+  body?: unknown,
+): Promise<unknown> {
+  const response = await fetch(url, {
+    method,
+    ...(body === undefined
+      ? {}
+      : {
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+  });
+  if (!response.ok) {
+    throw new Error(
+      `Request failed: ${response.status} ${response.statusText}`,
+    );
+  }
+  return response.json();
+}
+
+export async function fetchLicense(
+  signal?: AbortSignal,
+): Promise<LicenseStatus> {
+  return licenseStatusSchema.parse(await getJson('/api/license', signal));
+}
+
+export async function activateLicense(key: string): Promise<LicenseActivation> {
+  return licenseActivationSchema.parse(
+    await send('/api/license', 'PUT', { key }),
+  );
+}
+
+export async function checkLicense(): Promise<LicenseStatus> {
+  return licenseStatusSchema.parse(await send('/api/license/check', 'POST'));
+}
+
+export async function removeLicense(): Promise<LicenseStatus> {
+  return licenseStatusSchema.parse(await send('/api/license', 'DELETE'));
 }
