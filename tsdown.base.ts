@@ -16,7 +16,9 @@ export function libConfig(overrides: UserConfig = {}): UserConfig {
       publint: true,
       attw: true,
       failOnWarn: true,
-      suppressWarnings: ['TypeScript 7.0 does not yet have a stable API'],
+      suppressWarnings: [
+        'The `tsgo` generator on TypeScript 7.0 is deprecated',
+      ],
     },
     overrides,
   );
