@@ -51,8 +51,8 @@ function EditionGlyph({ licensed }: { licensed: boolean }) {
 
 type Edition = 'community' | 'licensed';
 
-// Edition marker (refined.css .r-edition). Defaults to community — there is no
-// licensing backend in v1.
+// Edition marker (refined.css .r-edition). Presentational: LicenseDialog
+// supplies the edition from /api/license and makes it the dialog's trigger.
 export function EditionBadge({ edition = 'community' }: { edition?: Edition }) {
   const licensed = edition === 'licensed';
   const label = licensed ? 'Licensed' : 'Community Edition';

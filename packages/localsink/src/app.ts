@@ -11,10 +11,14 @@ import { HTTPException } from 'hono/http-exception';
 import { secureHeaders } from 'hono/secure-headers';
 import { z } from 'zod';
 
-import { ingestPayloadSchema } from '@localsink/contract';
+import {
+  ingestPayloadSchema,
+  licenseKeyInputSchema,
+} from '@localsink/contract';
 
 import type { Database } from './database.ts';
 import { InvalidQueryError, logsQuerySchema } from './database.ts';
+import type { LicenseManager } from './license/manager.ts';
 import { createMcpServer } from './mcp/server.ts';
 
 const logIdParamSchema = z.object({
@@ -47,6 +51,12 @@ export interface CreateAppOptions {
   staticDir?: string;
   /** Host names to answer requests for. Omit to answer any. */
   allowedHosts?: string[];
+  /**
+   * Serves /api/license when present. Only the CLI passes one: a server
+   * started from code (test-harness, e2e) never reads a key or calls the
+   * licensing service.
+   */
+  license?: LicenseManager;
 }
 
 export function createApp(database: Database, options: CreateAppOptions = {}) {
@@ -122,6 +132,39 @@ export function createApp(database: Database, options: CreateAppOptions = {}) {
       return c.body(null, 201);
     },
   );
+
+  const { license } = options;
+  if (license) {
+    const ENV_MANAGED = 'The license key is set by LOCALSINK_LICENSE_KEY.';
+
+    app.get('/api/license', async (c) => {
+      c.header('Cache-Control', 'no-store');
+      return c.json(await license.status());
+    });
+
+    app.put(
+      '/api/license',
+      validate('json', licenseKeyInputSchema),
+      async (c) => {
+        c.header('Cache-Control', 'no-store');
+        if (license.source === 'env')
+          return c.json({ error: ENV_MANAGED }, 409);
+        const { key } = c.req.valid('json');
+        return c.json(await license.activate(key));
+      },
+    );
+
+    app.post('/api/license/check', async (c) => {
+      c.header('Cache-Control', 'no-store');
+      return c.json(await license.check());
+    });
+
+    app.delete('/api/license', async (c) => {
+      c.header('Cache-Control', 'no-store');
+      if (license.source === 'env') return c.json({ error: ENV_MANAGED }, 409);
+      return c.json(await license.remove());
+    });
+  }
 
   app.all('/api/*', (c) => c.json({ error: 'Not found.' }, 404));
 

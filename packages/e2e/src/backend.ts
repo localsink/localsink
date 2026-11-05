@@ -2,7 +2,7 @@ import { findPackageJSON } from 'node:module';
 import { dirname, join } from 'node:path';
 
 import { startServer } from 'localsink';
-import type { Database } from 'localsink';
+import type { Database, LicenseManager } from 'localsink';
 
 import { sampleLogs } from '@localsink/contract/fixtures';
 
@@ -24,11 +24,21 @@ export interface Backend {
   close: () => Promise<void>;
 }
 
-export async function startBackend(): Promise<Backend> {
+export interface BackendOptions {
+  /** Defaults to any free port. */
+  port?: number;
+  /** Serves /api/license, as the CLI does. The backend closes it. */
+  license?: LicenseManager;
+}
+
+export async function startBackend(
+  options: BackendOptions = {},
+): Promise<Backend> {
   const { url, db, close } = await startServer({
-    port: 0,
+    port: options.port ?? 0,
     dbFileName: ':memory:',
     staticDir,
+    ...(options.license ? { license: options.license } : {}),
   });
   for (const log of sampleLogs) await db.createLog(log);
 

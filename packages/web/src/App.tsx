@@ -1,7 +1,7 @@
 import { AppSidebar } from '@/components/app-sidebar.tsx';
 import { ConnectionBanner } from '@/components/connection-banner.tsx';
 import type { ConnectionState } from '@/components/connection-banner.tsx';
-import { EditionBadge } from '@/components/edition-badge.tsx';
+import { LicenseDialog } from '@/components/license-dialog.tsx';
 import { LogList } from '@/components/log-list.tsx';
 import { ModeToggle } from '@/components/mode-toggle.tsx';
 import { Topbar } from '@/components/topbar.tsx';
@@ -193,7 +193,7 @@ export default function App() {
             levelStyleFor={levelStyleFor}
           />
           <div className="ml-auto flex items-center gap-3">
-            <EditionBadge />
+            <LicenseDialog />
             <ModeToggle />
           </div>
         </header>

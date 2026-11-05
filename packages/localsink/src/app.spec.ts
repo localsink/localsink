@@ -7,12 +7,19 @@ import {
   StreamableHTTPClientTransport,
 } from '@modelcontextprotocol/client';
 import { drizzle } from 'drizzle-orm/libsql';
+import { http, HttpResponse } from 'msw/http';
+import { setupServer } from 'msw/node';
 
-import { logPageSchema } from '@localsink/contract';
+import {
+  licenseActivationSchema,
+  licenseStatusSchema,
+  logPageSchema,
+} from '@localsink/contract';
 
 import type { CreateAppOptions } from './app.ts';
 import { createApp } from './app.ts';
 import { makeDatabase } from './database.ts';
+import { openLicenseManager } from './license/manager.ts';
 import { applySchema } from './migrate.ts';
 
 async function createTestApp(options?: CreateAppOptions) {
@@ -509,6 +516,131 @@ describe('POST /mcp', () => {
     expect(result.content).toEqual([
       { type: 'text', text: expect.stringContaining('"total": 1') },
     ]);
+  });
+});
+
+async function createLicensedApp(envKey?: string) {
+  const configDir = mkdtempSync(join(tmpdir(), 'localsink-license-'));
+  onTestFinished(() => rmSync(configDir, { recursive: true, force: true }));
+  const license = await openLicenseManager({
+    version: '1.2.3',
+    configDir,
+    envKey,
+    log: () => undefined,
+  });
+  onTestFinished(() => license.close());
+  return createTestApp({ license });
+}
+
+function putLicense(key: string) {
+  return {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key }),
+  };
+}
+
+// Bodyless, as the UI sends them. csrf() refuses a bodyless write that has
+// neither header a browser adds, so these carry the one the UI's would.
+function fromUi(method: 'POST' | 'DELETE') {
+  return { method, headers: { 'Sec-Fetch-Site': 'same-origin' } };
+}
+
+describe('/api/license', () => {
+  const KEY = '0f8fad5b-d9cb-469f-a165-70867728950e';
+  const answer = {
+    valid: true,
+    customer: 'Acme',
+    seats: 5,
+    plan: 'commercial',
+    starts_at: 1_700_000_000,
+    expires_at: 4_000_000_000,
+    checked_at: 1_700_000_000,
+  };
+
+  // The licensing service, answering every key as valid.
+  const licensing = setupServer(
+    http.post('https://licensing.localsink.io/v1/validate', () =>
+      HttpResponse.json(answer),
+    ),
+  );
+  beforeAll(() => licensing.listen({ onUnhandledFrame: 'error' }));
+  afterAll(() => licensing.close());
+
+  it('is not served without a license manager', async () => {
+    const { app } = await createTestApp();
+    const res = await app.request('/api/license');
+    expect(res.status).toBe(404);
+  });
+
+  it('reports Community Edition with no key, uncached', async () => {
+    const { app } = await createLicensedApp();
+    const res = await app.request('/api/license');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    expect(licenseStatusSchema.parse(await res.json())).toMatchObject({
+      edition: 'community',
+      source: 'none',
+    });
+  });
+
+  it('activates, checks and removes a key', async () => {
+    const { app } = await createLicensedApp();
+
+    const activated = await app.request('/api/license', putLicense(KEY));
+    expect(activated.status).toBe(200);
+    expect(licenseActivationSchema.parse(await activated.json())).toMatchObject(
+      {
+        outcome: 'activated',
+        status: { edition: 'licensed', customer: 'Acme', key_hint: '950e' },
+      },
+    );
+
+    const checked = await app.request('/api/license/check', fromUi('POST'));
+    expect(licenseStatusSchema.parse(await checked.json())).toMatchObject({
+      edition: 'licensed',
+    });
+
+    const removed = await app.request('/api/license', fromUi('DELETE'));
+    expect(licenseStatusSchema.parse(await removed.json())).toMatchObject({
+      edition: 'community',
+      source: 'none',
+    });
+  });
+
+  it('normalizes a pasted key', async () => {
+    const { app } = await createLicensedApp();
+    const res = await app.request(
+      '/api/license',
+      putLicense(`  ${KEY.toUpperCase()}\n`),
+    );
+    expect(licenseActivationSchema.parse(await res.json())).toMatchObject({
+      outcome: 'activated',
+    });
+  });
+
+  it('never returns the full key', async () => {
+    const { app } = await createLicensedApp();
+    const activated = await app.request('/api/license', putLicense(KEY));
+    const status = await app.request('/api/license');
+    expect(await activated.text()).not.toContain(KEY.slice(0, 8));
+    expect(await status.text()).not.toContain(KEY.slice(0, 8));
+  });
+
+  it('returns 400 for something that is not a key', async () => {
+    const { app } = await createLicensedApp();
+    const res = await app.request('/api/license', putLicense('not-a-key'));
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 409 for activation and removal under LOCALSINK_LICENSE_KEY', async () => {
+    const { app } = await createLicensedApp(KEY);
+    expect((await app.request('/api/license', putLicense(KEY))).status).toBe(
+      409,
+    );
+    expect((await app.request('/api/license', fromUi('DELETE'))).status).toBe(
+      409,
+    );
   });
 });
 

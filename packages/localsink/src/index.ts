@@ -7,6 +7,11 @@ export {
 } from './database.ts';
 export type { Database } from './database.ts';
 export { applySchema } from './migrate.ts';
+export { openLicenseManager } from './license/manager.ts';
+export type {
+  LicenseManager,
+  LicenseManagerOptions,
+} from './license/manager.ts';
 export { startServer } from './server.ts';
 export type { ServerHandle, StartServerOptions } from './server.ts';
 export {

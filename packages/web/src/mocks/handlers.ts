@@ -1,6 +1,11 @@
 import { http, HttpResponse } from 'msw/http';
 
-import type { LogMeta, LogPage, LogRow } from '@localsink/contract';
+import type {
+  LicenseStatus,
+  LogMeta,
+  LogPage,
+  LogRow,
+} from '@localsink/contract';
 import { decodeCursor, encodeCursor } from '@localsink/contract';
 import { sampleLogs } from '@localsink/contract/fixtures';
 
@@ -51,7 +56,26 @@ function applyFilters(params: URLSearchParams): LogRow[] {
   });
 }
 
+// No key: what localsink reports until one is activated. Specs that need
+// another edition override this with worker.use(...).
+export const communityLicense: LicenseStatus = {
+  edition: 'community',
+  source: 'none',
+  reason: null,
+  dead: false,
+  unreachable: false,
+  checking: false,
+  customer: null,
+  seats: null,
+  expires_at: null,
+  checked_at: null,
+  key_hint: null,
+  licensing_host: 'licensing.localsink.io',
+};
+
 export const handlers = [
+  http.get('/api/license', () => HttpResponse.json(communityLicense)),
+
   http.get('/api/logs', ({ request }) => {
     const params = new URL(request.url).searchParams;
     const limit = Number(params.get('limit') ?? DEFAULT_LIMIT);

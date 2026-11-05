@@ -215,3 +215,70 @@ export const logMetaSchema = z.object({
 });
 
 export type LogMeta = z.infer<typeof logMetaSchema>;
+
+// ── License (/api/license) ─────────────────────────────────────────────────
+
+// The shape of a license key: the lowercase UUID the licensing service mints.
+// Structural only — whether the key exists is the licensing service's call.
+const LICENSE_KEY_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+// PUT /api/license. Trimmed and lowercased before the shape check, so a key
+// pasted with stray whitespace or in uppercase still activates.
+export const licenseKeyInputSchema = z.object({
+  key: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(LICENSE_KEY_REGEX, 'Not a license key.'),
+});
+
+export type LicenseKeyInput = z.infer<typeof licenseKeyInputSchema>;
+
+// Why a key isn't licensing this install. `inactive` means the license ended
+// before its paid period did (a refund); `unverified` means the key has never
+// been confirmed because the licensing service couldn't be reached.
+export const licenseReasonSchema = z.enum([
+  'expired',
+  'inactive',
+  'revoked',
+  'not_found',
+  'unverified',
+]);
+
+export type LicenseReason = z.infer<typeof licenseReasonSchema>;
+
+// GET /api/license, and the current state after every license mutation.
+// Never carries the key itself — only its last four characters.
+export const licenseStatusSchema = z.object({
+  edition: z.enum(['community', 'licensed']),
+  // Where the key came from: nowhere, the saved license file, or the
+  // LOCALSINK_LICENSE_KEY environment variable (which makes it read-only).
+  source: z.enum(['none', 'file', 'env']),
+  reason: licenseReasonSchema.nullable(),
+  // The licensing service gave a final answer against this key; it is no
+  // longer checked automatically, only on request.
+  dead: z.boolean(),
+  // The most recent check couldn't reach the licensing service.
+  unreachable: z.boolean(),
+  checking: z.boolean(),
+  customer: z.string().nullable(),
+  seats: z.number().int().nullable(),
+  // Epoch milliseconds, like log timestamps.
+  expires_at: z.number().int().nullable(),
+  checked_at: z.number().int().nullable(),
+  key_hint: z.string().nullable(),
+  licensing_host: z.string(),
+});
+
+export type LicenseStatus = z.infer<typeof licenseStatusSchema>;
+
+// PUT /api/license. A failed activation leaves the current key untouched, so
+// the outcome is reported separately from the status.
+export const licenseActivationSchema = z.object({
+  outcome: z.enum(['activated', 'rejected', 'unreachable', 'save_failed']),
+  reason: z.enum(['expired', 'inactive', 'revoked', 'not_found']).nullable(),
+  status: licenseStatusSchema,
+});
+
+export type LicenseActivation = z.infer<typeof licenseActivationSchema>;
