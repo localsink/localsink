@@ -93,7 +93,9 @@ test('activates a key, keeps it across a restart, and removes it', async ({
   await app.editionBadge.click();
   await app.page.getByLabel('License key').fill(KEY);
   await app.page.getByRole('button', { name: 'Activate' }).click();
-  await expect(app.page.getByText('Acme')).toBeVisible();
+  await expect(
+    app.page.getByRole('dialog').getByText('Acme', { exact: true }),
+  ).toBeVisible();
   await app.page.keyboard.press('Escape');
   await expect(
     app.page.getByRole('button', { name: 'Licensed' }),
