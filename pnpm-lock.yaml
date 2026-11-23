@@ -255,14 +255,14 @@ catalogs:
       specifier: ^4.0.0
       version: 4.0.0
     hono:
-      specifier: ^4.13.19
-      version: 4.13.19
+      specifier: ^4.13.20
+      version: 4.13.20
     husky:
       specifier: 9.1.7
       version: 9.1.7
     lint-staged:
-      specifier: 17.6.1
-      version: 17.6.1
+      specifier: 17.6.2
+      version: 17.6.2
     lucide-react:
       specifier: 1.77.0
       version: 1.77.0
@@ -384,7 +384,7 @@ importers:
         version: 9.1.7
       lint-staged:
         specifier: 'catalog:'
-        version: 17.6.1
+        version: 17.6.2
       msw:
         specifier: 'catalog:'
         version: 3.0.7(@types/node@26.6.6)(typescript@7.0.2)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
@@ -466,10 +466,10 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.1.11(hono@4.13.19)
+        version: 2.1.11(hono@4.13.20)
       '@hono/zod-validator':
         specifier: 'catalog:'
-        version: 0.9.1(hono@4.13.19)(zod@4.6.7)
+        version: 0.9.1(hono@4.13.20)(zod@4.6.7)
       '@libsql/client':
         specifier: 'catalog:'
         version: 0.18.0
@@ -487,7 +487,7 @@ importers:
         version: 4.0.0
       hono:
         specifier: 'catalog:'
-        version: 4.13.19
+        version: 4.13.20
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -2608,8 +2608,8 @@ packages:
   headers-polyfill@5.0.1:
     resolution: {integrity: sha512-1TJ6Fih/b8h5TIcv+1+Hw0PDQWJTKDKzFZzcKOiW1wJza3XoAQlkCuXLbymPYB8+ZQyw8mHvdw560e8zVFIWyA==}
 
-  hono@4.13.19:
-    resolution: {integrity: sha512-KmXvQAXwcAHV+muzbIwoJ23niEB5nMoDVr9WcRkU8mvjUECm/1+7v4Jgp7P7a+H6MLFrh+vXrGonGrGS+RQfkA==}
+  hono@4.13.20:
+    resolution: {integrity: sha512-xo6gecEJQ+CjTtOUUbcLHE8CdRKMeF4qITe+DT+OhFnSUmZR/ZBa9XavAfiGh4HlukmlaHFdaK4dz5tkTYFNmA==}
     engines: {node: '>=16.9.0'}
 
   hookable@6.1.2:
@@ -2839,8 +2839,8 @@ packages:
     resolution: {integrity: sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA==}
     engines: {node: '>= 12.0.0'}
 
-  lint-staged@17.6.1:
-    resolution: {integrity: sha512-3MXgVN7BERDR/6CXZs2fDHGc+r0+hlvGAa9wqMlVbIS6RVRuaPOnb5SnN6wMXulwfEy9DXVkMVUN/8cUlpPDnw==}
+  lint-staged@17.6.2:
+    resolution: {integrity: sha512-c/JaXaXmleubmKUwwp4OAcq55RV9Z3HTUNdqdqPh2srtmP9Of3bcR6o00GoWDUye+9JhMuoYkhYqAVPIOZKcsw==}
     engines: {node: '>=22.22.1'}
     hasBin: true
 
@@ -4076,13 +4076,13 @@ snapshots:
 
   '@fontsource-variable/geist@5.3.0': {}
 
-  '@hono/node-server@2.1.11(hono@4.13.19)':
+  '@hono/node-server@2.1.11(hono@4.13.20)':
     dependencies:
-      hono: 4.13.19
+      hono: 4.13.20
 
-  '@hono/zod-validator@0.9.1(hono@4.13.19)(zod@4.6.7)':
+  '@hono/zod-validator@0.9.1(hono@4.13.20)(zod@4.6.7)':
     dependencies:
-      hono: 4.13.19
+      hono: 4.13.20
       zod: 4.6.7
 
   '@inquirer/ansi@2.0.9': {}
@@ -5221,7 +5221,7 @@ snapshots:
       '@types/set-cookie-parser': 2.4.10
       set-cookie-parser: 3.2.1
 
-  hono@4.13.19: {}
+  hono@4.13.20: {}
 
   hookable@6.1.2: {}
 
@@ -5373,7 +5373,7 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.33.0
       lightningcss-win32-x64-msvc: 1.33.0
 
-  lint-staged@17.6.1:
+  lint-staged@17.6.2:
     dependencies:
       picomatch: 4.0.7
       string-argv: 0.4.0
