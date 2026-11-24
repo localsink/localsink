@@ -29,13 +29,14 @@ where the assets sit next to the CLI in `dist/public`.
 
 Flags win over the environment, which wins over the default.
 
-| Flag              | Env            | Default             | Description                       |
-| ----------------- | -------------- | ------------------- | --------------------------------- |
-| `--port`, `-p`    | `PORT`         | `3000`              | HTTP port to bind.                |
-| `--host`          | `HOST`         | `127.0.0.1`         | Address to bind.                  |
-| `--db`, `-d`      | `DB_FILE_NAME` | `file:localsink.db` | Path to the SQLite database file. |
-| `--version`, `-v` | —              | —                   | Print the version.                |
-| `--help`, `-h`    | —              | —                   | Print usage.                      |
+| Flag              | Env                     | Default             | Description                                                            |
+| ----------------- | ----------------------- | ------------------- | ---------------------------------------------------------------------- |
+| `--port`, `-p`    | `PORT`                  | `3000`              | HTTP port to bind.                                                     |
+| `--host`          | `HOST`                  | `127.0.0.1`         | Address to bind.                                                       |
+| `--db`, `-d`      | `DB_FILE_NAME`          | `file:localsink.db` | Path to the SQLite database file.                                      |
+| `--version`, `-v` | —                       | —                   | Print the version.                                                     |
+| `--help`, `-h`    | —                       | —                   | Print usage.                                                           |
+| —                 | `LOCALSINK_LICENSE_KEY` | —                   | Commercial license key. See [Commercial license](#commercial-license). |
 
 A `.env` file in the working directory is auto-loaded via `process.loadEnvFile()`.
 
@@ -43,13 +44,42 @@ A `.env` file in the working directory is auto-loaded via `process.loadEnvFile()
 
 By default localsink listens on `127.0.0.1` only, so nothing beyond your machine
 can reach it. To reach it from a Docker container, a devcontainer or another
-machine, bind every interface:
+machine, or to run localsink itself in a container, bind every interface:
 
 ```sh
 npx localsink --host 0.0.0.0
 ```
 
 Anyone who can reach that address can then read and write your logs.
+
+### Commercial license
+
+localsink runs as the Community Edition until you add a commercial license key.
+Click **Community Edition** in the top bar of the UI and paste your key.
+localsink saves it in your user config directory, so it covers every project on
+that machine.
+
+In a container, or anywhere else without a persistent home directory, set
+`LOCALSINK_LICENSE_KEY` instead (a `.env` file works too). localsink then keeps
+the key in memory, never reads or writes a saved key, and checks it each time it
+starts. While the variable is set, the key can't be changed or removed from the
+UI.
+
+Without a key, localsink makes no network calls to us. With one, it validates
+the key when you enter it and about once a week afterward. The
+[privacy notice](https://localsink.io/privacy) lists exactly what is sent.
+
+#### Behind a proxy
+
+Node's `fetch` ignores `HTTPS_PROXY` unless its proxy support is turned on. If
+localsink can only reach the internet through a proxy, set both:
+
+```sh
+NODE_USE_ENV_PROXY=1 HTTPS_PROXY=http://proxy.example.com:8080 npx localsink
+```
+
+These must be real environment variables, not `.env` entries: Node reads its
+proxy settings at startup, before localsink loads `.env`.
 
 ### Browsers
 
