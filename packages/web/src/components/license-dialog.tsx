@@ -10,7 +10,12 @@ import {
 } from '@/components/ui/dialog.tsx';
 import { Input } from '@/components/ui/input.tsx';
 import { Skeleton } from '@/components/ui/skeleton.tsx';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useIsMutating,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useId, useState } from 'react';
 import type { SubmitEvent } from 'react';
 
@@ -35,6 +40,8 @@ const PRICING_URL = 'https://localsink.io/pricing';
 const BILLING_URL = 'https://paddle.net';
 
 const LICENSE_KEY = ['license'];
+// Shared by activation, check and removal, so each waits for the others.
+const LICENSE_MUTATION = ['license'];
 
 function formatDate(ms: number): string {
   return new Date(ms).toISOString().slice(0, 10);
@@ -100,9 +107,11 @@ function Note({
 
 function KeyForm({
   replacing,
+  busy,
   onDone,
 }: {
   replacing: boolean;
+  busy: boolean;
   onDone: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -111,6 +120,7 @@ function KeyForm({
   const [error, setError] = useState<string | null>(null);
 
   const activation = useMutation({
+    mutationKey: LICENSE_MUTATION,
     mutationFn: activateLicense,
     onSuccess: (result) => {
       queryClient.setQueryData(LICENSE_KEY, result.status);
@@ -156,7 +166,7 @@ function KeyForm({
           aria-invalid={error === null ? undefined : true}
           className="h-9 text-[12.5px]"
         />
-        <Button type="submit" disabled={activation.isPending || key === ''}>
+        <Button type="submit" disabled={busy || key === ''}>
           {activation.isPending
             ? 'Checking…'
             : replacing
@@ -179,12 +189,14 @@ function LicensePanel({ status }: { status: LicenseStatus }) {
   const licensed = status.edition === 'licensed';
 
   const check = useMutation({
+    mutationKey: LICENSE_MUTATION,
     mutationFn: checkLicense,
     onSuccess: (next) => {
       queryClient.setQueryData(LICENSE_KEY, next);
     },
   });
   const removal = useMutation({
+    mutationKey: LICENSE_MUTATION,
     mutationFn: removeLicense,
     onSuccess: (next) => {
       queryClient.setQueryData(LICENSE_KEY, next);
@@ -193,7 +205,8 @@ function LicensePanel({ status }: { status: LicenseStatus }) {
   });
 
   const reason = describeReason(status);
-  const busy = check.isPending || removal.isPending || status.checking;
+  const mutating = useIsMutating({ mutationKey: LICENSE_MUTATION }) > 0;
+  const busy = mutating || status.checking;
   const showForm =
     status.source === 'none' ||
     (status.source === 'file' && (replacing || status.dead));
@@ -252,6 +265,7 @@ function LicensePanel({ status }: { status: LicenseStatus }) {
       {showForm ? (
         <KeyForm
           replacing={status.source === 'file'}
+          busy={busy}
           onDone={() => {
             setReplacing(false);
           }}

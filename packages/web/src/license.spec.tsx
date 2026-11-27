@@ -23,6 +23,15 @@ const licensed: LicenseStatus = {
   key_hint: '950e',
 };
 
+// A promise and the function that settles it, for holding a request open.
+function deferred() {
+  let resolve!: () => void;
+  const promise = new Promise<void>((settle) => {
+    resolve = settle;
+  });
+  return { promise, resolve };
+}
+
 function serveStatus(status: LicenseStatus) {
   worker.use(http.get('/api/license', () => HttpResponse.json(status)));
 }
@@ -187,6 +196,48 @@ test('Licensed shows the license and can check, replace and remove it', async ()
   await expect
     .element(screen.getByRole('button', { name: 'Community Edition' }))
     .toBeInTheDocument();
+});
+
+test('replacing, checking and removing wait for one another', async () => {
+  const activation = deferred();
+  const check = deferred();
+  worker.use(
+    http.put('/api/license', async () => {
+      await activation.promise;
+      const result: LicenseActivation = {
+        outcome: 'rejected',
+        reason: 'not_found',
+        status: licensed,
+      };
+      return HttpResponse.json(result);
+    }),
+    http.post('/api/license/check', async () => {
+      await check.promise;
+      return HttpResponse.json(licensed);
+    }),
+  );
+  const { dialog } = await openDialog(licensed);
+  const button = (name: string) =>
+    dialog.getByRole('button', { name, exact: true });
+  const checkNow = button('Check now');
+  const remove = button('Remove from this computer');
+  const replace = button('Replace');
+
+  await button('Replace key').click();
+  await dialog.getByLabelText('New license key').fill(KEY);
+  await replace.click();
+  await expect.element(checkNow).toBeDisabled();
+  await expect.element(remove).toBeDisabled();
+  activation.resolve();
+  await expect.element(checkNow).toBeEnabled();
+  await expect.element(remove).toBeEnabled();
+
+  await checkNow.click();
+  await expect.element(button('Checking…')).toBeDisabled();
+  await expect.element(replace).toBeDisabled();
+  await expect.element(remove).toBeDisabled();
+  check.resolve();
+  await expect.element(replace).toBeEnabled();
 });
 
 test('a key from LOCALSINK_LICENSE_KEY can only be checked', async () => {
