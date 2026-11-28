@@ -1,16 +1,18 @@
 {
   "name": "localsink",
   "version": "0.0.0",
-  "description": "Local-first log sink with a searchable UI and API.",
+  "description": "Local-first log sink with full-text search, a live tail and an MCP server, so you and your coding agents can read your logs.",
   "keywords": [
     "developer-tools",
     "fts5",
     "local-first",
     "log-aggregator",
     "log-sink",
+    "log-viewer",
     "logging",
     "logs",
     "mcp",
+    "model-context-protocol",
     "observability",
     "sqlite"
   ],
