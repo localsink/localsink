@@ -58,6 +58,6 @@
     "winston": "catalog:"
   },
   "engines": {
-    "node": ">=26"
+    "node": ">=24"
   }
 }

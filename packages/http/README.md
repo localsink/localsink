@@ -2,21 +2,18 @@
 
 Low-level HTTP primitives for sending logs to a localsink server.
 
+Start a localsink server with `npx localsink`; see the
+[main README](https://github.com/localsink/localsink#readme) for setup.
+
 > Most consumers should use [`@localsink/sdk`](../sdk) (or one of the framework transports: [`@localsink/pino`](../pino), [`@localsink/winston`](../winston), [`@localsink/console`](../console)). Use `@localsink/http` directly only when you need bare-metal control over the request.
 
 ## Install
 
 ```sh
-pnpm add @localsink/http
-```
-
-```sh
 npm install @localsink/http
 ```
 
-```sh
-yarn add @localsink/http
-```
+Requires Node.js 24 or later.
 
 ## Usage
 

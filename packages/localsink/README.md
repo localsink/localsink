@@ -2,7 +2,12 @@
 
 The localsink server: HTTP + MCP API for ingesting and querying logs, backed by SQLite (libSQL) with FTS5 full-text search.
 
+For an overview, the logger integrations and editions, see the
+[main README](https://github.com/localsink/localsink#readme).
+
 ## Run the server
+
+Requires Node.js 24 or later.
 
 ```sh
 npx localsink
@@ -12,18 +17,8 @@ This serves the UI, the REST API and the MCP endpoint on a single origin at
 `http://localhost:3000`, creating and migrating `localsink.db` in the working
 directory if it isn't there yet.
 
-### From a clone
-
-```sh
-git clone https://github.com/localsink/localsink.git
-cd localsink
-pnpm install
-pnpm --filter localsink dev   # API + MCP only; @localsink/web serves the UI
-```
-
-In dev the UI comes from Vite (`pnpm --filter @localsink/web dev`), which
-proxies `/api` and `/mcp` here. The bundled UI is only served from a build,
-where the assets sit next to the CLI in `dist/public`.
+To run it from a clone of the repository, see
+[Development](https://github.com/localsink/localsink#development).
 
 ### Options
 
@@ -89,7 +84,10 @@ can send logs. Every other route answers web pages on its own origin only, and
 a form-style write (a form post, or a `text/plain` or bodyless `fetch`) from a
 page on another origin gets `403` from Hono's
 [CSRF middleware](https://hono.dev/docs/middleware/builtin/csrf). Requests that
-don't come from a browser (the transports, `curl`, MCP clients) are unaffected.
+don't come from a browser (the transports, MCP clients) are unaffected, as long
+as they send a JSON `Content-Type`. The middleware treats a request with no
+`Content-Type` as `text/plain`, so a bodyless `curl -X POST` or `-X DELETE`
+also gets `403` unless you add `-H 'Content-Type: application/json'`.
 
 Responses also carry Hono's
 [secure headers](https://hono.dev/docs/middleware/builtin/secure-headers), so
@@ -127,12 +125,13 @@ which wraps this and registers teardown for you.
 
 ### `startServer(options): Promise<ServerHandle>`
 
-| Option       | Type      | Description                                                                                                         |
-| ------------ | --------- | ------------------------------------------------------------------------------------------------------------------- |
-| `port`       | `number`  | Port to bind. `0` lets the OS pick a free one.                                                                      |
-| `host`       | `string?` | Address to bind (default `127.0.0.1`). See [Reaching localsink from elsewhere](#reaching-localsink-from-elsewhere). |
-| `dbFileName` | `string`  | libSQL database file, e.g. `file:localsink.db` or `:memory:`.                                                       |
-| `staticDir`  | `string?` | Directory holding a built SPA. Omit to serve the API and MCP endpoints.                                             |
+| Option       | Type              | Description                                                                                                         |
+| ------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `port`       | `number`          | Port to bind. `0` lets the OS pick a free one.                                                                      |
+| `host`       | `string?`         | Address to bind (default `127.0.0.1`). See [Reaching localsink from elsewhere](#reaching-localsink-from-elsewhere). |
+| `dbFileName` | `string`          | libSQL database file, e.g. `file:localsink.db` or `:memory:`.                                                       |
+| `staticDir`  | `string?`         | Directory holding a built SPA. Omit to serve the API and MCP endpoints.                                             |
+| `license`    | `LicenseManager?` | From `openLicenseManager`. Serves the [license routes](#license-routes); the server closes it on shutdown.          |
 
 Resolves to a `ServerHandle`:
 
@@ -154,20 +153,22 @@ bound. The underlying error is preserved on `cause`, so callers can branch on
 
 ### Other exports
 
-| Export                                           | Description                                                    |
-| ------------------------------------------------ | -------------------------------------------------------------- |
-| `createApp(db, options?)`                        | The Hono app, if you want to mount it yourself.                |
-| `initializeDatabase(dbFileName?)`                | Opens and migrates a database, returning a `Database`.         |
-| `makeDatabase(drizzleClient)`                    | Wraps an existing Drizzle client in the `Database` API.        |
-| `applySchema(db)`                                | Applies the schema and migrations to a Drizzle client.         |
-| `InvalidQueryError`                              | Thrown for mutually exclusive query params; maps to `400`.     |
-| `DEFAULT_PORT`, `DEFAULT_HOST`                   | `3000` and `127.0.0.1`.                                        |
-| `DEFAULT_DB_FILE_NAME`                           | `file:localsink.db`.                                           |
-| `DEFAULT_SERVER_URL`                             | `http://localhost:3000`.                                       |
-| `logsQuerySchema`                                | Zod schema for `GET /api/logs` query params.                   |
-| `Database`, `ServerHandle`, `StartServerOptions` | Types for the above.                                           |
-| `CreateAppOptions`                               | Options accepted by `createApp`.                               |
-| `LogFilter`, `LogMeta`, `LogPage`, `LogRow`      | Wire types, re-exported so you needn't depend on the contract. |
+| Export                                           | Description                                                     |
+| ------------------------------------------------ | --------------------------------------------------------------- |
+| `createApp(db, options?)`                        | The Hono app, if you want to mount it yourself.                 |
+| `openLicenseManager(options)`                    | Opens the license manager that the CLI passes to `startServer`. |
+| `initializeDatabase(dbFileName?)`                | Opens and migrates a database, returning a `Database`.          |
+| `makeDatabase(drizzleClient)`                    | Wraps an existing Drizzle client in the `Database` API.         |
+| `applySchema(db)`                                | Applies the schema and migrations to a Drizzle client.          |
+| `InvalidQueryError`                              | Thrown for mutually exclusive query params; maps to `400`.      |
+| `DEFAULT_PORT`, `DEFAULT_HOST`                   | `3000` and `127.0.0.1`.                                         |
+| `DEFAULT_DB_FILE_NAME`                           | `file:localsink.db`.                                            |
+| `DEFAULT_SERVER_URL`                             | `http://localhost:3000`.                                        |
+| `logsQuerySchema`                                | Zod schema for `GET /api/logs` query params.                    |
+| `Database`, `ServerHandle`, `StartServerOptions` | Types for the above.                                            |
+| `CreateAppOptions`                               | Options accepted by `createApp`.                                |
+| `LicenseManager`, `LicenseManagerOptions`        | Types for `openLicenseManager`.                                 |
+| `LogFilter`, `LogMeta`, `LogPage`, `LogRow`      | Wire types, re-exported so you needn't depend on the contract.  |
 
 ## REST API
 
@@ -179,12 +180,14 @@ Ingest a single log. Body must match `ingestPayloadSchema`. Returns `201` with a
 
 ### `GET /api/logs`
 
-Query logs with optional filters. All query params are AND-ed together.
+Query logs with optional filters. Different params are AND-ed together.
+`service_name` and `level` accept several values (repeat the param or
+comma-separate them, e.g. `level=warn,error`), which are OR-ed.
 
 | Param          | Description                                                            |
 | -------------- | ---------------------------------------------------------------------- |
-| `service_name` | Exact match.                                                           |
-| `level`        | Exact match.                                                           |
+| `service_name` | Exact match on any of the given values.                                |
+| `level`        | Exact match on any of the given values.                                |
 | `logger`       | Exact match.                                                           |
 | `trace_id`     | Exact match.                                                           |
 | `span_id`      | Exact match.                                                           |
@@ -218,6 +221,23 @@ Returns shape-of-DB metadata:
 }
 ```
 
+### License routes
+
+The UI's edition dialog uses these. The CLI always serves them. `startServer`
+and `createApp` serve them only when given a `license` option. Responses use
+the `LicenseStatus` and `LicenseActivation` schemas from
+[`@localsink/contract`](../contract).
+
+| Route                     | Description                                                              |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `GET /api/license`        | Current edition and key status.                                          |
+| `PUT /api/license`        | Activate a key: `{ "key": "…" }`. Returns `{ outcome, reason, status }`. |
+| `POST /api/license/check` | Check the saved key against the licensing service now.                   |
+| `DELETE /api/license`     | Remove the saved key and return to the Community Edition.                |
+
+While `LOCALSINK_LICENSE_KEY` is set, `PUT` and `DELETE` return `409`, because
+the key comes from the environment.
+
 ## Full-text search (`q`)
 
 The `q` param runs an FTS5 query against an index built recursively from `message`, the `error` JSON, and the `attributes` JSON — including attribute **keys**. Supported syntax:
@@ -226,10 +246,12 @@ The `q` param runs an FTS5 query against an index built recursively from `messag
 | ------------ | ---------------------------------------------------------------- |
 | prefix       | `err*`                                                           |
 | phrase       | `"failed connection"`                                            |
-| boolean      | `error AND timeout`, `foo OR bar`, `NOT debug`                   |
+| boolean      | `error AND timeout`, `foo OR bar`, `error NOT debug`             |
 | column scope | `message:login`, `error_text:timeout`, `attributes_text:user_id` |
 
-Malformed FTS5 queries return `400` with the underlying parser error.
+If `q` isn't valid FTS5 syntax (for example, free text with punctuation such
+as `GET /health`), it's retried as a literal phrase instead of returning an
+error.
 
 ## MCP endpoint
 
@@ -239,4 +261,10 @@ Malformed FTS5 queries return `400` with the underlying parser error.
 - `search_logs` → same as `GET /api/logs`
 - `get_log_by_id` → same as `GET /api/logs/:id`
 
-Point an MCP-capable client (e.g. Claude Desktop) at `http://localhost:3000/mcp` to let an LLM search your logs. Browser-based MCP clients on another origin can't reach it (see [Browsers](#browsers)).
+Point an MCP client that supports Streamable HTTP at `http://localhost:3000/mcp` to let an LLM search your logs. With Claude Code:
+
+```sh
+claude mcp add --transport http localsink http://localhost:3000/mcp
+```
+
+Browser-based MCP clients on another origin can't reach it (see [Browsers](#browsers)).

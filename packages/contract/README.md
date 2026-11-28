@@ -7,16 +7,10 @@ The server uses these schemas to validate incoming requests and to type its resp
 ## Install
 
 ```sh
-pnpm add @localsink/contract
-```
-
-```sh
 npm install @localsink/contract
 ```
 
-```sh
-yarn add @localsink/contract
-```
+Requires Node.js 24 or later.
 
 ## Usage
 

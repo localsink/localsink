@@ -1,8 +1,11 @@
 # @localsink/web
 
-React + Vite SPA for browsing, searching, and live-tailing logs from a localsink server.
+The localsink web UI: a React + Vite single-page app for browsing, searching
+and live-tailing logs.
 
-> **Status: in active development.** The product design — architecture, polling-based live tail, URL-as-state, terminal-style bounded scrollback, and the "no in-app tab strip" decision — is settled and documented in [docs/ui-requirements.md](../../docs/ui-requirements.md). The implementation is being built against that blueprint.
+This package isn't published. Its build is bundled into
+[`localsink`](../localsink) and served from the same origin as the API, so
+`npx localsink` is all users need. This README is for working on the UI.
 
 ## Stack
 
@@ -10,8 +13,6 @@ React + Vite SPA for browsing, searching, and live-tailing logs from a localsink
 - **Vite** for dev server and production build
 - **Tailwind CSS v4** (via `@tailwindcss/vite`)
 - **Vitest** in browser mode (Playwright / headless Chromium) for unit specs
-
-The built bundle is intended to be served from the same origin as the API by the [`localsink`](../localsink) server, so all `/api/logs*` calls are same-origin in production.
 
 ## Develop
 
@@ -24,4 +25,9 @@ pnpm --filter @localsink/web preview  # vite preview of the production bundle
 pnpm --filter @localsink/web test     # vitest in headless chromium
 ```
 
-For full integration, start a localsink server in another terminal (see [`packages/localsink`](../localsink)) so the UI has an API to talk to.
+The dev server proxies `/api` and `/mcp` to a localsink server on `:3000`
+(override with `VITE_API_TARGET`), so start one in another terminal with
+`pnpm --filter localsink dev`. `pnpm --filter localsink seed` gives it sample
+logs, and `pnpm --filter localsink emit` streams new ones for the live tail.
+
+Browser-level end-to-end tests live in [`@localsink/e2e`](../e2e).

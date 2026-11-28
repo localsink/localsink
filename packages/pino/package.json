@@ -58,6 +58,6 @@
     "pino": "catalog:"
   },
   "engines": {
-    "node": ">=26"
+    "node": ">=24"
   }
 }

@@ -2,21 +2,18 @@
 
 Ergonomic client for sending logs to a localsink server programmatically.
 
+Start a localsink server with `npx localsink`; see the
+[main README](https://github.com/localsink/localsink#readme) for setup.
+
 If you are wiring up an existing logger, prefer [`@localsink/pino`](../pino), [`@localsink/winston`](../winston), or [`@localsink/console`](../console). Use this SDK directly for ad-hoc instrumentation or when building a custom transport.
 
 ## Install
 
 ```sh
-pnpm add @localsink/sdk
-```
-
-```sh
 npm install @localsink/sdk
 ```
 
-```sh
-yarn add @localsink/sdk
-```
+Requires Node.js 24 or later.
 
 ## Usage
 
