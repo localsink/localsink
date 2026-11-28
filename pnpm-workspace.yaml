@@ -39,15 +39,15 @@ catalog:
   drizzle-kit: 0.31.11
   drizzle-orm: ^0.45.4
   env-paths: ^4.0.0
-  hono: ^4.13.22
+  hono: ^4.13.23
   husky: 9.1.7
   lint-staged: 17.6.2
-  lucide-react: 1.81.0
+  lucide-react: 1.82.0
   msw: 3.0.8
   oxc-transform-react: 0.158.0
   oxfmt: 0.80.0
   oxlint: 1.95.0
-  oxlint-tsgolint: 7.0.2008
+  oxlint-tsgolint: 7.0.2009
   pino: ^10.4.0
   pino-abstract-transport: ^3.0.0
   playwright: 1.65.1
