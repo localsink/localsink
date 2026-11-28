@@ -172,14 +172,14 @@ your logger has.
 
 | Package                                            | Use it to                                                                      |
 | -------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **Run it**                                         |                                                                                |
+| **Server**                                         |                                                                                |
 | [`localsink`](packages/localsink)                  | Run the server and the bundled UI (`npx localsink`), or embed it as a library. |
-| **Send logs**                                      |                                                                                |
+| **Transports**                                     |                                                                                |
 | [`@localsink/pino`](packages/pino)                 | Send logs from [pino](https://github.com/pinojs/pino).                         |
 | [`@localsink/winston`](packages/winston)           | Send logs from [winston](https://github.com/winstonjs/winston).                |
 | [`@localsink/console`](packages/console)           | Forward `console.*` calls.                                                     |
 | [`@localsink/sdk`](packages/sdk)                   | Send logs from code, or build your own transport on top of it.                 |
-| **Build on it**                                    |                                                                                |
+| **Custom transports**                              |                                                                                |
 | [`@localsink/http`](packages/http)                 | Send a single request with no client, for full control.                        |
 | [`@localsink/contract`](packages/contract)         | Validate and type data with the shared Zod wire schemas.                       |
 | [`@localsink/test-harness`](packages/test-harness) | Test a custom transport in Vitest against a real server.                       |
