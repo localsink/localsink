@@ -2,21 +2,18 @@
 
 [Pino](https://github.com/pinojs/pino) transport that forwards logs to a running localsink server.
 
+Start a localsink server with `npx localsink`; see the
+[main README](https://github.com/localsink/localsink#readme) for setup.
+
 Built on [`pino-abstract-transport`](https://github.com/pinojs/pino-abstract-transport) and designed to run in a worker thread via [`pino.transport`](https://getpino.io/#/docs/transports).
 
 ## Install
 
 ```sh
-pnpm add pino @localsink/pino
-```
-
-```sh
 npm install pino @localsink/pino
 ```
 
-```sh
-yarn add pino @localsink/pino
-```
+Requires Node.js 24 or later.
 
 `pino` is a peer dependency.
 
@@ -54,3 +51,4 @@ The options type is exported as `TransportOptions` for TypeScript callers.
 
 - Pino runs `target` transports in a worker thread, so `options` must be JSON-serializable — pass plain values only, no functions or class instances.
 - Pending requests are awaited on transport `close()`, so logs in flight at shutdown are not lost.
+- **Never throws.** Network errors and non-2xx responses are swallowed, and each request times out after three seconds, so localsink being down can't break your application.

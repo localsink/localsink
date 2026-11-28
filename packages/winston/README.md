@@ -2,19 +2,16 @@
 
 [Winston](https://github.com/winstonjs/winston) transport that forwards logs to a running localsink server.
 
-## Install
+Start a localsink server with `npx localsink`; see the
+[main README](https://github.com/localsink/localsink#readme) for setup.
 
-```sh
-pnpm add winston @localsink/winston
-```
+## Install
 
 ```sh
 npm install winston @localsink/winston
 ```
 
-```sh
-yarn add winston @localsink/winston
-```
+Requires Node.js 24 or later.
 
 `winston` is a peer dependency.
 
@@ -59,3 +56,4 @@ exported.
 ## Notes
 
 - `transport.close()` waits for in-flight requests to settle before emitting `finish`, so after `logger.close()`, wait for the transport's `finish` event before exiting.
+- **Never throws.** Network errors and non-2xx responses are swallowed, and each request times out after three seconds, so localsink being down can't break your application.

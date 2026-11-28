@@ -51,6 +51,6 @@
     "@localsink/test-harness": "workspace:*"
   },
   "engines": {
-    "node": ">=26"
+    "node": ">=24"
   }
 }

@@ -7,22 +7,16 @@ If you are building a transport for a logger that localsink doesn't ship with â€
 ## Install
 
 ```sh
-pnpm add -D @localsink/test-harness
-```
-
-```sh
 npm install --save-dev @localsink/test-harness
 ```
 
-```sh
-yarn add --dev @localsink/test-harness
-```
-
-Requires [Vitest](https://vitest.dev) â€” the harness uses `onTestFinished` to register automatic cleanup, so it must run inside a Vitest test.
+Requires Node.js 24 or later and [Vitest](https://vitest.dev), which is a peer dependency. The harness uses `onTestFinished` to register automatic cleanup, so it must run inside a Vitest test.
 
 ## Usage
 
 ```ts
+import { describe, expect, it, vi } from 'vitest';
+
 import { startTestServer } from '@localsink/test-harness';
 
 import { myTransport } from './my-transport.ts';

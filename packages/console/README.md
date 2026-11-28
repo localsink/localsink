@@ -2,21 +2,18 @@
 
 Forward `console.*` calls to a running localsink server.
 
+Start a localsink server with `npx localsink`; see the
+[main README](https://github.com/localsink/localsink#readme) for setup.
+
 Patches `console.log`, `error`, `warn`, `info`, `debug`, and `trace` so each call is also POSTed to localsink. The original method still writes to stdout/stderr — nothing is suppressed.
 
 ## Install
 
 ```sh
-pnpm add @localsink/console
-```
-
-```sh
 npm install @localsink/console
 ```
 
-```sh
-yarn add @localsink/console
-```
+Requires Node.js 24 or later.
 
 ## Usage
 
