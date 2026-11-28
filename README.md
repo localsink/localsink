@@ -22,6 +22,8 @@ to paste your terminal.
 - **Zero infrastructure.** One Node process and one SQLite file. No Docker, no
   account, no API key. Your logs never leave your machine.
 
+![The localsink UI: logs from several services, filterable by service and severity, with an error expanded to show its stack trace and attributes](.github/assets/screenshot.webp)
+
 ## Quick start
 
 localsink needs Node.js 24 or later.
@@ -170,14 +172,14 @@ your logger has.
 
 | Package                                            | Use it to                                                                      |
 | -------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **Run it**                                         |                                                                                |
+| **Server**                                         |                                                                                |
 | [`localsink`](packages/localsink)                  | Run the server and the bundled UI (`npx localsink`), or embed it as a library. |
-| **Send logs**                                      |                                                                                |
+| **Transports**                                     |                                                                                |
 | [`@localsink/pino`](packages/pino)                 | Send logs from [pino](https://github.com/pinojs/pino).                         |
 | [`@localsink/winston`](packages/winston)           | Send logs from [winston](https://github.com/winstonjs/winston).                |
 | [`@localsink/console`](packages/console)           | Forward `console.*` calls.                                                     |
 | [`@localsink/sdk`](packages/sdk)                   | Send logs from code, or build your own transport on top of it.                 |
-| **Build on it**                                    |                                                                                |
+| **Custom transports**                              |                                                                                |
 | [`@localsink/http`](packages/http)                 | Send a single request with no client, for full control.                        |
 | [`@localsink/contract`](packages/contract)         | Validate and type data with the shared Zod wire schemas.                       |
 | [`@localsink/test-harness`](packages/test-harness) | Test a custom transport in Vitest against a real server.                       |
@@ -230,6 +232,12 @@ localsink is source-available under
 orders or custom terms, email
 [licensing@localsink.io](mailto:licensing@localsink.io).
 
+## Support
+
+- **Community Edition:**
+  [GitHub issues](https://github.com/localsink/localsink/issues)
+- **Licensed Edition:** [support@localsink.io](mailto:support@localsink.io)
+
 ## Development
 
 The repository is a pnpm workspace. It pins Node and pnpm versions in
@@ -256,9 +264,3 @@ pnpm --filter @localsink/web dev  # UI on :5173, proxying /api and /mcp
 To give the UI something to show, `pnpm --filter localsink seed` loads sample
 logs into the dev database. `pnpm --filter localsink emit` streams synthetic
 logs to a running server, which is useful for testing the live tail.
-
-## Support
-
-- **Community Edition:**
-  [GitHub issues](https://github.com/localsink/localsink/issues)
-- **Licensed Edition:** [support@localsink.io](mailto:support@localsink.io)
