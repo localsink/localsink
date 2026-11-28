@@ -1,7 +1,7 @@
 {
   "name": "localsink",
   "version": "0.0.0",
-  "description": "Local-first log sink with full-text search, a live tail and an MCP server, so you and your coding agents can read your logs.",
+  "description": "Local-first log sink with full-text search, a live tail and an MCP server for coding agents.",
   "keywords": [
     "developer-tools",
     "fts5",
