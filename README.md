@@ -15,7 +15,7 @@ search, faceted filters and a live tail you can pause. It also runs an MCP
 endpoint, so your coding agent can search the same logs instead of asking you
 to paste your terminal.
 
-![The localsink UI: logs from several services, filterable by service and severity, with an error expanded to show its stack trace and attributes](.github/assets/screenshot.png)
+![The localsink UI: logs from several services, filterable by service and severity, with an error expanded to show its stack trace and attributes](.github/assets/screenshot.webp)
 
 - **Filter and search, don't scroll.** SQLite FTS5 over every message, error
   and attribute, with facets built from your actual data.
