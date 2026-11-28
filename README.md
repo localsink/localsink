@@ -15,14 +15,14 @@ search, faceted filters and a live tail you can pause. It also runs an MCP
 endpoint, so your coding agent can search the same logs instead of asking you
 to paste your terminal.
 
-![The localsink UI: logs from several services, filterable by service and severity, with an error expanded to show its stack trace and attributes](.github/assets/screenshot.webp)
-
 - **Filter and search, don't scroll.** SQLite FTS5 over every message, error
   and attribute, with facets built from your actual data.
 - **Agent-ready.** Claude Code, or any MCP client, can query your logs at
   `localhost:3000/mcp` and find the error itself.
 - **Zero infrastructure.** One Node process and one SQLite file. No Docker, no
   account, no API key. Your logs never leave your machine.
+
+![The localsink UI: logs from several services, filterable by service and severity, with an error expanded to show its stack trace and attributes](.github/assets/screenshot.webp)
 
 ## Quick start
 
@@ -232,6 +232,12 @@ localsink is source-available under
 orders or custom terms, email
 [licensing@localsink.io](mailto:licensing@localsink.io).
 
+## Support
+
+- **Community Edition:**
+  [GitHub issues](https://github.com/localsink/localsink/issues)
+- **Licensed Edition:** [support@localsink.io](mailto:support@localsink.io)
+
 ## Development
 
 The repository is a pnpm workspace. It pins Node and pnpm versions in
@@ -258,9 +264,3 @@ pnpm --filter @localsink/web dev  # UI on :5173, proxying /api and /mcp
 To give the UI something to show, `pnpm --filter localsink seed` loads sample
 logs into the dev database. `pnpm --filter localsink emit` streams synthetic
 logs to a running server, which is useful for testing the live tail.
-
-## Support
-
-- **Community Edition:**
-  [GitHub issues](https://github.com/localsink/localsink/issues)
-- **Licensed Edition:** [support@localsink.io](mailto:support@localsink.io)
